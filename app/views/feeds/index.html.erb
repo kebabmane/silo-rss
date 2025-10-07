@@ -1,0 +1,58 @@
+<div class="max-w-4xl mx-auto py-8 px-4">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Feeds</h1>
+    <div class="space-x-2">
+      <%= link_to "Add Feed", new_feed_path, class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+      <%= link_to "Export OPML", export_opml_feeds_path, class: "px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" %>
+    </div>
+  </div>
+
+  <!-- Import OPML -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Import OPML</h2>
+    <%= form_with url: import_opml_feeds_path, method: :post, multipart: true do |f| %>
+      <div class="flex items-center space-x-4">
+        <%= f.file_field :opml_file, accept: '.opml,.xml', class: "block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" %>
+        <%= f.submit "Import", class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Subscriptions List -->
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <% @subscriptions.group_by(&:category).each do |category, subs| %>
+      <div class="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+        <h3 class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <%= category %>
+        </h3>
+        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+          <% subs.each do |subscription| %>
+            <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  <%= subscription.display_name %>
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <%= subscription.feed.feed_url %>
+                </p>
+              </div>
+              <%= button_to "Remove", feed_path(subscription.feed), method: :delete,
+                  class: "text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300",
+                  data: { confirm: "Are you sure?" } %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @subscriptions.empty? %>
+      <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+        <p>No feeds yet. Add your first feed to get started!</p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "← Back to Dashboard", dashboard_path, class: "text-blue-600 dark:text-blue-400 hover:underline" %>
+  </div>
+</div>

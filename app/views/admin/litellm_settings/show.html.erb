@@ -1,0 +1,83 @@
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+  <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">LiteLLM Settings</h1>
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <%= form_with(model: @setting, url: admin_litellm_settings_path, method: :patch, local: true, class: "space-y-6", data: { turbo: false }) do |form| %>
+      <% if @setting.errors.any? %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-800 dark:border-red-600 dark:text-red-100">
+          <h2 class="font-bold">Errors:</h2>
+          <ul class="list-disc list-inside">
+            <% @setting.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div>
+        <label class="flex items-center">
+          <%= form.check_box :enabled, class: "mr-2" %>
+          <span class="text-gray-700 dark:text-gray-300 font-medium">Enable LiteLLM</span>
+        </label>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Enable or disable LiteLLM integration for daily briefs</p>
+      </div>
+
+      <div>
+        <%= form.label :server_url, "Server URL", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= form.text_field :server_url, placeholder: "http://localhost:4000", class: "w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">The URL of your LiteLLM proxy server</p>
+      </div>
+
+      <div>
+        <%= form.label :api_key, "API Key", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= form.password_field :api_key, placeholder: "Optional", class: "w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave blank if your LiteLLM server doesn't require authentication</p>
+      </div>
+
+      <div>
+        <%= form.label :default_model, "Default Model", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <% if @models.any? %>
+          <%= form.select :default_model,
+                options_for_select(
+                  @models.map { |m| [m["id"] || m, m["id"] || m] },
+                  @setting.default_model
+                ),
+                { include_blank: "Select a model..." },
+                class: "w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= @models.count %> models available - <a href="<%= fetch_models_admin_litellm_settings_path %>" data-turbo-method="post" class="text-blue-600 hover:text-blue-800">Refresh models</a></p>
+        <% else %>
+          <%= form.text_field :default_model, placeholder: "gpt-3.5-turbo", class: "w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Enter the default LLM model or <a href="<%= fetch_models_admin_litellm_settings_path %>" data-turbo-method="post" class="text-blue-600 hover:text-blue-800">fetch from server</a></p>
+        <% end %>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <%= form.label :max_tokens, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.number_field :max_tokens, class: "w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Maximum tokens for responses</p>
+        </div>
+
+        <div>
+          <%= form.label :timeout, "Timeout (seconds)", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+          <%= form.number_field :timeout, class: "w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Request timeout in seconds</p>
+        </div>
+      </div>
+
+      <div>
+        <%= form.label :temperature, class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+        <%= form.number_field :temperature, step: 0.1, min: 0, max: 2, class: "w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Temperature for text generation (0.0-2.0, lower is more focused)</p>
+      </div>
+
+      <div class="flex space-x-3 pt-4">
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Settings</button>
+      </div>
+    <% end %>
+
+    <div class="mt-4 flex space-x-3">
+      <%= button_to "Test Connection", test_connection_admin_litellm_settings_path, method: :post, class: "px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" %>
+    </div>
+  </div>
+</div>

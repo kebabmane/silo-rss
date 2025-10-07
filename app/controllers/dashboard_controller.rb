@@ -1,0 +1,82 @@
+class DashboardController < ApplicationController
+  def index
+    @categories = Current.user.subscriptions.distinct.pluck(:category).compact.sort
+    subscriptions = Current.user.subscriptions.includes(:feed).order(:category, :custom_name).to_a
+    # Group subscriptions by category in memory to avoid N+1 queries
+    @subscriptions_by_category = subscriptions.group_by(&:category)
+    @subscriptions = subscriptions
+
+    # Get articles for the selected feed/category or all articles
+    @articles = Article.joins(feed: :subscriptions)
+                      .where(subscriptions: { user_id: Current.user.id })
+                      .includes(:feed)
+                      .recent
+
+    # Apply filters
+    if params[:feed_id].present?
+      @articles = @articles.where(feed_id: params[:feed_id])
+      @selected_feed = Current.user.feeds.find_by(id: params[:feed_id])
+    end
+
+    if params[:category].present?
+      # Avoid duplicate joins - already joined above
+      @articles = @articles.where(subscriptions: { category: params[:category] })
+      @selected_category = params[:category]
+    end
+
+    # Default: show unread articles only
+    filter = params[:filter] || "unread"
+    if filter == "unread"
+      @articles = @articles.left_joins(:article_states)
+                          .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", Current.user.id, false)
+    elsif filter == "starred"
+      @articles = @articles.joins(:article_states)
+                          .where(article_states: { user_id: Current.user.id, starred: true })
+    elsif filter == "archived"
+      @articles = @articles.joins(:article_states)
+                          .where(article_states: { user_id: Current.user.id, archived: true })
+    end
+
+    # Always exclude archived from default views unless explicitly filtered
+    unless filter == "archived"
+      @articles = @articles.left_joins(:article_states)
+                          .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
+    end
+
+    @articles = @articles.limit(50)
+
+    # Eager load article states for current user to prevent N+1 queries
+    preload_article_states(@articles, Current.user)
+
+    # Select first article if available
+    if params[:article_id].present?
+      @selected_article = Article
+        .joins(feed: :subscriptions)
+        .where(subscriptions: { user_id: Current.user.id })
+        .includes(:feed)
+        .find_by(id: params[:article_id])
+    else
+      @selected_article = @articles.first
+    end
+  end
+
+  private
+
+  def preload_article_states(articles, user)
+    # Get article IDs
+    article_ids = articles.map(&:id)
+
+    # Load all article states for these articles and this user in one query
+    states = ArticleState.where(article_id: article_ids, user_id: user.id).to_a
+
+    # Create a hash for quick lookup
+    states_by_article_id = states.index_by(&:article_id)
+
+    # Preload the states into the articles association
+    articles.each do |article|
+      state = states_by_article_id[article.id]
+      article.association(:article_states).target = state ? [state] : []
+      article.association(:article_states).loaded!
+    end
+  end
+end

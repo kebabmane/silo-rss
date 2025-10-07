@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+tech_crunch:
+  title: TechCrunch
+  feed_url: https://techcrunch.com/feed/
+  site_url: https://techcrunch.com
+  last_fetched_at: <%= 1.hour.ago %>
+
+hacker_news:
+  title: Hacker News
+  feed_url: https://news.ycombinator.com/rss
+  site_url: https://news.ycombinator.com
+  last_fetched_at: <%= 2.hours.ago %>
+
+ruby_weekly:
+  title: Ruby Weekly
+  feed_url: https://rubyweekly.com/rss
+  site_url: https://rubyweekly.com
+  last_fetched_at: <%= 3.hours.ago %>

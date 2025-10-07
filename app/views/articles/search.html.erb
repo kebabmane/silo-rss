@@ -1,0 +1,166 @@
+<div class="flex h-[calc(100vh-4rem)]">
+  <!-- Left Sidebar: Categories and Feeds -->
+  <div class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+    <div class="p-4">
+      <!-- Back to Dashboard -->
+      <div class="mb-4">
+        <%= link_to dashboard_path, class: "block px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" do %>
+          ← Back to Dashboard
+        <% end %>
+      </div>
+
+      <hr class="my-4 border-gray-200 dark:border-gray-700">
+
+      <div class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="px-3 mb-2">Search Results</p>
+        <% if params[:q].present? %>
+          <p class="px-3 text-xs">Searching for: <strong class="text-gray-900 dark:text-gray-100"><%= params[:q] %></strong></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle: Articles List -->
+  <%= turbo_frame_tag "articles_list", class: "w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col" do %>
+    <!-- Search Bar -->
+    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+      <%= form_with url: search_path, method: :get, data: { turbo_frame: "articles_list" }, class: "relative" do |f| %>
+        <%= f.text_field :q,
+            placeholder: "Search articles...",
+            value: params[:q],
+            class: "w-full px-4 py-2 pr-20 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            autofocus: true %>
+        <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          <% if params[:q].present? %>
+            <%= link_to dashboard_path,
+                data: { turbo_frame: "articles_list" },
+                class: "px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" do %>
+              Clear
+            <% end %>
+          <% end %>
+          <%= f.submit "Search", class: "px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
+      <% if params[:q].present? %>
+        <% if @articles.any? %>
+          <% @articles.each do |article| %>
+            <% state = article.state_for(Current.user) %>
+            <%= link_to search_path(q: params[:q], article_id: article.id),
+                class: "block p-4 hover:bg-gray-50 dark:hover:bg-gray-700 #{state.read? ? 'opacity-60' : 'font-semibold'} #{params[:article_id].to_i == article.id ? 'bg-blue-50 dark:bg-blue-900' : ''}",
+                data: {
+                  turbo_frame: "article_content",
+                  action: "click->keyboard#selectArticle",
+                  article_id: article.id
+                } do %>
+              <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-gray-900 dark:text-white truncate">
+                    <%= article.title %>
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <%= article.feed.title %>
+                  </p>
+                  <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    <%= article.published_at&.strftime("%b %d, %Y") %>
+                  </p>
+                </div>
+                <% if state.starred? %>
+                  <span class="ml-2 text-yellow-400">⭐</span>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        <% else %>
+          <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+            <p>No articles found matching "<%= params[:q] %>"</p>
+            <p class="text-sm mt-2">Try a different search term</p>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+          <p>Enter a search term to find articles</p>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Right: Article Content -->
+  <%= turbo_frame_tag "article_content", class: "flex-1 overflow-y-auto bg-white dark:bg-gray-800" do %>
+    <% if @selected_article %>
+      <% state = @selected_article.state_for(Current.user) %>
+      <article class="max-w-4xl mx-auto p-8">
+        <header class="mb-6">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <%= @selected_article.title %>
+          </h1>
+          <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+            <div>
+              <span><%= @selected_article.feed.title %></span>
+              <span class="mx-2">•</span>
+              <span><%= @selected_article.published_at&.strftime("%B %d, %Y") %></span>
+            </div>
+            <a href="<%= @selected_article.url %>" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
+              View Original →
+            </a>
+          </div>
+        </header>
+
+        <!-- Article Actions -->
+        <div class="mb-6 flex space-x-2">
+          <%= button_to toggle_read_article_path(@selected_article),
+              method: :patch,
+              class: "px-3 py-1 text-sm rounded-md border #{state.read? ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600' : 'bg-blue-50 dark:bg-blue-900 border-blue-300 dark:border-blue-700'} text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600",
+              data: { turbo: false } do %>
+            <%= state.read? ? "Mark Unread" : "Mark Read" %>
+          <% end %>
+
+          <%= button_to toggle_starred_article_path(@selected_article),
+              method: :patch,
+              class: "px-3 py-1 text-sm rounded-md border #{state.starred? ? 'bg-yellow-50 dark:bg-yellow-900 border-yellow-300 dark:border-yellow-700' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'} text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600",
+              data: { turbo: false } do %>
+            <%= state.starred? ? "⭐ Starred" : "☆ Star" %>
+          <% end %>
+
+          <%= button_to toggle_archived_article_path(@selected_article),
+              method: :patch,
+              class: "px-3 py-1 text-sm rounded-md border bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600" do %>
+            Archive
+          <% end %>
+
+          <%= button_to fetch_content_article_path(@selected_article),
+              method: :post,
+              class: "px-3 py-1 text-sm rounded-md border #{@selected_article.full_content_fetched? ? 'bg-green-100 dark:bg-green-800 border-green-400 dark:border-green-600 text-green-800 dark:text-green-100' : 'bg-purple-100 dark:bg-purple-800 border-purple-400 dark:border-purple-600 text-purple-800 dark:text-purple-100'} hover:opacity-80" do %>
+            <%= @selected_article.full_content_fetched? ? "🔄 Re-fetch Content" : "📥 Fetch Full Content" %>
+          <% end %>
+        </div>
+
+        <!-- Article Content -->
+        <div class="prose dark:prose-invert max-w-none text-gray-900 dark:text-gray-100">
+          <%= sanitize @selected_article.display_content, tags: %w[div p br strong em a h1 h2 h3 h4 h5 h6 ul ol li blockquote img pre code span], attributes: %w[href src alt class] %>
+        </div>
+      </article>
+
+      <!-- Auto-mark as read -->
+      <% unless state.read? %>
+        <%= turbo_stream_from "article_#{@selected_article.id}" %>
+        <script>
+          setTimeout(() => {
+            fetch('<%= toggle_read_article_path(@selected_article) %>', {
+              method: 'PATCH',
+              headers: {
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+              }
+            });
+          }, 2000);
+        </script>
+      <% end %>
+    <% else %>
+      <div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+        <p>Select an article to read</p>
+      </div>
+    <% end %>
+  <% end %>
+</div>

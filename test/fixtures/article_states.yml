@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+alice_tc_1:
+  user: alice
+  article: tc_article_1
+  read: false
+  starred: true
+  archived: false
+
+alice_tc_2:
+  user: alice
+  article: tc_article_2
+  read: true
+  starred: false
+  archived: false
+
+alice_hn_1:
+  user: alice
+  article: hn_article_1
+  read: false
+  starred: false
+  archived: true
+
+bob_ruby_1:
+  user: bob
+  article: ruby_article_1
+  read: true
+  starred: true
+  archived: false

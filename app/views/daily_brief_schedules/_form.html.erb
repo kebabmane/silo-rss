@@ -1,0 +1,80 @@
+<%= form_with(model: schedule, class: "space-y-6") do |form| %>
+  <% if schedule.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-800 dark:border-red-600 dark:text-red-100">
+      <h2 class="font-bold">Errors:</h2>
+      <ul class="list-disc list-inside">
+        <% schedule.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :time_of_day, "Time of Day", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+    <%= form.time_field :time_of_day, class: "w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Days of Week</label>
+    <div class="space-y-2">
+      <% %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday].each do |day| %>
+        <label class="flex items-center">
+          <%= check_box_tag "daily_brief_schedule[days_of_week][]", day.downcase,
+                            schedule.days_of_week.map(&:downcase).include?(day.downcase),
+                            class: "mr-2" %>
+          <span class="text-gray-700 dark:text-gray-300"><%= day %></span>
+        </label>
+      <% end %>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave unchecked to run every day</p>
+  </div>
+
+  <div>
+    <%= form.label :summary_length, "Summary Length", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+    <%= form.select :summary_length,
+                     [["Short", "short"], ["Medium", "medium"], ["Detailed", "detailed"]],
+                     {},
+                     class: "w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+  </div>
+
+  <div>
+    <label class="flex items-center">
+      <%= form.check_box :email_delivery, class: "mr-2" %>
+      <span class="text-gray-700 dark:text-gray-300">Send via email</span>
+    </label>
+  </div>
+
+  <div>
+    <label class="flex items-center">
+      <%= form.check_box :include_all_feeds, class: "mr-2", data: { action: "change->feed-filter#toggle" } %>
+      <span class="text-gray-700 dark:text-gray-300">Include all feeds</span>
+    </label>
+  </div>
+
+  <div id="feed-selection" class="<%= 'hidden' if schedule.include_all_feeds? %>">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Feeds</label>
+    <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-md p-3">
+      <% Current.user.feeds.each do |feed| %>
+        <label class="flex items-center">
+          <%= check_box_tag "feed_ids[]", feed.id,
+                            schedule.filtered_feeds.include?(feed),
+                            class: "mr-2" %>
+          <span class="text-gray-700 dark:text-gray-300"><%= feed.title %></span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div>
+    <label class="flex items-center">
+      <%= form.check_box :active, class: "mr-2" %>
+      <span class="text-gray-700 dark:text-gray-300">Active</span>
+    </label>
+  </div>
+
+  <div class="flex space-x-3">
+    <%= form.submit class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+    <%= link_to "Cancel", daily_brief_schedules_path, class: "px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400" %>
+  </div>
+<% end %>

@@ -1,0 +1,36 @@
+<% require "openssl" %>
+<% password_digest = BCrypt::Password.create("password") %>
+<% secret = Rails.application.secret_key_base %>
+
+alice:
+  email_address: alice@example.com
+  password_digest: <%= password_digest %>
+  api_token: alice_api_token_123456789
+  api_token_digest: <%= OpenSSL::HMAC.hexdigest("SHA256", secret, "api-token:alice_api_token_123456789") %>
+  api_token_expires_at: <%= 90.days.from_now.iso8601 %>
+  admin: true
+  confirmed_at: <%= 2.days.ago.iso8601 %>
+
+bob:
+  email_address: bob@example.com
+  password_digest: <%= password_digest %>
+  api_token: bob_api_token_987654321
+  api_token_digest: <%= OpenSSL::HMAC.hexdigest("SHA256", secret, "api-token:bob_api_token_987654321") %>
+  api_token_expires_at: <%= 90.days.from_now.iso8601 %>
+  confirmed_at: <%= 2.days.ago.iso8601 %>
+  confirmed_by: alice
+
+charlie:
+  email_address: charlie@example.com
+  password_digest: <%= password_digest %>
+  api_token: charlie_api_token_111222333
+  api_token_digest: <%= OpenSSL::HMAC.hexdigest("SHA256", secret, "api-token:charlie_api_token_111222333") %>
+  api_token_expires_at: <%= 90.days.from_now.iso8601 %>
+  confirmed_at: <%= 2.days.ago.iso8601 %>
+  confirmed_by: alice
+
+pending:
+  email_address: pending@example.com
+  password_digest: <%= password_digest %>
+  admin: false
+  confirmed_at:

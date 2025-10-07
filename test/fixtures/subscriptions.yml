@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+alice_tech_crunch:
+  user: alice
+  feed: tech_crunch
+  category: Technology
+  custom_name: null
+
+alice_hacker_news:
+  user: alice
+  feed: hacker_news
+  category: Technology
+  custom_name: "HN - Custom Name"
+
+bob_ruby_weekly:
+  user: bob
+  feed: ruby_weekly
+  category: Programming
+  custom_name: null
+
+bob_tech_crunch:
+  user: bob
+  feed: tech_crunch
+  category: News
+  custom_name: null

@@ -1,0 +1,31 @@
+<div class="max-w-2xl mx-auto py-8 px-4">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add New Feed</h1>
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+    <%= form_with url: discover_feeds_path, method: :post, data: { turbo_frame: "feed_discovery" } do |f| %>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Feed URL or Website URL
+        </label>
+        <%= f.text_field :url,
+            placeholder: "https://example.com or https://example.com/feed.xml",
+            class: "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+            autofocus: true %>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Enter a website URL (we'll auto-discover the feed) or a direct RSS/Atom feed URL
+        </p>
+      </div>
+
+      <%= f.submit "Discover Feed",
+          class: "w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+    <% end %>
+
+    <%= turbo_frame_tag "feed_discovery", class: "mt-6" do %>
+      <!-- Discovery results will appear here -->
+    <% end %>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "← Back to Dashboard", dashboard_path, class: "text-blue-600 dark:text-blue-400 hover:underline" %>
+  </div>
+</div>

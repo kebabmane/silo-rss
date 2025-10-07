@@ -1,0 +1,51 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Daily Brief Schedules</h1>
+    <%= link_to "New Schedule", new_daily_brief_schedule_path, class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+  </div>
+
+  <% if @schedules.empty? %>
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
+      <p class="text-gray-600 dark:text-gray-400 mb-4">You don't have any daily brief schedules yet.</p>
+      <%= link_to "Create your first schedule", new_daily_brief_schedule_path, class: "text-blue-600 hover:text-blue-800 dark:text-blue-400" %>
+    </div>
+  <% else %>
+    <div class="space-y-4">
+      <% @schedules.each do |schedule| %>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <%= schedule.time_of_day.strftime("%I:%M %p") %>
+                <% if schedule.active? %>
+                  <span class="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 rounded">Active</span>
+                <% else %>
+                  <span class="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded">Inactive</span>
+                <% end %>
+              </h3>
+
+              <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                <p>
+                  <strong>Days:</strong>
+                  <%= schedule.days_of_week.empty? ? "Every day" : schedule.days_of_week.map(&:capitalize).join(", ") %>
+                </p>
+                <p><strong>Summary Length:</strong> <%= schedule.summary_length.capitalize %></p>
+                <p><strong>Email Delivery:</strong> <%= schedule.email_delivery? ? "Yes" : "No" %></p>
+                <p>
+                  <strong>Feeds:</strong>
+                  <%= schedule.include_all_feeds? ? "All feeds" : "#{schedule.filtered_feeds.count} selected feeds" %>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex space-x-2">
+              <%= button_to "Generate Now", generate_now_daily_brief_schedule_path(schedule), method: :post, class: "px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700" %>
+              <%= link_to "Edit", edit_daily_brief_schedule_path(schedule), class: "px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600" %>
+              <%= button_to "Delete", daily_brief_schedule_path(schedule), method: :delete, data: { confirm: "Are you sure?" }, class: "px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: ["./bin/thrust", "./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+    ports:
+      - "3000:3000"
+    volumes:
+      - storage-data:/rails/storage
+      - db-data:/rails/db
+    environment:
+      - RAILS_ENV=production
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_LOG_TO_STDOUT=1
+      - RAILS_SERVE_STATIC_FILES=1
+      - PORT=3000
+    depends_on:
+      - worker
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: ["./bin/thrust", "./bin/rails", "solid_queue:start"]
+    volumes:
+      - storage-data:/rails/storage
+      - db-data:/rails/db
+    environment:
+      - RAILS_ENV=production
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_LOG_TO_STDOUT=1
+      - RAILS_SERVE_STATIC_FILES=1
+    restart: unless-stopped
+
+volumes:
+  storage-data:
+  db-data:

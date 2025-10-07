@@ -1,0 +1,16 @@
+one:
+  user: alice
+  daily_brief_schedule: one
+  content: "This is a test daily brief with summary content."
+  article_count: 5
+  generated_at: <%= 1.day.ago %>
+  read: false
+
+two:
+  user: alice
+  daily_brief_schedule: one
+  content: "Another test brief that has been read."
+  article_count: 3
+  generated_at: <%= 2.days.ago %>
+  read: true
+  emailed_at: <%= 2.days.ago %>

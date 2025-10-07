@@ -1,0 +1,37 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+tc_article_1:
+  feed: tech_crunch
+  title: "Latest AI Developments in 2025"
+  content: "This is a summary of the latest AI developments..."
+  full_content: null
+  url: https://techcrunch.com/2025/10/01/ai-developments/
+  guid: tc_ai_2025_001
+  published_at: <%= 1.day.ago %>
+
+tc_article_2:
+  feed: tech_crunch
+  title: "Startup Funding Reaches New Heights"
+  content: "Venture capital funding has reached unprecedented levels..."
+  full_content: "Venture capital funding has reached unprecedented levels. Here is the full article content with much more detail about the funding rounds, investors, and market trends."
+  url: https://techcrunch.com/2025/10/02/startup-funding/
+  guid: tc_funding_2025_002
+  published_at: <%= 2.days.ago %>
+
+hn_article_1:
+  feed: hacker_news
+  title: "Show HN: My New Open Source Project"
+  content: "I built a new tool for developers..."
+  full_content: null
+  url: https://news.ycombinator.com/item?id=12345
+  guid: hn_show_12345
+  published_at: <%= 3.days.ago %>
+
+ruby_article_1:
+  feed: ruby_weekly
+  title: "Ruby 3.4 Released with New Features"
+  content: "The Ruby core team has announced..."
+  full_content: null
+  url: https://rubyweekly.com/issues/688
+  guid: ruby_3_4_release
+  published_at: <%= 1.week.ago %>

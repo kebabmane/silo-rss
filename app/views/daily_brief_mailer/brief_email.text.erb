@@ -1,0 +1,14 @@
+YOUR DAILY BRIEF
+================================================================================
+
+Generated on <%= @brief.generated_at.strftime("%B %d, %Y at %I:%M %p") %>
+<%= @brief.article_count %> <%= "article".pluralize(@brief.article_count) %> summarized
+
+================================================================================
+
+<%= @brief.content %>
+
+================================================================================
+
+This daily brief was automatically generated based on your schedule preferences.
+To manage your daily brief settings, visit your Silo dashboard.

@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+@layer base {
+  /* Enable dark mode support */
+  html.dark {
+    color-scheme: dark;
+  }
+}
+
+/* Custom prose colors for article content */
+.prose {
+  --tw-prose-body: theme(colors.gray.700);
+  --tw-prose-headings: theme(colors.gray.900);
+  --tw-prose-links: theme(colors.blue.600);
+}
+
+.dark .prose {
+  --tw-prose-body: theme(colors.gray.300);
+  --tw-prose-headings: theme(colors.white);
+  --tw-prose-links: theme(colors.blue.400);
+}
+
+/* Daily Brief specific styling */
+.daily-brief-content {
+  line-height: 1.8;
+}
+
+.daily-brief-content h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: theme(colors.gray.900);
+  border-bottom: 2px solid theme(colors.gray.200);
+  padding-bottom: 0.5rem;
+}
+
+.daily-brief-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: theme(colors.gray.800);
+  border-bottom: 1px solid theme(colors.gray.200);
+  padding-bottom: 0.5rem;
+}
+
+.daily-brief-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: theme(colors.gray.800);
+}
+
+.daily-brief-content h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: theme(colors.gray.700);
+}
+
+.daily-brief-content p {
+  margin-bottom: 1.25rem;
+}
+
+.daily-brief-content strong {
+  font-weight: 600;
+  color: theme(colors.gray.900);
+}
+
+.daily-brief-content ul,
+.daily-brief-content ol {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.daily-brief-content li {
+  margin-bottom: 0.5rem;
+}
+
+.daily-brief-content a {
+  color: theme(colors.blue.600);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.daily-brief-content a:hover {
+  color: theme(colors.blue.700);
+}
+
+.daily-brief-content hr {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border-color: theme(colors.gray.300);
+}
+
+.daily-brief-content blockquote {
+  border-left: 4px solid theme(colors.blue.500);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+  color: theme(colors.gray.600);
+}
+
+.daily-brief-content code {
+  background-color: theme(colors.gray.100);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  color: theme(colors.gray.800);
+}
+
+.daily-brief-content pre {
+  background-color: theme(colors.gray.100);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.daily-brief-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Dark mode styles */
+.dark .daily-brief-content h1 {
+  color: theme(colors.white);
+  border-bottom-color: theme(colors.gray.700);
+}
+
+.dark .daily-brief-content h2 {
+  color: theme(colors.gray.100);
+  border-bottom-color: theme(colors.gray.700);
+}
+
+.dark .daily-brief-content h3 {
+  color: theme(colors.gray.200);
+}
+
+.dark .daily-brief-content h4 {
+  color: theme(colors.gray.300);
+}
+
+.dark .daily-brief-content strong {
+  color: theme(colors.gray.100);
+}
+
+.dark .daily-brief-content a {
+  color: theme(colors.blue.400);
+}
+
+.dark .daily-brief-content a:hover {
+  color: theme(colors.blue.300);
+}
+
+.dark .daily-brief-content hr {
+  border-color: theme(colors.gray.700);
+}
+
+.dark .daily-brief-content blockquote {
+  border-left-color: theme(colors.blue.400);
+  color: theme(colors.gray.400);
+}
+
+.dark .daily-brief-content code {
+  background-color: theme(colors.gray.800);
+  color: theme(colors.gray.200);
+}
+
+.dark .daily-brief-content pre {
+  background-color: theme(colors.gray.800);
+}
