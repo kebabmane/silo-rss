@@ -45,6 +45,9 @@
             <div class="flex items-center space-x-4">
               <%= link_to "Add Feed", new_feed_path, class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" %>
               <%= link_to "Sync Now", refresh_all_feeds_path, data: { turbo_method: :post }, class: "px-3 py-2 text-sm font-medium text-blue-600 bg-blue-100 dark:bg-blue-900/40 dark:text-blue-200 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900" %>
+              <button type="button" data-controller="refresh" data-action="click->refresh#reload" class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                Refresh View
+              </button>
               <%= link_to "Daily Briefs", daily_briefs_path, class: "px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" %>
               <%= link_to "Settings", settings_path, class: "px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" %>
               <% if Current.user&.admin? %>
