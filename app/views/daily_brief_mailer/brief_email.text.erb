@@ -1,7 +1,7 @@
 YOUR DAILY BRIEF
 ================================================================================
 
-Generated on <%= @brief.generated_at.strftime("%B %d, %Y at %I:%M %p") %>
+Generated on <%= format_user_time(@brief.generated_at, style: :long) %>
 <%= @brief.article_count %> <%= "article".pluralize(@brief.article_count) %> summarized
 
 ================================================================================

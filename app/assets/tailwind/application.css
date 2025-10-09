@@ -20,6 +20,32 @@
   --tw-prose-links: theme(colors.blue.400);
 }
 
+@layer components {
+  .article-content {
+    color: theme(colors.gray.900);
+  }
+
+  .article-content :is(p, li, span, strong, em, blockquote, h1, h2, h3, h4, h5, h6) {
+    color: inherit;
+  }
+
+  .article-content a {
+    color: theme(colors.blue.600);
+  }
+
+  .dark .article-content {
+    color: theme(colors.gray.100);
+  }
+
+  .dark .article-content a {
+    color: theme(colors.blue.300);
+  }
+
+  .dark .article-content :is(p, li, span, strong, em, blockquote) {
+    color: inherit;
+  }
+}
+
 /* Daily Brief specific styling */
 .daily-brief-content {
   line-height: 1.8;

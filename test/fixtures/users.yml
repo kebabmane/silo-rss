@@ -10,6 +10,7 @@ alice:
   api_token_expires_at: <%= 90.days.from_now.iso8601 %>
   admin: true
   confirmed_at: <%= 2.days.ago.iso8601 %>
+  time_zone: America/New_York
 
 bob:
   email_address: bob@example.com
@@ -19,6 +20,7 @@ bob:
   api_token_expires_at: <%= 90.days.from_now.iso8601 %>
   confirmed_at: <%= 2.days.ago.iso8601 %>
   confirmed_by: alice
+  time_zone: Europe/London
 
 charlie:
   email_address: charlie@example.com
@@ -28,6 +30,7 @@ charlie:
   api_token_expires_at: <%= 90.days.from_now.iso8601 %>
   confirmed_at: <%= 2.days.ago.iso8601 %>
   confirmed_by: alice
+  time_zone: Etc/UTC
 
 pending:
   email_address: pending@example.com

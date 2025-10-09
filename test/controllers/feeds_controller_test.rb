@@ -181,6 +181,22 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     # Response should include existing categories for dropdown
   end
 
+  test "should redirect to login when refreshing feeds without authentication" do
+    post refresh_all_feeds_url
+    assert_redirected_to new_session_path
+  end
+
+  test "should enqueue user feed refresh job" do
+    login_as @alice
+
+    assert_enqueued_with(job: UserFeedRefreshJob, args: [@alice.id]) do
+      post refresh_all_feeds_url
+    end
+
+    assert_redirected_to dashboard_path
+    assert_equal "Sync started. Your feeds will refresh shortly.", flash[:notice]
+  end
+
   # Create action tests
   test "should redirect to login when creating subscription without authentication" do
     post feeds_url, params: { feed_id: @tech_crunch.id, category: "Tech" }

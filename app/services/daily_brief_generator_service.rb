@@ -67,10 +67,16 @@ class DailyBriefGeneratorService
       content = article.display_content || article.title
       feed_name = article.feed.title
 
+      published_at_text = if article.published_at.present?
+                             article.published_at.in_time_zone(user_time_zone).strftime("%B %d, %Y %I:%M %p")
+                           else
+                             "Unknown"
+                           end
+
       <<~ARTICLE
         Article #{index + 1}: #{article.title}
         Source: #{feed_name}
-        Published: #{article.published_at&.strftime("%B %d, %Y %I:%M %p") || "Unknown"}
+        Published: #{published_at_text}
         URL: #{article.url}
 
         #{truncate_content(content, 2000)}
@@ -160,5 +166,9 @@ class DailyBriefGeneratorService
     return text if text.length <= max_length
 
     text[0...max_length] + "..."
+  end
+
+  def user_time_zone
+    @user.time_zone_or_default
   end
 end

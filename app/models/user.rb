@@ -29,6 +29,12 @@ class User < ApplicationRecord
             confirmation: true,
             length: { minimum: PASSWORD_MIN_LENGTH, maximum: ActiveModel::SecurePassword::MAX_PASSWORD_LENGTH_ALLOWED },
             if: :password_attribute_assigned?
+  TIME_ZONE_OPTIONS = ActiveSupport::TimeZone.all.map do |tz|
+    [tz.to_s, tz.tzinfo.name]
+  end.freeze
+  VALID_TIME_ZONES = TIME_ZONE_OPTIONS.map(&:last).freeze
+
+  validates :time_zone, inclusion: { in: VALID_TIME_ZONES }
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
@@ -168,6 +174,10 @@ class User < ApplicationRecord
       save! if changed?
       token
     end
+  end
+
+  def time_zone_or_default
+    time_zone.presence || "Etc/UTC"
   end
 
   private

@@ -22,7 +22,14 @@ module Authentication
     end
 
     def resume_session
-      Current.session ||= find_session_by_cookie
+      session = Current.session || find_session_by_cookie
+
+      if session
+        Current.session = session
+        Current.time_zone = session.user&.time_zone_or_default
+      end
+
+      session
     end
 
     def find_session_by_cookie
@@ -43,6 +50,7 @@ module Authentication
     def start_new_session_for(user)
       user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
         Current.session = session
+        Current.time_zone = user.time_zone_or_default
         cookies.signed.permanent[:session_id] = {
           value: session.id,
           httponly: true,
@@ -54,6 +62,7 @@ module Authentication
 
     def terminate_session
       Current.session&.destroy
+      Current.time_zone = nil
       cookies.delete(:session_id)
     end
 end

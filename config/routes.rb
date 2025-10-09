@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   resource :session
   resources :passwords, param: :token
   resources :registrations, only: [:new, :create]
+  resource :settings, only: [:show, :update]
 
   # Public landing page + main application
   root "home#index"
@@ -13,6 +14,7 @@ Rails.application.routes.draw do
       post :discover
       post :import_opml
       get :export_opml
+      post :refresh_all
     end
   end
 

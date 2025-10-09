@@ -64,7 +64,7 @@
                     <%= article.feed.title %>
                   </p>
                   <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    <%= article.published_at&.strftime("%b %d, %Y") %>
+                    <%= format_user_time(article.published_at, style: :short_date) %>
                   </p>
                 </div>
                 <% if state.starred? %>
@@ -100,7 +100,7 @@
             <div>
               <span><%= @selected_article.feed.title %></span>
               <span class="mx-2">•</span>
-              <span><%= @selected_article.published_at&.strftime("%B %d, %Y") %></span>
+              <span><%= format_user_time(@selected_article.published_at, style: :long_date) %></span>
             </div>
             <a href="<%= @selected_article.url %>" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
               View Original →
@@ -138,8 +138,8 @@
         </div>
 
         <!-- Article Content -->
-        <div class="prose dark:prose-invert max-w-none text-gray-900 dark:text-gray-100">
-          <%= sanitize @selected_article.display_content, tags: %w[div p br strong em a h1 h2 h3 h4 h5 h6 ul ol li blockquote img pre code span], attributes: %w[href src alt class] %>
+        <div class="prose max-w-none article-content">
+          <%= sanitize @selected_article.display_content, tags: %w[div p br strong em a h1 h2 h3 h4 h5 h6 ul ol li blockquote img pre code span table thead tbody tr th td], attributes: %w[href src alt class] %>
         </div>
       </article>
 

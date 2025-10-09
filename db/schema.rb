@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_06_004326) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_07_220246) do
   create_table "article_states", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "article_id", null: false
@@ -263,6 +263,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_06_004326) do
     t.string "api_token_digest"
     t.datetime "confirmed_at"
     t.integer "confirmed_by_id"
+    t.string "time_zone", default: "Etc/UTC", null: false
     t.index ["admin"], name: "index_users_on_admin"
     t.index ["api_token"], name: "index_users_on_api_token", unique: true
     t.index ["api_token_digest"], name: "index_users_on_api_token_digest", unique: true

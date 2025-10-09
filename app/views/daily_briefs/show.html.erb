@@ -22,14 +22,14 @@
         Daily Brief
       </h1>
       <p class="text-gray-600 dark:text-gray-400 mt-2">
-        <%= @brief.generated_at.strftime("%B %d, %Y at %I:%M %p") %>
+        <%= format_user_time(@brief.generated_at, style: :long) %>
       </p>
       <p class="text-sm text-gray-500 dark:text-gray-500 mt-1">
         <%= @brief.article_count %> <%= "article".pluralize(@brief.article_count) %> summarized
       </p>
     </div>
 
-    <div class="prose prose-lg dark:prose-invert max-w-none daily-brief-content">
+    <div class="prose prose-lg max-w-none daily-brief-content article-content">
       <%= markdown(@brief.content) %>
     </div>
   </div>

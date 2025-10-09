@@ -76,6 +76,11 @@ class FeedsController < ApplicationController
     redirect_to feeds_path, alert: "Failed to import OPML file."
   end
 
+  def refresh_all
+    UserFeedRefreshJob.perform_later(Current.user.id)
+    redirect_back fallback_location: dashboard_path, notice: "Sync started. Your feeds will refresh shortly."
+  end
+
   def export_opml
     opml_content = OpmlService.export(Current.user)
     send_data opml_content,

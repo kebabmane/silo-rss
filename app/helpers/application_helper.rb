@@ -28,4 +28,23 @@ module ApplicationHelper
 
     markdown.render(text).html_safe
   end
+
+  def format_user_time(time, style: :long)
+    return "" if time.blank?
+
+    local_time = time.in_time_zone(Time.zone)
+
+    case style
+    when :short_date
+      local_time.strftime("%b %d, %Y")
+    when :long_date
+      local_time.strftime("%B %d, %Y")
+    when :long
+      local_time.strftime("%B %d, %Y at %I:%M %p")
+    when :month_day_time
+      local_time.strftime("%B %d at %I:%M %p")
+    else
+      local_time.to_s
+    end
+  end
 end
