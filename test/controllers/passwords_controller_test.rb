@@ -205,6 +205,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     patch password_url(token), params: {}
 
     assert_redirected_to edit_password_path(token)
+    assert_equal "Password and confirmation are required.", flash[:alert]
   end
 
   test "should handle nil password" do
@@ -216,6 +217,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to edit_password_path(token)
+    assert_equal "Password and confirmation are required.", flash[:alert]
   end
 
   # Security tests
@@ -308,7 +310,8 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
       password_confirmation: long_password
     }
 
-    # BCrypt might have limits, handle accordingly
+    assert_redirected_to edit_password_path(token)
+    assert_equal "Passwords did not match.", flash[:alert]
   end
 
   test "should handle special characters in new password" do
@@ -359,10 +362,9 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should handle empty token" do
-    get edit_password_url("")
-
-    # Rails routing might handle this differently
-    # Adjust based on your routes configuration
+    assert_raises(ActionController::UrlGenerationError) do
+      get edit_password_url("")
+    end
   end
 
   test "should not allow authenticated user's token to reset another user" do

@@ -12,6 +12,11 @@ class User < ApplicationRecord
   TOKEN_HMAC_KEY = "api-token"
 
   belongs_to :confirmed_by, class_name: "User", optional: true
+  has_many :confirmed_users,
+           class_name: "User",
+           foreign_key: :confirmed_by_id,
+           inverse_of: :confirmed_by,
+           dependent: :nullify
 
   has_secure_password
   encrypts :api_token, deterministic: false
@@ -23,12 +28,17 @@ class User < ApplicationRecord
   has_many :daily_brief_schedules, dependent: :destroy
   has_many :daily_briefs, dependent: :destroy
 
-  validates :email_address, presence: true, uniqueness: true
+  validates :email_address,
+            presence: true,
+            uniqueness: true,
+            format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" },
+            length: { maximum: 254 }
   validates :password,
             presence: true,
             confirmation: true,
             length: { minimum: PASSWORD_MIN_LENGTH, maximum: ActiveModel::SecurePassword::MAX_PASSWORD_LENGTH_ALLOWED },
             if: :password_attribute_assigned?
+  validates :password_confirmation, presence: true, if: :password_attribute_assigned?
   TIME_ZONE_OPTIONS = ActiveSupport::TimeZone.all.map do |tz|
     [tz.to_s, tz.tzinfo.name]
   end.freeze
@@ -155,6 +165,14 @@ class User < ApplicationRecord
 
   def confirmed?
     confirmed_at.present?
+  end
+
+  def onboarding_completed?
+    onboarding_completed_at.present?
+  end
+
+  def complete_onboarding!
+    update!(onboarding_completed_at: Time.current) unless onboarding_completed?
   end
 
   def confirm!(confirmed_by: nil)

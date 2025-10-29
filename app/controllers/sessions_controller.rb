@@ -6,13 +6,23 @@ class SessionsController < ApplicationController
   end
 
   def create
-    user = User.authenticate_by(params.permit(:email_address, :password))
+    credentials = params.permit(:email_address, :password)
 
-    if user&.confirmed?
-      start_new_session_for user
-      redirect_to after_authentication_url
-    elsif user
-      redirect_to new_session_path, alert: "Your account is awaiting admin approval."
+    if credentials[:email_address].blank? || credentials[:password].blank?
+      redirect_to new_session_path, alert: "Try another email address or password."
+      return
+    end
+
+    user = User.authenticate_by(credentials)
+
+    if user
+      # Check if admin confirmation is required
+      if Setting.require_admin_confirmation? && !user.confirmed?
+        redirect_to new_session_path, alert: "Your account is awaiting admin approval."
+      else
+        start_new_session_for user
+        redirect_to after_authentication_url
+      end
     else
       redirect_to new_session_path, alert: "Try another email address or password."
     end

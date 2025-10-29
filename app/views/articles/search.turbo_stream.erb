@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "articles_list" do %>
+  <%= render partial: "articles/search_articles_list", locals: { articles: @articles, query: params[:q], selected_article_id: params[:article_id] } %>
+<% end %>
+
+<%= turbo_stream.replace "article_content" do %>
+  <%= render partial: "articles/search_article_content", locals: { article: @selected_article } %>
+<% end %>

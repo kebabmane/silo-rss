@@ -18,13 +18,13 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="h-full bg-gray-100 dark:bg-gray-900" data-controller="keyboard theme">
+  <body class="h-full bg-gray-100 dark:bg-black" data-controller="keyboard theme">
     <% if Current.user %>
-      <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-10">
+      <nav class="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-10" role="navigation" aria-label="Main navigation">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16 gap-4">
             <div class="flex items-center flex-shrink-0">
-              <%= link_to dashboard_path, class: "text-xl font-bold text-gray-900 dark:text-white" do %>
+              <%= link_to dashboard_path, class: "text-xl font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded", aria_label: "Silo home" do %>
                 Silo
               <% end %>
             </div>
@@ -43,31 +43,35 @@
               <% end %>
             </div>
             <div class="flex items-center space-x-4">
-              <%= link_to "Add Feed", new_feed_path, class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700" %>
-              <%= link_to "Sync Now", refresh_all_feeds_path, data: { turbo_method: :post }, class: "px-3 py-2 text-sm font-medium text-blue-600 bg-blue-100 dark:bg-blue-900/40 dark:text-blue-200 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900" %>
-              <button type="button" data-controller="refresh" data-action="click->refresh#reload" class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+              <%= link_to "Add Feed", new_feed_path, class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2", aria_label: "Add new feed" %>
+              <%= link_to "Sync Now", refresh_all_feeds_path, data: { turbo_method: :post }, class: "px-3 py-2 text-sm font-medium text-blue-600 bg-blue-100 dark:bg-blue-900/40 dark:text-blue-200 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2", aria_label: "Synchronize all feeds now" %>
+              <button type="button" data-controller="refresh" data-action="click->refresh#reload" class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Refresh view">
                 Refresh View
               </button>
-              <%= link_to "Daily Briefs", daily_briefs_path, class: "px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" %>
-              <%= link_to "Settings", settings_path, class: "px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" %>
+              <%= link_to "Daily Briefs", daily_briefs_path, class: "px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded" %>
+              <%= link_to "Settings", settings_path, class: "px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded" %>
               <% if Current.user&.admin? %>
                 <div class="relative group">
-                  <button class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Admin ▾</button>
-                  <div class="hidden group-hover:block absolute right-0 pt-2 w-48 z-20">
+                  <button class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded" aria-label="Admin menu" aria-haspopup="true">Admin ▾</button>
+                  <div class="hidden group-hover:block absolute right-0 pt-2 w-48 z-20" role="menu">
                     <div class="bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700">
-                      <%= link_to "Users", admin_users_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-md" %>
-                      <%= link_to "Jobs", mission_control_jobs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-                      <%= link_to "LiteLLM Settings", admin_litellm_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-md" %>
+                      <%= link_to "Dashboard", admin_root_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-md focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700", role: "menuitem" %>
+                      <%= link_to "Users", admin_users_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700", role: "menuitem" %>
+                      <%= link_to "Suggested Feeds", admin_suggested_feeds_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700", role: "menuitem" %>
+                      <%= link_to "Settings", admin_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700", role: "menuitem" %>
+                      <%= link_to "Jobs", mission_control_jobs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700", role: "menuitem" %>
+                      <%= link_to "Daily Brief Prompt", admin_daily_brief_prompts_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700", role: "menuitem" %>
+                      <%= link_to "LiteLLM Settings", admin_litellm_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-md focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700", role: "menuitem" %>
                     </div>
                   </div>
                 </div>
               <% end %>
-              <button data-action="click->theme#toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <button data-action="click->theme#toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded" aria-label="Toggle dark mode">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                   <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
                 </svg>
               </button>
-              <%= button_to "Sign Out", session_path, method: :delete, class: "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" %>
+              <%= button_to "Sign Out", session_path, method: :delete, class: "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded", aria_label: "Sign out" %>
             </div>
           </div>
         </div>
@@ -85,6 +89,14 @@
         <%= yield %>
       </main>
     <% else %>
+      <!-- Theme toggle for public pages -->
+      <div class="fixed top-4 right-4 z-50">
+        <button data-controller="theme" data-action="click->theme#toggle" class="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700" aria-label="Toggle dark mode">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
+          </svg>
+        </button>
+      </div>
       <main class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
         <%= yield %>
       </main>

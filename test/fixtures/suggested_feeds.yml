@@ -1,0 +1,71 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+tech_crunch_suggested:
+  title: TechCrunch
+  feed_url: https://techcrunch.com/feed/
+  category: Technology
+  description: Technology news and startups
+  display_order: 1
+
+hacker_news_suggested:
+  title: Hacker News
+  feed_url: https://news.ycombinator.com/rss
+  category: Technology
+  description: Technology and startup discussion
+  display_order: 2
+
+nyt_world_suggested:
+  title: NYT World News
+  feed_url: https://rss.nytimes.com/services/xml/rss/nyt/World.xml
+  category: News
+  description: World news from New York Times
+  display_order: 3
+
+the_verge_suggested:
+  title: The Verge
+  feed_url: https://www.theverge.com/rss/index.xml
+  category: Technology
+  description: Technology and gadget news
+  display_order: 4
+
+bbc_news_suggested:
+  title: BBC News
+  feed_url: http://feeds.bbci.co.uk/news/rss.xml
+  category: News
+  description: BBC News headlines
+  display_order: 5
+
+npr_news_suggested:
+  title: NPR News
+  feed_url: https://feeds.npr.org/1001/rss.xml
+  category: News
+  description: NPR News
+  display_order: 6
+
+ruby_weekly_suggested:
+  title: Ruby Weekly
+  feed_url: https://rubyweekly.com/rss
+  category: Development
+  description: Ruby programming news
+  display_order: 7
+
+smashing_magazine_suggested:
+  title: Smashing Magazine
+  feed_url: https://www.smashingmagazine.com/feed/
+  category: Development
+  description: Web development and design
+  display_order: 8
+
+css_tricks_suggested:
+  title: CSS-Tricks
+  feed_url: https://css-tricks.com/feed/
+  category: Development
+  description: Web development tips and tutorials
+  display_order: 9
+
+science_daily_suggested:
+  title: Science Daily
+  feed_url: https://www.sciencedaily.com/rss/all.xml
+  category: Science
+  description: Latest science news
+  display_order: 10

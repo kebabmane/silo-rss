@@ -1,6 +1,11 @@
+<!-- Onboarding Modal -->
+<% if @subscriptions.empty? && !Current.user.onboarding_completed? %>
+  <%= render "dashboard/onboarding_modal" %>
+<% end %>
+
 <div class="flex h-[calc(100vh-4rem)]">
   <!-- Left Sidebar: Categories and Feeds -->
-  <div class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+  <div class="w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
     <div class="p-4">
       <!-- Filter Buttons -->
       <div class="mb-4 space-y-1">
@@ -36,7 +41,7 @@
   </div>
 
   <!-- Middle: Articles List -->
-  <%= turbo_frame_tag "articles_list", class: "w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col" do %>
+  <%= turbo_frame_tag "articles_list", class: "w-96 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col" do %>
     <!-- Mobile search bar -->
     <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 md:hidden">
       <%= form_with url: search_path, method: :get, data: { turbo_frame: "articles_list" }, class: "relative" do |f| %>
@@ -56,9 +61,6 @@
         </div>
       <% end %>
     </div>
-
-    <!-- Spacer to align list on larger screens -->
-    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 hidden md:block"></div>
 
     <div class="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
       <% @articles.each do |article| %>
@@ -101,7 +103,7 @@
   <% end %>
 
   <!-- Right: Article Content -->
-  <%= turbo_frame_tag "article_content", class: "flex-1 overflow-y-auto bg-white dark:bg-gray-800" do %>
+  <%= turbo_frame_tag "article_content", class: "flex-1 overflow-y-auto bg-white dark:bg-black" do %>
     <% if @selected_article %>
       <% state = @selected_article.state_for(Current.user) %>
       <article class="max-w-4xl mx-auto p-8">

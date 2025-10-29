@@ -6,6 +6,10 @@ class DashboardController < ApplicationController
     @subscriptions_by_category = subscriptions.group_by(&:category)
     @subscriptions = subscriptions
 
+    # Load suggested feeds for onboarding modal
+    @suggested_feeds = SuggestedFeed.ordered
+    @suggested_feeds_by_category = @suggested_feeds.group_by(&:category)
+
     # Get articles for the selected feed/category or all articles
     @articles = Article.joins(feed: :subscriptions)
                       .where(subscriptions: { user_id: Current.user.id })
@@ -58,6 +62,11 @@ class DashboardController < ApplicationController
     else
       @selected_article = @articles.first
     end
+  end
+
+  def mark_onboarding_completed
+    Current.user.complete_onboarding!
+    head :ok
   end
 
   private

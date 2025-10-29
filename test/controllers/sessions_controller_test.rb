@@ -36,7 +36,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
   test "should set session cookie on successful login" do
     post session_url, params: { email_address: "alice@example.com", password: "password" }
 
-    assert_not_nil cookies.signed.permanent[:session_id]
+    assert_not_nil cookies[:session_id]
   end
 
   test "should redirect to root after successful login" do
@@ -106,13 +106,12 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
-  test "should be case sensitive for email" do
-    # Rails typically handles email case-insensitivity at the model level
-    # This test ensures the authentication behavior
-    post session_url, params: { email_address: "ALICE@EXAMPLE.COM", password: "password" }
+  test "should allow case insensitive email" do
+    assert_difference "Session.count", 1 do
+      post session_url, params: { email_address: "ALICE@EXAMPLE.COM", password: "password" }
+    end
 
-    # Depending on your User.authenticate_by implementation, this might succeed or fail
-    # Adjust based on your actual implementation
+    assert_redirected_to dashboard_path
   end
 
   test "should show generic error message for security" do
@@ -127,12 +126,14 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     # Test that rate limiting is configured (actual behavior depends on rate_limit implementation)
     10.times do
       post session_url, params: { email_address: "alice@example.com", password: "wrong" }
+      assert_redirected_to new_session_path
     end
 
     # The 11th attempt should trigger rate limiting
     post session_url, params: { email_address: "alice@example.com", password: "password" }
 
     # Depending on rate limit implementation, this might redirect with specific message
+    assert_redirected_to new_session_path
   end
 
   # Destroy action tests
@@ -171,16 +172,16 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
   test "should only destroy current session, not all user sessions" do
     login_as @alice
+    session_to_destroy = @alice.sessions.order(:created_at).last
     # Create an additional session for alice
     other_session = @alice.sessions.create!
-
-    current_session = @alice.sessions.last
 
     delete session_url
 
     # Current session should be destroyed
     # Other session should remain (depending on your implementation)
-    assert_not Session.exists?(current_session.id)
+    assert_not Session.exists?(session_to_destroy.id)
+    assert Session.exists?(other_session.id)
   end
 
   # Security tests
@@ -193,10 +194,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     post session_url, params: { email_address: "alice@example.com", password: "password" }
 
     # Session token should be different after login
-    token_after = cookies.signed.permanent[:session_id]
+    token_after = cookies[:session_id]
 
     # New session should be created
     assert_not_nil token_after
+    assert_not_equal token_before, token_after
   end
 
   test "should require valid parameters only" do
@@ -214,11 +216,11 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
   # Edge cases
   test "should handle email with whitespace" do
-    assert_no_difference "Session.count" do
+    assert_difference "Session.count", 1 do
       post session_url, params: { email_address: " alice@example.com ", password: "password" }
     end
 
-    # Depending on implementation, this might succeed if email is stripped
+    assert_redirected_to dashboard_path
   end
 
   test "should handle very long email" do
@@ -248,6 +250,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
       password: "p@ssw0rd!#$%^&*()",
       password_confirmation: "p@ssw0rd!#$%^&*()"
     )
+    special_user.update!(confirmed_at: Time.current)
 
     assert_difference "Session.count", 1 do
       post session_url, params: {

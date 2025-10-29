@@ -110,17 +110,7 @@ class ArticlesController < ApplicationController
       .joins(feed: :subscriptions)
       .where(subscriptions: { user_id: Current.user.id })
       .includes(:feed)
-      .find_by(id: params[:id])
-
-    return if @article
-
-    respond_to do |format|
-      format.html { redirect_to articles_path, alert: "Article not found." }
-      format.json { render json: { error: "Not Found" }, status: :not_found }
-      format.any { head :not_found }
-    end
-
-    throw :abort
+      .find(params[:id])
   end
 
   def preload_article_states(articles, user)

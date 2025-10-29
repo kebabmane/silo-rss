@@ -1,7 +1,6 @@
 <% require "openssl" %>
 <% password_digest = BCrypt::Password.create("password") %>
 <% secret = Rails.application.secret_key_base %>
-
 alice:
   email_address: alice@example.com
   password_digest: <%= password_digest %>
@@ -37,3 +36,4 @@ pending:
   password_digest: <%= password_digest %>
   admin: false
   confirmed_at:
+  time_zone: Etc/UTC

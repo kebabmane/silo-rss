@@ -33,10 +33,27 @@ class DailyBriefSchedule < ApplicationRecord
   def time_to_generate?(current_time = Time.current)
     return false unless should_run_on?(current_time.to_date)
 
-    schedule_hour = time_of_day.hour
-    schedule_minute = time_of_day.min
+    # Convert both times to user's timezone for comparison
+    user_tz = user.time_zone || "UTC"
+    current_in_tz = current_time.in_time_zone(user_tz)
+    schedule_time_in_tz = time_of_day.in_time_zone(user_tz)
 
-    current_time.hour == schedule_hour && current_time.min >= schedule_minute
+    schedule_hour = schedule_time_in_tz.hour
+    schedule_minute = schedule_time_in_tz.min
+
+    current_in_tz.hour == schedule_hour && current_in_tz.min >= schedule_minute
+  end
+
+  def display_name
+    if has_attribute?(:name) && self[:name].present?
+      self[:name]
+    else
+      time_label = time_of_day ? time_of_day.strftime("%I:%M %p") : nil
+      base = "Daily Brief"
+      base += " at #{time_label}" if time_label
+      base += include_all_feeds? ? "" : " (selected feeds)"
+      base
+    end
   end
 
   private

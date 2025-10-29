@@ -32,6 +32,16 @@ class DailyBriefGeneratorService
     raise Error, "Failed to generate daily brief: #{e.message}"
   end
 
+  # Build the prompt without contacting the LLM – useful for previews
+  def prompt_preview
+    articles = fetch_unread_articles
+
+    {
+      prompt: prepare_content_for_summary(articles),
+      articles: articles
+    }
+  end
+
   private
 
   def fetch_unread_articles
@@ -42,7 +52,7 @@ class DailyBriefGeneratorService
     # Get articles from the past 24 hours that are unread
     # Use left_joins for better performance and safety
     Article
-      .joins(:feed)
+      .includes(:feed)
       .left_joins(:article_states)
       .where(feed_id: feed_ids)
       .where("articles.published_at >= ?", 24.hours.ago)

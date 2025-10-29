@@ -20,7 +20,8 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
-  config.cache_store = :null_store
+  # Use memory store for testing rate limiting
+  config.cache_store = :memory_store
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
@@ -41,6 +42,9 @@ Rails.application.configure do
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
+
+  # Allow legacy unencrypted fixture data for encrypted columns during tests.
+  config.active_record.encryption.support_unencrypted_data = true
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true

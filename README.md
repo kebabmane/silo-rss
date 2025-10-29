@@ -173,11 +173,11 @@ Review the Docker quick start in [`docs/docker.md`](docs/docker.md) for both sin
 Rails 8 includes Kamal deployment configuration:
 
 ```bash
-kamal setup
-kamal deploy
+bundle exec kamal setup
+bundle exec kamal deploy
 ```
 
-See `config/deploy.yml` for configuration.
+The configuration is prepped for deploying to a single DigitalOcean Droplet – follow [`docs/deployment/digitalocean-kamal.md`](docs/deployment/digitalocean-kamal.md) for a full walkthrough.
 
 ### Manual Deployment
 

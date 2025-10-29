@@ -4,14 +4,10 @@ class DailyBriefGeneratorServiceTest < ActiveSupport::TestCase
   setup do
     @user = users(:alice)
     @feed = feeds(:tech_crunch)
-    @user.subscriptions.create!(feed: @feed)
+    @subscription = subscriptions(:alice_tech_crunch) || @user.subscriptions.create!(feed: @feed)
 
-    @schedule = DailyBriefSchedule.create!(
-      user: @user,
-      time_of_day: Time.parse("08:00"),
-      include_all_feeds: true,
-      summary_length: "medium"
-    )
+    @schedule = daily_brief_schedules(:one)
+    @schedule.update!(include_all_feeds: true, summary_length: "medium")
 
     # Setup LiteLLM
     LitellmSetting.instance.update!(
@@ -93,5 +89,23 @@ class DailyBriefGeneratorServiceTest < ActiveSupport::TestCase
 
     # Should only include the recent unread article
     assert_equal 1, brief.article_count
+  end
+
+  test "provides prompt preview with articles" do
+    recent_article = @feed.articles.create!(
+      title: "Preview Article",
+      content: "Preview content",
+      url: "http://example.com/preview",
+      guid: "preview-123",
+      published_at: 1.hour.ago
+    )
+
+    preview = DailyBriefGeneratorService.new(@schedule).prompt_preview
+
+    assert_kind_of Hash, preview
+    assert_includes preview, :prompt
+    assert_includes preview, :articles
+    assert_match /Preview Article/, preview[:prompt]
+    assert_equal ["Preview Article"], preview[:articles].map(&:title)
   end
 end

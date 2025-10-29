@@ -54,7 +54,7 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
   test "export filename includes current date" do
     get export_opml_feeds_path
 
-    expected_filename = "silo_export_#{Date.today}.opml"
+    expected_filename = "silo_export_#{Date.current}.opml"
     assert_match expected_filename, response.headers["Content-Disposition"]
   end
 
@@ -110,7 +110,8 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
     rails_sub = @user.subscriptions.find_by(feed: rails_feed)
     assert rails_sub
     assert_equal "Development", rails_sub.category
-    assert_nil rails_sub.custom_name  # Uses feed title
+    # Custom name is set to the OPML title on import for new feeds
+    assert_equal "Rails Blog", rails_sub.custom_name
 
     tech_news_feed = Feed.find_by(feed_url: "https://technews.com/rss")
     tech_news_sub = @user.subscriptions.find_by(feed: tech_news_feed)
@@ -179,7 +180,8 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
 
     opml_file = Rack::Test::UploadedFile.new(
       StringIO.new(opml_content),
-      "text/xml"
+      "text/xml",
+      original_filename: "subscriptions.opml"
     )
 
     post import_opml_feeds_path, params: { opml_file: opml_file }
@@ -212,7 +214,8 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
 
     opml_file = Rack::Test::UploadedFile.new(
       StringIO.new(opml_content),
-      "text/xml"
+      "text/xml",
+      original_filename: "subscriptions.opml"
     )
 
     post import_opml_feeds_path, params: { opml_file: opml_file }
@@ -240,7 +243,8 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
 
     opml_file = Rack::Test::UploadedFile.new(
       StringIO.new(opml_content),
-      "text/xml"
+      "text/xml",
+      original_filename: "subscriptions.opml"
     )
 
     initial_bob_subscriptions = bob.subscriptions.count
@@ -272,7 +276,8 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
 
     opml_file = Rack::Test::UploadedFile.new(
       StringIO.new(opml_content),
-      "text/xml"
+      "text/xml",
+      original_filename: "subscriptions.opml"
     )
 
     post import_opml_feeds_path, params: { opml_file: opml_file }
@@ -295,7 +300,8 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
 
     opml_file = Rack::Test::UploadedFile.new(
       StringIO.new(original_opml),
-      "text/xml"
+      "text/xml",
+      original_filename: "subscriptions.opml"
     )
 
     post import_opml_feeds_path, params: { opml_file: opml_file }
@@ -326,7 +332,8 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
 
     opml_file = Rack::Test::UploadedFile.new(
       StringIO.new(opml_content),
-      "text/xml"
+      "text/xml",
+      original_filename: "subscriptions.opml"
     )
 
     post import_opml_feeds_path, params: { opml_file: opml_file }
@@ -371,7 +378,8 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
 
     opml_file = Rack::Test::UploadedFile.new(
       StringIO.new(opml_content),
-      "text/xml"
+      "text/xml",
+      original_filename: "subscriptions.opml"
     )
 
     # Should import successfully even with minimal attributes

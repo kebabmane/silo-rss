@@ -8,13 +8,11 @@ module Admin
     def update
       @setting = LitellmSetting.instance
 
-      Rails.logger.info "Updating settings with params: #{setting_params.inspect}"
-
       if @setting.update(setting_params)
-        Rails.logger.info "Settings updated successfully: #{@setting.inspect}"
+        Rails.logger.info "LiteLLM settings updated successfully."
         redirect_to admin_litellm_settings_path, notice: "LiteLLM settings updated successfully."
       else
-        Rails.logger.error "Failed to update settings: #{@setting.errors.full_messages}"
+        Rails.logger.error "Failed to update LiteLLM settings: #{@setting.errors.full_messages.to_sentence}"
         @models = fetch_available_models
         render :show, status: :unprocessable_entity
       end

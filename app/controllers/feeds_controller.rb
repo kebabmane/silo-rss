@@ -20,9 +20,7 @@ class FeedsController < ApplicationController
 
       if @feed.new_record?
         @feed.site_url = discovery_result[:site_url]
-        # Fetch initial metadata and articles
-        parsed_feed = Feedjira.parse(HTTParty.get(@feed.feed_url).body)
-        @feed.title = parsed_feed.title if parsed_feed
+        fetch_initial_metadata(@feed)
         @feed.save
         FeedRefreshJob.perform_later(@feed.id)
       end
@@ -52,6 +50,12 @@ class FeedsController < ApplicationController
 
   def destroy
     @subscription = Current.user.subscriptions.find_by(feed: @feed)
+
+    unless @subscription
+      redirect_to feeds_path, alert: "Feed not found."
+      return
+    end
+
     @subscription.destroy
     redirect_to feeds_path, notice: "Feed removed"
   end
@@ -101,5 +105,18 @@ class FeedsController < ApplicationController
 
   def subscription_params
     params.require(:subscription).permit(:category, :custom_name)
+  end
+
+  def fetch_initial_metadata(feed)
+    uri = UrlSafety.safe_uri_for(feed.feed_url)
+    return unless uri
+
+    response = HTTParty.get(uri.to_s, timeout: 10)
+    parsed_feed = Feedjira.parse(response.body)
+    if parsed_feed&.title.present? && feed.title.blank?
+      feed.title = parsed_feed.title
+    end
+  rescue => e
+    Rails.logger.warn("Feed discovery metadata fetch failed for #{feed.feed_url}: #{e.message}")
   end
 end

@@ -30,6 +30,11 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # Reset Settings between tests to prevent state leakage
+    setup do
+      Setting.require_admin_confirmation = false
+    end
+
     # Add more helper methods to be used by all tests here...
 
     # Authentication helper for controller tests
@@ -53,8 +58,20 @@ end
 module ActionDispatch
   class IntegrationTest
     def login_as(user)
-      session = user.sessions.create!
-      cookies.signed[:session_id] = session.id
+      # Integration tests need to POST to session path to properly set cookies
+      # All fixture users have password "password"
+      post session_path, params: {
+        email_address: user.email_address,
+        password: "password"
+      }, headers: { "User-Agent" => "Test User Agent" }
+
+      # Ensure login succeeded (should redirect to dashboard)
+      unless response.redirect? || response.successful?
+        raise "Login failed for #{user.email_address}: #{response.status} #{response.body}"
+      end
+
+      # Follow redirect to complete the login flow
+      follow_redirect! if response.redirect?
     end
 
     def api_headers(user)

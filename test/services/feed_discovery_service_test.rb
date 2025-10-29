@@ -313,6 +313,47 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     assert_equal "https://example.com/feed", result[:feed_url]
   end
 
+  test "discover resolves relative feed URL without leading slash" do
+    page_url = "https://example.com/blog"
+    html = <<~HTML
+      <html><head>
+        <link rel="alternate" type="application/rss+xml" href="feed.xml" />
+      </head><body></body></html>
+    HTML
+
+    stub_request(:get, page_url)
+      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+
+    service = FeedDiscoveryService.new(page_url)
+    result = service.discover
+
+    assert_equal "https://example.com/feed.xml", result[:feed_url]
+    assert_equal page_url, result[:site_url]
+  end
+
+  test "discover rejects unsafe feed links" do
+    page_url = "https://example.com"
+    html = <<~HTML
+      <html><head>
+        <link rel="alternate" type="application/rss+xml" href="http://127.0.0.1/feed" />
+      </head><body></body></html>
+    HTML
+
+    stub_request(:get, page_url)
+      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+
+    # Stub common path attempts to avoid external calls
+    ["/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml"].each do |path|
+      stub_request(:get, "https://example.com#{path}")
+        .to_return(status: 404, body: "", headers: { 'Content-Type' => 'text/html' })
+    end
+
+    service = FeedDiscoveryService.new(page_url)
+    result = service.discover
+
+    assert_nil result
+  end
+
   # Error scenarios
   test "discover returns nil when URL returns 404" do
     page_url = "https://example.com/nonexistent"

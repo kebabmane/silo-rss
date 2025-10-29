@@ -10,6 +10,11 @@ module Api
                          .includes(:feed)
                          .recent
 
+        limit = params[:limit].present? ? params[:limit].to_i : 50
+        limit = 50 if limit <= 0
+        offset = params[:offset].present? ? params[:offset].to_i : 0
+        offset = 0 if offset.negative?
+
         # Apply filters
         articles = articles.where(feed_id: params[:feed_id]) if params[:feed_id].present?
 
@@ -36,7 +41,7 @@ module Api
         # Get total count before limiting
         total_count = articles.count(:all)
 
-        articles = articles.limit(params[:limit] || 50).offset(params[:offset] || 0)
+        articles = articles.limit(limit).offset(offset)
 
         # Preload article states for current user
         preload_article_states(articles, current_user)
@@ -66,8 +71,8 @@ module Api
           },
           meta: {
             total: total_count,
-            limit: params[:limit] || 50,
-            offset: params[:offset] || 0
+            limit: limit,
+            offset: offset
           }
         }
       end
@@ -212,6 +217,8 @@ module Api
             state = article.state_for(current_user)
             state.update(archived: value)
           end
+        end
+
         render json: { success: true, updated_count: articles.count }
       end
 

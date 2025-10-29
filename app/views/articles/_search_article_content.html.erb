@@ -1,0 +1,73 @@
+<% if article %>
+  <% state = article.state_for(Current.user) %>
+  <article class="max-w-4xl mx-auto p-8">
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <%= article.title %>
+      </h1>
+      <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+        <div>
+          <span><%= article.feed.title %></span>
+          <span class="mx-2">•</span>
+          <span><%= format_user_time(article.published_at, style: :long_date) %></span>
+        </div>
+        <a href="<%= article.url %>" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
+          View Original →
+        </a>
+      </div>
+    </header>
+
+    <!-- Article Actions -->
+    <div class="mb-6 flex space-x-2">
+      <%= button_to toggle_read_article_path(article),
+          method: :patch,
+          class: "px-3 py-1 text-sm rounded-md border #{state.read? ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600' : 'bg-blue-50 dark:bg-blue-900 border-blue-300 dark:border-blue-700'} text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600",
+          data: { turbo: false } do %>
+        <%= state.read? ? "Mark Unread" : "Mark Read" %>
+      <% end %>
+
+      <%= button_to toggle_starred_article_path(article),
+          method: :patch,
+          class: "px-3 py-1 text-sm rounded-md border #{state.starred? ? 'bg-yellow-50 dark:bg-yellow-900 border-yellow-300 dark:border-yellow-700' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'} text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600",
+          data: { turbo: false } do %>
+        <%= state.starred? ? "⭐ Starred" : "☆ Star" %>
+      <% end %>
+
+      <%= button_to toggle_archived_article_path(article),
+          method: :patch,
+          class: "px-3 py-1 text-sm rounded-md border bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600" do %>
+        Archive
+      <% end %>
+
+      <%= button_to fetch_content_article_path(article),
+          method: :post,
+          class: "px-3 py-1 text-sm rounded-md border #{article.full_content_fetched? ? 'bg-green-100 dark:bg-green-800 border-green-400 dark:border-green-600 text-green-800 dark:text-green-100' : 'bg-purple-100 dark:bg-purple-800 border-purple-400 dark:border-purple-600 text-purple-800 dark:text-purple-100'} hover:opacity-80" do %>
+        <%= article.full_content_fetched? ? "🔄 Re-fetch Content" : "📥 Fetch Full Content" %>
+      <% end %>
+    </div>
+
+    <!-- Article Content -->
+    <div class="prose max-w-none article-content">
+      <%= sanitize article.display_content, tags: %w[div p br strong em a h1 h2 h3 h4 h5 h6 ul ol li blockquote img pre code span table thead tbody tr th td], attributes: %w[href src alt class] %>
+    </div>
+  </article>
+
+  <!-- Auto-mark as read -->
+  <% unless state.read? %>
+    <%= turbo_stream_from "article_#{article.id}" %>
+    <script>
+      setTimeout(() => {
+        fetch('<%= toggle_read_article_path(article) %>', {
+          method: 'PATCH',
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          }
+        });
+      }, 2000);
+    </script>
+  <% end %>
+<% else %>
+  <div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+    <p>Select an article to read</p>
+  </div>
+<% end %>

@@ -43,8 +43,7 @@ module Api
             f.site_url = discovery_result[:site_url]
 
             # Fetch metadata
-            parsed_feed = Feedjira.parse(HTTParty.get(f.feed_url).body)
-            f.title = parsed_feed.title if parsed_feed
+            apply_discovered_metadata(f)
           end
 
           render json: {
@@ -101,6 +100,21 @@ module Api
         else
           render json: { error: 'Subscription not found' }, status: :not_found
         end
+      end
+
+      private
+
+      def apply_discovered_metadata(feed)
+        uri = UrlSafety.safe_uri_for(feed.feed_url)
+        return unless uri
+
+        response = HTTParty.get(uri.to_s, timeout: 10)
+        parsed_feed = Feedjira.parse(response.body)
+        if parsed_feed&.title.present? && feed.title.blank?
+          feed.title = parsed_feed.title
+        end
+      rescue => e
+        Rails.logger.warn("API feed discovery metadata fetch failed for #{feed.feed_url}: #{e.message}")
       end
     end
   end

@@ -8,7 +8,7 @@ class UserAuthenticationFlowTest < ActionDispatch::IntegrationTest
 
     # Submit registration form with valid data
     assert_difference "User.count", 1 do
-      assert_difference "Session.count", 1 do
+      assert_no_difference "Session.count" do
         post registrations_path, params: {
           user: {
             email_address: "newuser@example.com",
@@ -19,22 +19,20 @@ class UserAuthenticationFlowTest < ActionDispatch::IntegrationTest
       end
     end
 
-    # Should redirect to dashboard after successful registration
-    assert_redirected_to dashboard_path
+    # Users must be approved before signing in
+    assert_redirected_to new_session_path
+    assert_equal "Your account has been created and is awaiting admin approval.", flash[:notice]
     follow_redirect!
     assert_response :success
 
-    # Should display success message
-    assert_match /Welcome! Your account has been created/, flash[:notice]
-
-    # User should be logged in (session cookie set)
-    assert_not_nil cookies[:session_id]
+    # User is not logged in yet
+    assert_nil cookies[:session_id]
 
     # Verify user was created with correct attributes
     user = User.find_by(email_address: "newuser@example.com")
     assert user
     assert user.authenticate("securepassword123")
-    assert user.api_token.present?
+    assert_nil user.confirmed_at
   end
 
   test "registration with invalid data shows errors" do
@@ -136,12 +134,8 @@ class UserAuthenticationFlowTest < ActionDispatch::IntegrationTest
 
   test "logout destroys session" do
     user = users(:alice)
-    session = user.sessions.create!(user_agent: "Test", ip_address: "127.0.0.1")
-    cookies.signed.permanent[:session_id] = { value: session.id, httponly: true }
-
-    # Verify user is logged in
-    get dashboard_path
-    assert_response :success
+    login_as user
+    current_session = user.sessions.order(:created_at).last
 
     # Logout
     assert_difference "Session.count", -1 do
@@ -152,10 +146,9 @@ class UserAuthenticationFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
 
     # Session should be destroyed
-    assert_not Session.exists?(session.id)
+    assert_not Session.exists?(current_session.id)
 
     # Cookie should be deleted
-    follow_redirect!
     assert_nil cookies[:session_id]
   end
 
@@ -194,7 +187,7 @@ class UserAuthenticationFlowTest < ActionDispatch::IntegrationTest
       }
     }
 
-    assert_redirected_to dashboard_path
+    assert_redirected_to new_session_path
     user = User.find_by(email_address: "journey@example.com")
     assert user
 
@@ -206,7 +199,18 @@ class UserAuthenticationFlowTest < ActionDispatch::IntegrationTest
     get dashboard_path
     assert_redirected_to new_session_path
 
-    # Step 4: Login again
+    # Step 4: Attempt login before confirmation should fail
+    post session_path, params: {
+      email_address: "journey@example.com",
+      password: "mypassword123"
+    }
+
+    assert_redirected_to new_session_path
+    assert_equal "Your account is awaiting admin approval.", flash[:alert]
+
+    # Step 5: Confirm the user and login successfully
+    user.update!(confirmed_at: Time.current)
+
     post session_path, params: {
       email_address: "journey@example.com",
       password: "mypassword123"
@@ -233,30 +237,28 @@ class UserAuthenticationFlowTest < ActionDispatch::IntegrationTest
 
   test "multiple sessions for same user" do
     user = users(:alice)
+    initial_count = user.sessions.count
 
-    # First login (simulating desktop browser)
-    post session_path, params: {
+    desktop = open_session
+    desktop.post session_path, params: {
       email_address: user.email_address,
       password: "password"
     }
 
-    assert_redirected_to dashboard_path
-    first_session_cookie = cookies[:session_id]
+    assert_equal initial_count + 1, user.sessions.reload.count
+    desktop_session_cookie = desktop.cookies[:session_id]
 
-    # Clear cookies (simulating different browser)
-    cookies.clear
-
-    # Second login (simulating mobile browser)
-    post session_path, params: {
+    mobile = open_session
+    mobile.post session_path, params: {
       email_address: user.email_address,
       password: "password"
     }
 
-    assert_redirected_to dashboard_path
-    second_session_cookie = cookies[:session_id]
+    assert_equal initial_count + 2, user.sessions.reload.count
+    mobile_session_cookie = mobile.cookies[:session_id]
 
     # Both sessions should exist
-    assert_not_equal first_session_cookie, second_session_cookie
-    assert_equal 2, user.sessions.count
+    assert_not_equal desktop_session_cookie, mobile_session_cookie
+    assert_equal initial_count + 2, user.sessions.reload.count
   end
 end

@@ -67,7 +67,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       }
     }
 
-    assert_nil cookies.signed.permanent[:session_id]
+    assert_nil cookies[:session_id]
   end
 
   test "should redirect to sign in after successful registration" do
@@ -199,7 +199,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
         }
       end
 
-      assert_redirected_to dashboard_path
+      assert_redirected_to new_session_path
     end
   end
 
@@ -230,7 +230,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to dashboard_path
+    assert_redirected_to new_session_path
   end
 
   test "should handle special characters in password" do
@@ -244,7 +244,7 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_redirected_to dashboard_path
+    assert_redirected_to new_session_path
   end
 
   # Strong parameters tests
@@ -313,7 +313,8 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should handle very long email" do
-    long_email = "a" * 240 + "@example.com"
+    # Email with 255+ characters should fail (max is 254)
+    long_email = "a" * 250 + "@example.com"
 
     post registrations_url, params: {
       user: {
@@ -385,14 +386,14 @@ class RegistrationsControllerTest < ActionDispatch::IntegrationTest
 
   test "should handle missing user parameter" do
     assert_no_difference "User.count" do
-      assert_raises(ActionController::ParameterMissing) do
-        post registrations_url, params: {
-          email_address: "newuser@example.com",
-          password: "password123",
-          password_confirmation: "password123"
-        }
-      end
+      post registrations_url, params: {
+        email_address: "newuser@example.com",
+        password: "password123",
+        password_confirmation: "password123"
+      }
     end
+
+    assert_response :bad_request
   end
 
   # Security tests

@@ -301,12 +301,14 @@ module Api
       end
 
       test "create returns not found for non-existent feed" do
-        assert_raises(ActiveRecord::RecordNotFound) do
-          post api_v1_feeds_url,
-               params: { feed_id: 99999, category: "Tech" },
-               headers: api_headers(@alice),
-               as: :json
-        end
+        post api_v1_feeds_url,
+             params: { feed_id: 99999, category: "Tech" },
+             headers: api_headers(@alice),
+             as: :json
+
+        assert_response :not_found
+        json = JSON.parse(response.body)
+        assert_equal "Couldn't find Feed with 'id'=99999", json["error"]
       end
 
       test "create requires authentication" do

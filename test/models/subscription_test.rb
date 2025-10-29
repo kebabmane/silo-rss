@@ -11,24 +11,24 @@ class SubscriptionTest < ActiveSupport::TestCase
   end
 
   # Validation tests
-  test "requires category" do
+  test "allows category to be nil" do
     subscription = Subscription.new(
       user: users(:alice),
-      feed: feeds(:tech_crunch),
+      feed: feeds(:ruby_weekly),
       category: nil
     )
-    assert_not subscription.valid?
-    assert_includes subscription.errors[:category], "can't be blank"
+
+    assert subscription.valid?
   end
 
-  test "requires category to be present (not just empty string)" do
+  test "allows category to be blank string" do
     subscription = Subscription.new(
       user: users(:alice),
-      feed: feeds(:tech_crunch),
+      feed: feeds(:ruby_weekly),
       category: ""
     )
-    assert_not subscription.valid?
-    assert_includes subscription.errors[:category], "can't be blank"
+
+    assert subscription.valid?
   end
 
   test "requires unique user_id scoped to feed_id" do

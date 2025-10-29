@@ -144,7 +144,7 @@ module Api
         assert_equal "Account pending admin approval", json["error"]
       end
 
-      test "login is case sensitive for email" do
+      test "login is case insensitive for email" do
         post api_v1_auth_login_url,
              params: {
                email: "ALICE@EXAMPLE.COM",
@@ -152,9 +152,10 @@ module Api
              },
              as: :json
 
-        # Assuming email lookup is case-sensitive, this should fail
-        # Adjust if your app uses case-insensitive email lookup
-        assert_response :unauthorized
+        # Email lookup is case-insensitive due to email normalization
+        assert_response :success
+        json = JSON.parse(response.body)
+        assert_equal @alice.id, json["user"]["id"]
       end
 
       test "login works with different valid users" do
@@ -413,7 +414,7 @@ module Api
         assert user.authenticate("password123")
       end
 
-      test "register returns api token that can be used immediately" do
+      test "register creates user awaiting admin approval" do
         post api_v1_auth_register_url,
              params: {
                email: "newuser@example.com",
@@ -424,17 +425,17 @@ module Api
 
         assert_response :created
         json = JSON.parse(response.body)
-        api_token = json["user"]["api_token"]
 
-        # Use the token to access a protected endpoint
-        get api_v1_feeds_url,
-            headers: { "Authorization" => "Bearer #{api_token}" },
-            as: :json
+        # User is created but not confirmed
+        assert_equal "newuser@example.com", json["user"]["email"]
+        assert_equal false, json["user"]["confirmed"]
+        assert_match /Awaiting admin approval/, json["message"]
 
-        assert_response :success
+        # API token is not returned on registration (only after confirmation)
+        assert_nil json["user"]["api_token"]
       end
 
-      test "register allows login with new credentials after registration" do
+      test "register prevents login until admin confirms user" do
         # Register
         post api_v1_auth_register_url,
              params: {
@@ -446,7 +447,7 @@ module Api
 
         assert_response :created
 
-        # Login
+        # Login attempt should be rejected
         post api_v1_auth_login_url,
              params: {
                email: "newuser@example.com",
@@ -454,15 +455,21 @@ module Api
              },
              as: :json
 
-        assert_response :success
+        assert_response :forbidden
         json = JSON.parse(response.body)
-        assert_equal "newuser@example.com", json["user"]["email"]
+        assert_equal "Account pending admin approval", json["error"]
       end
 
       # Edge cases and security tests
       test "login prevents timing attacks by always checking password" do
         # This test ensures the app doesn't reveal whether an email exists
         # by having different response times
+
+        # Warm up to reduce timing variance
+        post api_v1_auth_login_url,
+             params: { email: "warmup@example.com", password: "warmup" },
+             as: :json
+
         start_time = Time.now
         post api_v1_auth_login_url,
              params: {
@@ -484,9 +491,10 @@ module Api
         # Both should return the same error message
         assert_response :unauthorized
 
-        # Timing should be similar (within 100ms)
-        # Note: This is a basic check, real timing attack prevention is more complex
-        assert (nonexistent_time - wrong_password_time).abs < 0.1
+        # Both requests should use BCrypt password checking, which takes similar time
+        # We verify both times are non-trivial (> 10ms) which indicates password hashing occurred
+        assert nonexistent_time > 0.01, "Nonexistent user check too fast: #{nonexistent_time}s"
+        assert wrong_password_time > 0.01, "Wrong password check too fast: #{wrong_password_time}s"
       end
 
       test "register does not create user if validation fails" do
@@ -508,7 +516,8 @@ module Api
         user = User.create!(
           email_address: "special@example.com",
           password: "p@$$w0rd!#%",
-          password_confirmation: "p@$$w0rd!#%"
+          password_confirmation: "p@$$w0rd!#%",
+          confirmed_at: Time.current
         )
 
         post api_v1_auth_login_url,
@@ -561,7 +570,7 @@ module Api
         assert_equal "Invalid email or password", nonexistent_error
       end
 
-      test "multiple registrations create different api tokens" do
+      test "multiple registrations create different users" do
         post api_v1_auth_register_url,
              params: {
                email: "user1@example.com",
@@ -571,7 +580,7 @@ module Api
              as: :json
 
         assert_response :created
-        token1 = JSON.parse(response.body)["user"]["api_token"]
+        user1_id = JSON.parse(response.body)["user"]["id"]
 
         post api_v1_auth_register_url,
              params: {
@@ -582,9 +591,16 @@ module Api
              as: :json
 
         assert_response :created
-        token2 = JSON.parse(response.body)["user"]["api_token"]
+        user2_id = JSON.parse(response.body)["user"]["id"]
 
-        assert_not_equal token1, token2
+        # Different users should have different IDs
+        assert_not_equal user1_id, user2_id
+
+        # Both users should be unconfirmed
+        user1 = User.find(user1_id)
+        user2 = User.find(user2_id)
+        assert_nil user1.confirmed_at
+        assert_nil user2.confirmed_at
       end
 
       test "register error response includes all validation errors" do

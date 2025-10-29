@@ -5,11 +5,16 @@ module Api
 
       # GET /api/v1/daily_briefs
       def index
+        limit = params[:limit].present? ? params[:limit].to_i : 50
+        limit = 50 if limit <= 0
+        offset = params[:offset].present? ? params[:offset].to_i : 0
+        offset = 0 if offset.negative?
+
         briefs = current_user.daily_briefs
                             .includes(:daily_brief_schedule)
                             .recent
-                            .limit(params[:limit] || 50)
-                            .offset(params[:offset] || 0)
+                            .limit(limit)
+                            .offset(offset)
 
         total_count = current_user.daily_briefs.count
 
@@ -24,14 +29,14 @@ module Api
               read: brief.read,
               schedule: {
                 id: brief.daily_brief_schedule.id,
-                name: brief.daily_brief_schedule.name
+                name: brief.daily_brief_schedule.display_name
               }
             }
           },
           meta: {
             total: total_count,
-            limit: params[:limit] || 50,
-            offset: params[:offset] || 0,
+            limit: limit,
+            offset: offset,
             unread_count: current_user.daily_briefs.unread.count
           }
         }
@@ -52,7 +57,7 @@ module Api
             read: @brief.read,
             schedule: {
               id: @brief.daily_brief_schedule.id,
-              name: @brief.daily_brief_schedule.name
+              name: @brief.daily_brief_schedule.display_name
             }
           }
         }
@@ -88,7 +93,7 @@ module Api
               read: brief.read,
               schedule: {
                 id: brief.daily_brief_schedule.id,
-                name: brief.daily_brief_schedule.name
+                name: brief.daily_brief_schedule.display_name
               }
             }
           }

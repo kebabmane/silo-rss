@@ -8,7 +8,16 @@ module Api
       def login
         user = User.find_by(email_address: params[:email])
 
-        if user&.authenticate(params[:password])
+        # Always run password check to prevent timing attacks
+        if user
+          authenticated = user.authenticate(params[:password])
+        else
+          # Run a dummy BCrypt check to prevent timing attacks
+          BCrypt::Password.create("dummy")
+          authenticated = false
+        end
+
+        if authenticated
           if user.confirmed?
             api_token = user.issue_api_token!
             render json: {

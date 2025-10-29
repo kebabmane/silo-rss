@@ -1,0 +1,59 @@
+<div class="min-h-screen bg-gray-100 dark:bg-black py-8">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Suggested Feeds</h1>
+      <%= link_to "Add Suggested Feed", new_admin_suggested_feed_path, class: "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md" %>
+    </div>
+
+    <div class="bg-white dark:bg-gray-950 rounded-lg shadow">
+      <% if @suggested_feeds.any? %>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-600">
+              <tr>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Title</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Category</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Feed URL</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Order</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @suggested_feeds.each do |feed| %>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">
+                    <%= feed.title %>
+                  </td>
+                  <td class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400">
+                    <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-medium">
+                      <%= feed.category %>
+                    </span>
+                  </td>
+                  <td class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400 truncate max-w-xs" title="<%= feed.feed_url %>">
+                    <%= feed.feed_url %>
+                  </td>
+                  <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">
+                    <%= feed.display_order || "—" %>
+                  </td>
+                  <td class="px-6 py-3 text-sm space-x-2">
+                    <%= link_to "Edit", edit_admin_suggested_feed_path(feed), class: "text-blue-600 dark:text-blue-400 hover:underline" %>
+                    <%= link_to "Delete", admin_suggested_feed_path(feed), method: :delete, data: { confirm: "Are you sure?" }, class: "text-red-600 dark:text-red-400 hover:underline" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+          <p class="text-lg">No suggested feeds yet</p>
+          <p class="text-sm mt-2">Create some to help users get started with your server</p>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="mt-6">
+      <%= link_to "← Back to Admin", admin_users_path, class: "text-blue-600 dark:text-blue-400 hover:underline" %>
+    </div>
+  </div>
+</div>

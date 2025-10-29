@@ -8,32 +8,31 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
 
   # Authentication requirement tests
   test "should require authentication for admin access" do
-    # AdminController inherits from ApplicationController
-    # which requires authentication by default
-    # This is a placeholder test as AdminController has no actions defined
-
-    # If you add any routes that go through AdminController,
-    # they should all require authentication
+    # Test with an actual admin route
+    get admin_users_path
+    assert_redirected_to new_session_path
   end
 
   test "should redirect to login when not authenticated" do
-    # Since AdminController has no direct routes in your current setup,
-    # this tests the general authentication requirement
-
-    # When you add admin routes, they should redirect to login
-    # Example:
-    # get some_admin_url
-    # assert_redirected_to new_session_path
+    # Test that non-authenticated users are redirected to login
+    get admin_users_path
+    assert_redirected_to new_session_path
+    assert_nil session[:current_user_id]
   end
 
-  test "should allow authenticated users to access admin features" do
-    # When admin routes are added, authenticated users should have access
-    # unless additional authorization is implemented
+  test "should allow authenticated admin users to access admin features" do
+    # Alice is an admin
+    login_as @alice
+    get admin_users_path
+    assert_response :success
+  end
 
-    # Example:
-    # login_as @alice
-    # get some_admin_url
-    # assert_response :success
+  test "should deny non-admin authenticated users" do
+    # Bob is not an admin
+    login_as @bob
+    get admin_users_path
+    assert_redirected_to dashboard_path
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   # Note: AdminController currently has no actions defined

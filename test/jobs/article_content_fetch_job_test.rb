@@ -150,7 +150,7 @@ class ArticleContentFetchJobTest < ActiveJob::TestCase
   end
 
   test "enqueues to default queue" do
-    assert_equal :default, ArticleContentFetchJob.new.queue_name
+    assert_equal "default", ArticleContentFetchJob.new.queue_name
   end
 
   test "can enqueue multiple jobs for different articles" do

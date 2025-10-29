@@ -42,9 +42,12 @@ class OpmlService
         feed = Feed.find_by(feed_url: feed_url)
         is_new_feed = feed.nil?
 
+        # If no title is provided, use the feed URL as a fallback
+        feed_title = custom_name.presence || feed_url
+
         feed ||= Feed.create!(
           feed_url: feed_url,
-          title: custom_name,
+          title: feed_title,
           site_url: outline['htmlUrl']
         )
 

@@ -1,4 +1,7 @@
 # Configure Rack::Attack for API rate limiting
+# Skip in test environment to avoid issues with request mocking
+return if Rails.env.test?
+
 class Rack::Attack
   # Throttle all requests by IP (60rpm)
   throttle("req/ip", limit: 60, period: 1.minute) do |req|
@@ -31,7 +34,8 @@ class Rack::Attack
 
   # Custom response for throttled requests
   self.throttled_responder = lambda do |env|
-    retry_after = env["rack.attack.match_data"][:period]
+    match_data = env["rack.attack.match_data"] || {}
+    retry_after = match_data[:period] || 60
     [
       429,
       {

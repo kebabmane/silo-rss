@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_07_220246) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_18_035637) do
   create_table "article_states", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "article_id", null: false
@@ -114,6 +114,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_07_220246) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "settings", force: :cascade do |t|
+    t.string "key"
+    t.string "value"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "solid_queue_blocked_executions", force: :cascade do |t|
@@ -249,6 +256,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_07_220246) do
     t.index ["user_id"], name: "index_subscriptions_on_user_id"
   end
 
+  create_table "suggested_feeds", force: :cascade do |t|
+    t.string "title"
+    t.string "feed_url"
+    t.string "category"
+    t.text "description"
+    t.integer "display_order"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "password_digest", null: false
@@ -264,6 +281,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_07_220246) do
     t.datetime "confirmed_at"
     t.integer "confirmed_by_id"
     t.string "time_zone", default: "Etc/UTC", null: false
+    t.datetime "onboarding_completed_at"
     t.index ["admin"], name: "index_users_on_admin"
     t.index ["api_token"], name: "index_users_on_api_token", unique: true
     t.index ["api_token_digest"], name: "index_users_on_api_token_digest", unique: true

@@ -74,6 +74,9 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Open emails in browser during development
+  gem "letter_opener"
 end
 
 group :test do
@@ -90,4 +93,5 @@ group :test do
 
   # Additional test utilities
   gem "mocha"
+  gem "rails-controller-testing"
 end

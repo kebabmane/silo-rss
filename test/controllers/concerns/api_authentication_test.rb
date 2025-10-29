@@ -20,17 +20,11 @@ class ApiAuthenticationTest < ActionDispatch::IntegrationTest
       get "/api/test/index" => "api_authentication_test/test#index"
       get "/api/test/show" => "api_authentication_test/test#show"
     end
-
-    @original_routes = Rails.application.routes
-    Rails.application.routes = @routes
+    @app = @routes
 
     @alice = users(:alice)
     @bob = users(:bob)
     @charlie = users(:charlie)
-  end
-
-  teardown do
-    Rails.application.routes = @original_routes
   end
 
   # Test: authenticate_api_user with valid token

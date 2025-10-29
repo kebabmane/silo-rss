@@ -265,9 +265,9 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should return 404 when creating subscription for non-existent feed" do
     login_as @alice
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      post feeds_url, params: { feed_id: 999999, category: "Test" }
-    end
+    post feeds_url, params: { feed_id: 999999, category: "Test" }
+
+    assert_response :not_found
   end
 
   # Destroy action tests
@@ -319,9 +319,9 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should return 404 when destroying non-existent feed" do
     login_as @alice
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      delete feed_url(id: 999999)
-    end
+    delete feed_url(id: 999999)
+
+    assert_response :not_found
   end
 
   # User isolation tests

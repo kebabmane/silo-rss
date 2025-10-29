@@ -64,12 +64,8 @@ class FeedDiscoveryService
 
     if feed_links.any?
       feed_link = feed_links.first
-      feed_url = feed_link["href"]
-
-      # Make feed URL absolute if it's relative
-      feed_url = URI.join(@url, feed_url).to_s if feed_url.start_with?("/")
-
-      return { feed_url: feed_url, site_url: @url }
+      feed_url = build_safe_feed_url(feed_link["href"])
+      return { feed_url: feed_url, site_url: @url } if feed_url
     end
 
     # If no feed links found, try common feed URLs
@@ -87,8 +83,9 @@ class FeedDiscoveryService
 
     common_paths.each do |path|
       test_url = "#{base_uri.scheme}://#{base_uri.host}#{path}"
-      if feed_url?(test_url)
-        return { feed_url: test_url, site_url: @url }
+      safe_url = build_safe_feed_url(test_url)
+      if safe_url && feed_url?(safe_url)
+        return { feed_url: safe_url, site_url: @url }
       end
     end
 
@@ -100,5 +97,21 @@ class FeedDiscoveryService
     "#{uri.scheme}://#{uri.host}"
   rescue
     feed_url
+  end
+
+  def build_safe_feed_url(candidate)
+    return if candidate.blank?
+
+    absolute_url = begin
+      uri = URI.parse(candidate.to_s.strip)
+      uri = URI.join(@url, candidate) if uri.relative?
+      uri.to_s
+    rescue URI::InvalidURIError
+      nil
+    end
+    return unless absolute_url
+
+    safe_uri = UrlSafety.safe_uri_for(absolute_url)
+    safe_uri&.to_s
   end
 end

@@ -50,7 +50,7 @@ class DailyBriefSchedulesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to daily_brief_schedules_url
     schedule.reload
-    assert_equal 9, schedule.time_of_day.hour
+    assert_equal 9, schedule.time_of_day.in_time_zone(@user.time_zone_or_default).hour
   end
 
   test "should destroy daily_brief_schedule" do

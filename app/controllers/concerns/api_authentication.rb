@@ -2,13 +2,15 @@ module ApiAuthentication
   extend ActiveSupport::Concern
 
   included do
+    skip_before_action :require_authentication, raise: false
     before_action :authenticate_api_user
   end
 
   private
 
   def authenticate_api_user
-    token = request.headers['Authorization']&.gsub('Bearer ', '')
+    auth_header = request.headers['Authorization']
+    token = extract_token(auth_header)
 
     if token.present?
       @current_user = User.find_by_api_token(token)
@@ -21,6 +23,17 @@ module ApiAuthentication
 
     unless @current_user
       render json: { error: 'Unauthorized' }, status: :unauthorized
+    end
+  end
+
+  def extract_token(auth_header)
+    return nil if auth_header.blank?
+
+    # Support both "Bearer token" and plain "token" formats
+    if auth_header.start_with?('Bearer ')
+      auth_header[7..-1] # Remove "Bearer " prefix (7 characters)
+    else
+      auth_header
     end
   end
 

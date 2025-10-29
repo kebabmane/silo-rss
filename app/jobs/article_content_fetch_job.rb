@@ -6,5 +6,6 @@ class ArticleContentFetchJob < ApplicationJob
     return unless article
 
     ArticleContentFetcherService.new(article).fetch
+    nil
   end
 end

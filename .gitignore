@@ -35,3 +35,7 @@
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
+
+# Kamal secrets should never be committed.
+/.kamal/secrets
+/.kamal/secrets.*

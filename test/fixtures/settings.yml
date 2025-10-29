@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+require_admin_confirmation:
+  key: require_admin_confirmation
+  value: "false"
+
+test_setting_one:
+  key: test_key_one
+  value: test_value_one
+
+test_setting_two:
+  key: test_key_two
+  value: test_value_two

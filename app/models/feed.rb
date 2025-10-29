@@ -1,6 +1,7 @@
 class Feed < ApplicationRecord
   has_many :articles, dependent: :destroy
   has_many :subscriptions, dependent: :destroy
+  has_many :daily_brief_feed_filters, dependent: :destroy
   has_many :users, through: :subscriptions
 
   validates :feed_url, presence: true, uniqueness: true

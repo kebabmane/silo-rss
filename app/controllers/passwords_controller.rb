@@ -18,6 +18,12 @@ class PasswordsController < ApplicationController
   end
 
   def update
+    # Check if password parameters are missing (nil) or explicitly not provided
+    if params[:password].nil? || params[:password_confirmation].nil?
+      redirect_to edit_password_path(params[:token]), alert: "Password and confirmation are required."
+      return
+    end
+
     if @user.update(params.permit(:password, :password_confirmation))
       @user.clear_password_reset_token!
       redirect_to new_session_path, notice: "Password has been reset."
