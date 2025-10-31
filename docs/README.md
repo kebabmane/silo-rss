@@ -7,10 +7,14 @@ Welcome to the Silo documentation. Here you'll find guides for development, depl
 ### 🚀 [Deployment](./deployment/)
 Complete guides for deploying Silo to production.
 
-- **[GitHub Actions + Kamal Setup](./deployment/github-actions-kamal.md)** - Automated CI/CD deployment pipeline with GitHub Actions
-- **[Setup Checklist](./deployment/SETUP_CHECKLIST.md)** - Interactive checklist for first-time deployment
-- **[GitHub Actions Quick Reference](./deployment/GITHUB_ACTIONS_SETUP_SUMMARY.md)** - Quick reference for GitHub Actions setup
-- **[DigitalOcean + Kamal Guide](./deployment/digitalocean-kamal.md)** - Initial DigitalOcean VPS setup with Kamal
+**👉 START HERE:**
+- **[Deployment Quick Start](./deployment/DEPLOYMENT_QUICK_START.md)** - 40-minute guide to deploy to DigitalOcean and set up automated pipeline
+
+**Reference Guides:**
+- **[GitHub Actions + Kamal Setup](./deployment/github-actions-kamal.md)** - Detailed CI/CD pipeline setup and monitoring
+- **[Setup Checklist](./deployment/SETUP_CHECKLIST.md)** - Interactive checklist for reference
+- **[GitHub Actions Quick Reference](./deployment/GITHUB_ACTIONS_SETUP_SUMMARY.md)** - Quick summary of GitHub Actions
+- **[DigitalOcean + Kamal Guide](./deployment/digitalocean-kamal.md)** - Initial VPS setup with Kamal
 
 ### 🔌 [API Documentation](./api/)
 Complete REST API documentation for building mobile and web clients.
@@ -32,10 +36,10 @@ Docker and Docker Compose setup for running Silo locally or in production.
 
 ### I want to...
 
-**Deploy to a VPS**
-1. Start with: [`deployment/SETUP_CHECKLIST.md`](deployment/SETUP_CHECKLIST.md)
-2. Then read: [`deployment/github-actions-kamal.md`](deployment/github-actions-kamal.md)
-3. Reference: [`deployment/digitalocean-kamal.md`](deployment/digitalocean-kamal.md)
+**Deploy to a VPS (Most Important!)**
+1. Start with: [`deployment/DEPLOYMENT_QUICK_START.md`](deployment/DEPLOYMENT_QUICK_START.md) ⭐
+2. Reference: [`deployment/SETUP_CHECKLIST.md`](deployment/SETUP_CHECKLIST.md)
+3. Deep dive: [`deployment/github-actions-kamal.md`](deployment/github-actions-kamal.md)
 
 **Build a mobile app**
 1. Read: [`api/API_DOCUMENTATION.md`](api/API_DOCUMENTATION.md)

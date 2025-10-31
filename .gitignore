@@ -4,38 +4,87 @@
 # belong in git's global ignore instead:
 # `$XDG_CONFIG_HOME/git/ignore` or `~/.config/git/ignore`
 
-# Ignore bundler config.
+# === Dependency Management ===
 /.bundle
+/vendor/bundle
 
-# Ignore all environment files.
+# === Environment & Secrets ===
 /.env*
+/config/master.key
+/config/credentials.yml.enc
+/.kamal/secrets
+/.kamal/secrets.*
 
-# Ignore all logfiles and tempfiles.
+# === Logs & Temporary Files ===
 /log/*
-/tmp/*
 !/log/.keep
+/tmp/*
 !/tmp/.keep
-
-# Ignore pidfiles, but keep the directory.
 /tmp/pids/*
 !/tmp/pids/
 !/tmp/pids/.keep
-
-# Ignore storage (uploaded files in development and any SQLite databases).
-/storage/*
-!/storage/.keep
 /tmp/storage/*
 !/tmp/storage/
 !/tmp/storage/.keep
 
+# === Database & Storage ===
+/storage/*
+!/storage/.keep
+db/*.sqlite3
+db/*.sqlite3-journal
+
+# === Assets & Builds ===
 /public/assets
-
-# Ignore master key for decrypting credentials and more.
-/config/master.key
-
+/public/packs
+/public/packs-test
 /app/assets/builds/*
 !/app/assets/builds/.keep
+/node_modules/
 
-# Kamal secrets should never be committed.
-/.kamal/secrets
-/.kamal/secrets.*
+# === Test Coverage ===
+/coverage
+/coverage.data
+
+# === IDE & Editor Files ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.iml
+*.sublime-workspace
+*.sublime-project
+
+# === Debugging & REPL History ===
+.byebug_history
+.pry_history
+.irb_history
+
+# === Test & Screenshot Artifacts ===
+*.png
+*.jpg
+*.jpeg
+test_app_ui.js
+/tmp/screenshots
+
+# === macOS & Windows ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === Yarn & npm ===
+yarn-error.log
+npm-debug.log
+/yarn-error.log
+
+# === Ruby & Rails ===
+.ruby-version.local
+.rvmrc
+.rvm/
+.rbenv/

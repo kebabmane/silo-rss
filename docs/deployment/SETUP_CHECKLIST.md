@@ -2,6 +2,14 @@
 
 Follow this checklist to set up automated deployments from GitHub to your VPS.
 
+## ⚡ Quick Start
+
+**New to this?** Start with: [`DEPLOYMENT_QUICK_START.md`](./DEPLOYMENT_QUICK_START.md)
+
+That guide walks you through everything step-by-step. Come back here for reference.
+
+---
+
 ## 1. DigitalOcean VPS Setup (If not already done)
 
 - [ ] Create Ubuntu 22.04+ droplet on DigitalOcean
