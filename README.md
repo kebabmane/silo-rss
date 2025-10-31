@@ -258,7 +258,7 @@ This project is available as open source under the terms of the [MIT License](LI
 
 ## REST API for Mobile Apps
 
-Silo includes a comprehensive REST API for building mobile applications. See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API docs.
+Silo includes a comprehensive REST API for building mobile applications. See [API Documentation](docs/api/API_DOCUMENTATION.md) for complete API docs.
 
 ### Quick API Start
 
@@ -285,7 +285,7 @@ curl -X GET http://localhost:3000/api/v1/feeds \
 - **Filtering & pagination** for article lists
 - **Mobile-ready JSON responses**
 
-See the complete API documentation: [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+See the complete [API Documentation](docs/api/API_DOCUMENTATION.md)
 
 Example mobile app implementations available in:
 - **iOS (Swift)** - See API docs
