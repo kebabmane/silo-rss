@@ -1,13 +1,14 @@
 # Name of your application. Used to uniquely configure containers.
 service: feed_reader
 
-# Name of the container image.
-image: registry.digitalocean.com/your-registry/feed-reader
+# Name of the container image (registry server is added by Kamal from registry.server below)
+image: silo/feed-reader
 
 # Deploy to these servers.
 servers:
   web:
-    - root@YOUR_DROPLET_IP
+    hosts:
+      - 170.64.139.111
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -19,13 +20,13 @@ servers:
 # Note: If using Cloudflare, set encryption mode in SSL/TLS setting to "Full" to enable CF-to-app encryption.
 proxy:
   ssl: true
-  host: app.your-domain.com
+  host: silo.hannah-co.com
 
 # Credentials for your image host.
 registry:
   # Specify the registry server, if you're not using Docker Hub
   server: registry.digitalocean.com
-  username: your-registry
+  username: silo
 
   # Always use an access token rather than real password when possible.
   password:
@@ -35,14 +36,17 @@ registry:
 env:
   secret:
     - RAILS_MASTER_KEY
+    - MAILGUN_API_KEY
+    - MAILGUN_DOMAIN
+    - MAILER_FROM_ADDRESS
   clear:
     RAILS_ENV: production
     RAILS_SERVE_STATIC_FILES: true
     RAILS_LOG_TO_STDOUT: true
-    # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
-    # When you start using multiple servers, you should split out job processing to a dedicated machine.
-    SOLID_QUEUE_IN_PUMA: true
-
+    SECRET_KEY_BASE: 816f1fee0ee2b4b48f961b9e688acb02b9cf2042f95fd4367b9161a5f62796f99a994d8e12baf57bdc10e1350ca71e36ce77332dc0889ffc24e48ca1c35a4b56
+    RAILS_MASTER_KEY: c29d9c3eb6c1ad5433c8f5dc18223e3f
+    APPLICATION_HOST: silo.hannah-co.com
+    MAILGUN_API_HOST: api.eu.mailgun.net
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3
 
@@ -64,12 +68,11 @@ aliases:
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole"
 
-
-# Use a persistent storage volume for sqlite database files and local Active Storage files.
-# Recommended to change this to a mounted volume path that is backed up off server.
+# Use persistent storage on mounted volume for sqlite database files, local Active Storage, and logs.
+# Data is stored on /mnt/volume_syd1_01 (separate volume for durability and backups)
 volumes:
-  - "feed_reader_storage:/rails/storage"
-
+  - "/mnt/volume_syd1_01/feed_reader/storage:/rails/storage"
+  - "/mnt/volume_syd1_01/feed_reader/log:/rails/log"
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old
@@ -83,6 +86,8 @@ builder:
   cache:
     type: gha
     options: mode=max
+  secrets:
+    - RAILS_MASTER_KEY
   # Uncomment to reuse a remote builder droplet for faster builds on macOS/Windows hosts.
   # remote: ssh://root@YOUR_BUILDER_IP
 
@@ -95,10 +100,10 @@ builder:
   # secrets:
   #   - GITHUB_TOKEN
   #   - RAILS_MASTER_KEY
-
-# Use a different ssh user than root
-# ssh:
-#   user: app
+# SSH configuration - specify which key to use for deployment
+ssh:
+  user: root
+  keys: [ "~/.ssh/id_ed25519" ]
 
 # Use accessory services (secrets come from .kamal/secrets).
 # accessories:

@@ -56,6 +56,9 @@ gem "kaminari"
 # Markdown rendering
 gem "redcarpet"
 
+# Transactional email via Mailgun HTTP API
+gem "mailgun-ruby"
+
 # API enhancements for mobile apps
 gem "rack-cors", require: "rack/cors"
 gem "rack-attack"

@@ -83,8 +83,6 @@
       </div>
     </div>
   </div>
-</div>
-
 <!-- Hidden form for adding feeds -->
 <div id="hidden_feed_form" style="display: none;">
   <%= form_with url: feeds_path, method: :post, local: true, id: "feed_form" do |f| %>
@@ -99,89 +97,103 @@
     const modal = document.querySelector('[data-controller="onboarding"]');
     if (!modal) return;
 
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
     window.onboardingHandlers = {
       close: function() {
-        // Mark onboarding as completed
         fetch('<%= mark_onboarding_completed_path %>', {
           method: 'POST',
           headers: {
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-Token': csrfToken
           }
-        }).then(() => modal.remove());
+        }).finally(() => modal.remove());
       },
 
       skip: function() {
-        this.close();
+        window.onboardingHandlers.close();
       },
 
       addFeed: function(feedId, feedUrl, category) {
-        // Discover and add the feed
         const form = document.getElementById('feed_form');
         form.querySelector('[name="feed_id"]').value = '';
-        form.querySelector('[name="category"]').value = category;
+        form.querySelector('[name="category"]').value = category || '';
         form.querySelector('[name="custom_name"]').value = '';
 
-        // Use discover endpoint to get feed and then create subscription
-        const discoverForm = document.createElement('form');
-        discoverForm.method = 'POST';
-        discoverForm.action = '<%= discover_feeds_path %>';
-        discoverForm.innerHTML = `
-          <input type="hidden" name="url" value="${feedUrl}">
-          <input type="hidden" name="authenticity_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-        `;
-        document.body.appendChild(discoverForm);
+        if (feedId) {
+          const subForm = document.createElement('form');
+          subForm.method = 'POST';
+          subForm.action = '<%= feeds_path %>';
+          subForm.innerHTML = `
+            <input type="hidden" name="feed_id" value="${feedId}">
+            <input type="hidden" name="category" value="${category || ''}">
+            <input type="hidden" name="authenticity_token" value="${csrfToken}">
+          `;
+          document.body.appendChild(subForm);
+          subForm.submit();
+          return;
+        }
 
-        // After discovery, we need to handle creating the subscription
-        fetch(discoverForm.action, {
+        fetch('<%= discover_feeds_path %>', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-Token': csrfToken
           },
           body: `url=${encodeURIComponent(feedUrl)}`
         })
         .then(response => response.text())
         .then(html => {
-          // Parse the response to get feed_id if available
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
-          const feedId = doc.querySelector('[data-feed-id]')?.dataset.feedId;
+          const discoveredFeedId = doc.querySelector('[data-feed-id]')?.dataset.feedId;
 
-          if (feedId) {
-            // Submit the subscription form
+          if (discoveredFeedId) {
             const subForm = document.createElement('form');
             subForm.method = 'POST';
             subForm.action = '<%= feeds_path %>';
             subForm.innerHTML = `
-              <input type="hidden" name="feed_id" value="${feedId}">
-              <input type="hidden" name="category" value="${category}">
-              <input type="hidden" name="authenticity_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+              <input type="hidden" name="feed_id" value="${discoveredFeedId}">
+              <input type="hidden" name="category" value="${category || ''}">
+              <input type="hidden" name="authenticity_token" value="${csrfToken}">
             `;
             document.body.appendChild(subForm);
             subForm.submit();
           }
         })
         .catch(error => console.error('Error adding feed:', error));
-
-        discoverForm.remove();
       },
 
       showOPML: function() {
-        // Create OPML upload modal
         const opmlForm = document.createElement('form');
         opmlForm.method = 'POST';
         opmlForm.action = '<%= import_opml_feeds_path %>';
         opmlForm.enctype = 'multipart/form-data';
         opmlForm.innerHTML = `
           <input type="file" name="opml_file" accept=".opml,.xml" style="display:none">
-          <input type="hidden" name="authenticity_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+          <input type="hidden" name="authenticity_token" value="${csrfToken}">
         `;
         document.body.appendChild(opmlForm);
-        opmlForm.querySelector('input[type="file"]').click();
-        opmlForm.querySelector('input[type="file"]').addEventListener('change', () => {
-          opmlForm.submit();
-        });
+        const fileInput = opmlForm.querySelector('input[type="file"]');
+        fileInput.addEventListener('change', () => opmlForm.submit(), { once: true });
+        fileInput.click();
       }
     };
+
+    const bind = (selector, handler) => {
+      modal.querySelectorAll(selector).forEach(element => {
+        element.addEventListener('click', event => {
+          event.preventDefault();
+          handler(event);
+        });
+      });
+    };
+
+    bind('[data-action="click->onboarding#close"]', () => window.onboardingHandlers.close());
+    bind('[data-action="click->onboarding#skip"]', () => window.onboardingHandlers.skip());
+    bind('[data-action="click->onboarding#addFeed"]', event => {
+      const button = event.currentTarget;
+      window.onboardingHandlers.addFeed(button.dataset.feedId, button.dataset.feedUrl, button.dataset.feedCategory);
+    });
+    bind('[data-action="click->onboarding#showOPML"]', () => window.onboardingHandlers.showOPML());
   });
 </script>

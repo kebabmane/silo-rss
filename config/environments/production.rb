@@ -3,6 +3,9 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Require the master key for encrypted credentials (Rails 8 requirement)
+  config.require_master_key = true
+
   # Code is not reloaded between requests.
   config.enable_reloading = false
 
@@ -53,21 +56,28 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  # Configure outbound email via Mailgun.
+  application_host = ENV.fetch("APPLICATION_HOST", "silo.hannah-co.com")
+  mailer_from_address = ENV["MAILER_FROM_ADDRESS"].presence || "info@#{application_host}"
+  mailgun_domain = ENV["MAILGUN_DOMAIN"].presence || application_host
+  mailgun_api_key = ENV["MAILGUN_API_KEY"]
+  mailgun_api_host = ENV.fetch("MAILGUN_API_HOST", "api.eu.mailgun.net")
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
-
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.default_url_options = {
+    host: application_host,
+    protocol: "https"
+  }
+  config.action_mailer.asset_host = "https://#{application_host}"
+  config.action_mailer.default_options = {
+    from: mailer_from_address
+  }
+  config.action_mailer.delivery_method = :mailgun
+  config.action_mailer.mailgun_settings = {
+    api_key: mailgun_api_key,
+    domain: mailgun_domain,
+    api_host: mailgun_api_host
+  }.compact
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
