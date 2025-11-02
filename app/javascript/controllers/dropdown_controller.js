@@ -2,6 +2,13 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
+    const summary = this.element.querySelector("summary")
+
+    // Prevent click from toggling the details element
+    if (summary) {
+      summary.addEventListener("click", (e) => e.preventDefault())
+    }
+
     // Open dropdown on hover
     this.element.addEventListener("mouseenter", () => this.open())
 
