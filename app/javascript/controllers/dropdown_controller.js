@@ -2,29 +2,35 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
-    const details = this.element.querySelector("details")
+    // Open dropdown on hover
+    this.element.addEventListener("mouseenter", () => this.open())
 
-    if (details) {
-      // Open dropdown on hover
-      this.element.addEventListener("mouseenter", () => this.open(details))
-
-      // Close dropdown when mouse leaves
-      this.element.addEventListener("mouseleave", () => this.close(details))
-    }
+    // Close dropdown when mouse leaves
+    this.element.addEventListener("mouseleave", () => this.close())
   }
 
-  open(details) {
-    // Close other dropdowns
-    document.querySelectorAll("details.nav-menu[open]").forEach(detail => {
-      if (detail !== details) {
-        detail.removeAttribute("open")
+  open() {
+    const details = this.element.querySelector("details")
+    if (!details) return
+
+    // Close other open dropdowns
+    document.querySelectorAll('[data-controller="dropdown"]').forEach(dropdown => {
+      if (dropdown !== this.element) {
+        const otherDetails = dropdown.querySelector("details")
+        if (otherDetails && otherDetails.hasAttribute("open")) {
+          otherDetails.removeAttribute("open")
+        }
       }
     })
-    // Open this dropdown
-    details.setAttribute("open", "")
+
+    // Open this dropdown using the native details open attribute
+    details.setAttribute("open", "open")
   }
 
-  close(details) {
-    details.removeAttribute("open")
+  close() {
+    const details = this.element.querySelector("details")
+    if (details) {
+      details.removeAttribute("open")
+    }
   }
 }
