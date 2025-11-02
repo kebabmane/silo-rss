@@ -46,42 +46,46 @@
               <%= link_to "Add Feed", new_feed_path, class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2", aria_label: "Add new feed" %>
 
               <% if Current.user&.admin? %>
-                <details class="nav-menu relative" data-controller="dropdown">
-                  <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="Admin panel" aria-label="Admin menu">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
-                    </svg>
-                    <span>Admin</span>
-                  </summary>
-                  <div class="absolute right-0 mt-2 z-30 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
-                    <%= link_to "Dashboard", admin_root_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                    <%= link_to "Users", admin_users_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                    <%= link_to "Suggested Feeds", admin_suggested_feeds_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                    <%= link_to "Settings", admin_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                    <%= link_to "Jobs", mission_control_jobs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                    <%= link_to "Daily Brief Prompt", admin_daily_brief_prompts_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                    <%= link_to "LiteLLM Settings", admin_litellm_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                  </div>
-                </details>
+                <div class="relative" data-controller="dropdown">
+                  <details class="nav-menu">
+                    <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="Admin panel" aria-label="Admin menu">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                      </svg>
+                      <span>Admin</span>
+                    </summary>
+                    <div class="absolute right-0 mt-2 z-30 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
+                      <%= link_to "Dashboard", admin_root_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Users", admin_users_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Suggested Feeds", admin_suggested_feeds_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Settings", admin_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Jobs", mission_control_jobs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Daily Brief Prompt", admin_daily_brief_prompts_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "LiteLLM Settings", admin_litellm_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                    </div>
+                  </details>
+                </div>
               <% end %>
 
-              <details class="nav-menu relative" data-controller="dropdown">
-                <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="More options" aria-label="Menu">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                  </svg>
-                  <span>More</span>
-                </summary>
-                <div class="absolute right-0 mt-2 z-30 w-48 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
-                  <%= link_to "Sync Feeds", refresh_all_feeds_path, data: { turbo_method: :post }, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", aria_label: "Synchronize all feeds" %>
-                  <button type="button" data-controller="refresh" data-action="click->refresh#reload" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Refresh view">
-                    Refresh View
-                  </button>
-                  <hr class="my-1 border-gray-200 dark:border-gray-700" />
-                  <%= link_to "Daily Briefs", daily_briefs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-                  <%= link_to "Settings", settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-                </div>
-              </details>
+              <div class="relative" data-controller="dropdown">
+                <details class="nav-menu">
+                  <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="More options" aria-label="Menu">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                    </svg>
+                    <span>More</span>
+                  </summary>
+                  <div class="absolute right-0 mt-2 z-30 w-48 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
+                    <%= link_to "Sync Feeds", refresh_all_feeds_path, data: { turbo_method: :post }, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", aria_label: "Synchronize all feeds" %>
+                    <button type="button" data-controller="refresh" data-action="click->refresh#reload" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Refresh view">
+                      Refresh View
+                    </button>
+                    <hr class="my-1 border-gray-200 dark:border-gray-700" />
+                    <%= link_to "Daily Briefs", daily_briefs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+                    <%= link_to "Settings", settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+                  </div>
+                </details>
+              </div>
 
               <button data-action="click->theme#toggle" class="inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Toggle dark mode">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
