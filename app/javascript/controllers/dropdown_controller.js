@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
+    console.log("Dropdown controller connected on:", this.element)
     const summary = this.element.querySelector("summary")
 
     // Prevent click from toggling the details element

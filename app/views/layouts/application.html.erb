@@ -77,7 +77,7 @@
                   </summary>
                   <div class="absolute right-0 mt-2 z-30 w-48 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
                     <%= link_to "Sync Feeds", refresh_all_feeds_path, data: { turbo_method: :post }, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", aria_label: "Synchronize all feeds" %>
-                    <button type="button" data-controller="refresh" data-action="click->refresh#reload" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Refresh view">
+                    <button type="button" onclick="window.location.reload()" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Refresh view">
                       Refresh View
                     </button>
                     <hr class="my-1 border-gray-200 dark:border-gray-700" />
