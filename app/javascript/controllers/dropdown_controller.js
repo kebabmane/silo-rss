@@ -2,11 +2,12 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
-    this.element.addEventListener("mouseleave", () => this.close())
-
-    // Also close other dropdowns when this one opens
     const summary = this.element.querySelector("summary")
     if (summary) {
+      // Close dropdown when mouse leaves the summary button
+      summary.addEventListener("mouseleave", () => this.close())
+
+      // Close other dropdowns when this one opens
       summary.addEventListener("click", () => this.closeOtherDropdowns())
     }
   }
