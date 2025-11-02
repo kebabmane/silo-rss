@@ -23,8 +23,8 @@ Rails.application.configure do
   # Use memory store for testing rate limiting
   config.cache_store = :memory_store
 
-  # Render exception templates for rescuable exceptions and raise for other exceptions.
-  config.action_dispatch.show_exceptions = :rescuable
+  # Raise exceptions during tests so failures bubble up.
+  config.action_dispatch.show_exceptions = false
 
   # Disable request forgery protection in test environment.
   config.action_controller.allow_forgery_protection = false
@@ -45,6 +45,17 @@ Rails.application.configure do
 
   # Allow legacy unencrypted fixture data for encrypted columns during tests.
   config.active_record.encryption.support_unencrypted_data = true
+
+  # Provide deterministic fallbacks for Active Record encryption keys in test runs.
+  config.after_initialize do
+    encryption = config.active_record.encryption
+    encryption.primary_key ||= ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"] ||
+      "10d93a8f01e6480791d5f5fd2a4a0cb4"
+    encryption.deterministic_key ||= ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"] ||
+      "7f51cbea9176459e8f4d7068ea6ea5bb"
+    encryption.key_derivation_salt ||= ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"] ||
+      "2c6d0bf3fa1344b4a5ce3fbd2419d1e2"
+  end
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true

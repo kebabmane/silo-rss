@@ -9,6 +9,10 @@ servers:
   web:
     hosts:
       - 170.64.139.111
+  job:
+    hosts:
+      - 170.64.139.111
+    cmd: bin/rails solid_queue:start
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -47,6 +51,7 @@ env:
     RAILS_MASTER_KEY: c29d9c3eb6c1ad5433c8f5dc18223e3f
     APPLICATION_HOST: silo.hannah-co.com
     MAILGUN_API_HOST: api.eu.mailgun.net
+    SOLID_QUEUE_IN_PUMA: false
     # Set number of processes dedicated to Solid Queue (default: 1)
     # JOB_CONCURRENCY: 3
 

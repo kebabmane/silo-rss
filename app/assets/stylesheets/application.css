@@ -51,3 +51,251 @@ html {
     scroll-behavior: auto !important;
   }
 }
+
+/* Focus mode layout adjustments */
+.dashboard-layout.focus-mode-active .dashboard-sidebar,
+.dashboard-layout.focus-mode-active .dashboard-article-list {
+  display: none;
+}
+
+.dashboard-layout.focus-mode-active .dashboard-article-pane {
+  background-color: #ffffff;
+}
+
+.dark .dashboard-layout.focus-mode-active .dashboard-article-pane {
+  background-color: #050505;
+}
+
+.dashboard-layout.focus-mode-active .dashboard-article-pane article {
+  max-width: 60ch;
+}
+
+.focus-mode-toggle.is-active {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.dark .focus-mode-toggle.is-active {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #f8fafc;
+}
+
+details.quick-actions > summary::-webkit-details-marker,
+details.nav-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.quick-actions > summary::marker,
+details.nav-menu > summary::marker {
+  display: none;
+}
+
+details.quick-actions[open] .quick-actions-toggle {
+  background-color: #e5e7eb;
+}
+
+.dark details.quick-actions[open] .quick-actions-toggle {
+  background-color: #374151;
+}
+
+.article-content a {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.article-content img {
+  border-radius: 0.75rem;
+}
+
+.article-content blockquote {
+  border-left: 4px solid rgba(59, 130, 246, 0.35);
+  padding-left: 1rem;
+}
+
+/* Reading Experience Enhancements */
+.prose {
+  --prose-body: 16px;
+  --prose-headings: 1.2;
+}
+
+.article-content {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+  letter-spacing: 0.3px;
+}
+
+.article-content p {
+  margin-bottom: 1.25rem;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.article-content h1 {
+  font-size: 1.75rem;
+}
+
+.article-content h2 {
+  font-size: 1.5rem;
+}
+
+.article-content h3 {
+  font-size: 1.25rem;
+}
+
+.article-content img {
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  max-width: 100%;
+  height: auto;
+}
+
+.article-content strong {
+  font-weight: 600;
+}
+
+.article-content em {
+  font-style: italic;
+}
+
+.article-content code {
+  background-color: rgba(59, 130, 246, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-family: "Menlo", "Monaco", "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+.article-content pre {
+  background-color: #f3f4f6;
+  dark: #1f2937;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.dark .article-content code {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark .article-content pre {
+  background-color: #1f2937;
+}
+
+/* Prose styling improvements for better readability */
+.prose {
+  color: #1f2937;
+}
+
+.dark .prose {
+  color: #f3f4f6;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.prose h1 {
+  font-size: 2rem;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+}
+
+.prose p + p {
+  margin-top: 0;
+}
+
+.prose ul,
+.prose ol {
+  margin: 1.25rem 0;
+  padding-left: 1.75rem;
+}
+
+.prose li {
+  margin: 0.5rem 0;
+}
+
+.prose table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.dark .prose th,
+.dark .prose td {
+  border-color: #374151;
+}
+
+.prose th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.dark .prose th {
+  background-color: #111827;
+}
+
+/* Button visual improvements */
+button,
+.button {
+  transition: all 0.2s ease;
+}
+
+button:active,
+.button:active {
+  transform: scale(0.98);
+}
+
+/* Link underlines */
+.article-content a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-decoration-color: rgba(37, 99, 235, 0.5);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  transition: all 0.2s ease;
+}
+
+.dark .article-content a {
+  color: #60a5fa;
+  text-decoration-color: rgba(96, 165, 250, 0.5);
+}
+
+.article-content a:hover {
+  text-decoration-color: rgba(37, 99, 235, 1);
+}
+
+.dark .article-content a:hover {
+  text-decoration-color: rgba(96, 165, 250, 1);
+}

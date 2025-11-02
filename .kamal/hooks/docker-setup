@@ -2,11 +2,11 @@
 set -euo pipefail
 
 if command -v docker >/dev/null 2>&1; then
-  echo "Docker already installed on $KAMAL_HOST."
+  echo "Docker already installed."
   exit 0
 fi
 
-echo "Installing Docker engine on $KAMAL_HOST..."
+echo "Installing Docker engine..."
 
 if ! command -v apt-get >/dev/null 2>&1; then
   echo "This setup hook expects an Ubuntu/Debian host with apt-get available."
