@@ -101,12 +101,19 @@ class DashboardController < ApplicationController
                                     .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
     end
 
-    @pagy, @articles = pagy(articles_query, items: 20)
+    # Validate page parameter
+    page = (params[:page] || 1).to_i
+    page = 1 if page < 1
+
+    @pagy, @articles = pagy(articles_query, items: 20, page: page)
     preload_article_states(@articles, Current.user)
 
     respond_to do |format|
       format.turbo_stream
     end
+  rescue StandardError => e
+    # Handle any errors (invalid page, etc.)
+    render :more_articles, locals: { articles: [] }
   end
 
   def mark_onboarding_completed

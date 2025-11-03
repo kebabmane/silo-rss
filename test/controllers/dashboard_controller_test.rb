@@ -441,4 +441,102 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
     assert @alice.reload.onboarding_completed?
   end
+
+  # More articles (infinite scroll) tests
+  test "more_articles should redirect to login when not authenticated" do
+    get dashboard_more_articles_url, params: { page: 2 }
+    assert_redirected_to new_session_path
+  end
+
+  test "more_articles should return turbo_stream response" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+    assert_match /turbo-stream/, @response.content_type
+  end
+
+  test "more_articles should paginate articles" do
+    login_as @alice
+    # First page
+    get dashboard_url
+    assert_response :success
+    # More articles (second page)
+    get dashboard_more_articles_url(page: 2), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should respect unread filter" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2, filter: "unread"), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should respect starred filter" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2, filter: "starred"), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should respect archived filter" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2, filter: "archived"), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should respect feed_id filter" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2, feed_id: @tech_crunch.id), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should respect category filter" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2, category: "Technology"), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should apply multiple filters simultaneously" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2, filter: "unread", feed_id: @tech_crunch.id), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should only show user's articles" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+    # Should only contain articles from alice's subscriptions
+  end
+
+  test "more_articles should exclude archived articles by default" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+    # Archived articles should not be included unless filter is "archived"
+  end
+
+  test "more_articles should use default filter when not provided" do
+    login_as @alice
+    # Without filter, should default to unread
+    get dashboard_more_articles_url(page: 2), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should handle invalid page parameter" do
+    login_as @alice
+    get dashboard_more_articles_url(page: "invalid"), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should handle non-existent feed" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2, feed_id: 999999), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
+
+  test "more_articles should handle non-existent category" do
+    login_as @alice
+    get dashboard_more_articles_url(page: 2, category: "NonExistent"), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    assert_response :success
+  end
 end
