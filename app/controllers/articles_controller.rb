@@ -71,19 +71,19 @@ class ArticlesController < ApplicationController
   def toggle_read
     state = @article.state_for(Current.user)
     state.update(read: !state.read)
-    head :ok
+    redirect_back fallback_location: dashboard_url, status: :see_other
   end
 
   def toggle_starred
     state = @article.state_for(Current.user)
     state.update(starred: !state.starred)
-    head :ok
+    redirect_back fallback_location: dashboard_url, status: :see_other
   end
 
   def toggle_archived
     state = @article.state_for(Current.user)
     state.update(archived: !state.archived)
-    redirect_to articles_path
+    redirect_back fallback_location: dashboard_url, status: :see_other
   end
 
   def fetch_content
