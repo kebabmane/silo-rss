@@ -8,6 +8,8 @@ export default class extends Controller {
   }
 
   connect() {
+    this.lastLoadTime = 0
+
     // Listen for Turbo frame updates to reset page number when articles_list frame reloads
     const articlesFrame = document.getElementById("articles_list")
     if (articlesFrame) {
@@ -42,7 +44,14 @@ export default class extends Controller {
       return
     }
 
+    // Debounce: prevent loading more than once every 300ms
+    const now = Date.now()
+    if (now - this.lastLoadTime < 300) {
+      return
+    }
+
     this.isLoading = true
+    this.lastLoadTime = now
 
     // Build URL with page parameter and current filters
     const url = new URL(this.urlValue, window.location.origin)
