@@ -5,17 +5,17 @@
 
 <div data-controller="focus-mode" data-focus-mode-target="layout" class="dashboard-layout flex h-[calc(100vh-4rem)]" data-current-filter="<%= params[:filter] || 'unread' %>">
   <!-- Left Sidebar: Categories and Feeds -->
-  <div class="dashboard-sidebar w-64 flex-shrink-0 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+  <div class="dashboard-sidebar w-64 flex-shrink-0 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto" data-controller="filter-highlight">
     <div class="p-4">
       <!-- Filter Buttons -->
       <div class="mb-5 space-y-2">
-        <%= link_to dashboard_path(filter: "unread"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium #{params[:filter] == 'unread' || params[:filter].nil? ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}", data: { turbo_frame: "articles_list" } do %>
+        <%= link_to dashboard_path(filter: "unread"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "unread" } do %>
           <span>Unread</span>
         <% end %>
-        <%= link_to dashboard_path(filter: "starred"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium #{params[:filter] == 'starred' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}", data: { turbo_frame: "articles_list" } do %>
+        <%= link_to dashboard_path(filter: "starred"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "starred" } do %>
           <span>⭐ Starred</span>
         <% end %>
-        <%= link_to dashboard_path(filter: "all"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium #{params[:filter] == 'all' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}", data: { turbo_frame: "articles_list" } do %>
+        <%= link_to dashboard_path(filter: "all"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "all" } do %>
           <span>All Articles</span>
         <% end %>
       </div>
