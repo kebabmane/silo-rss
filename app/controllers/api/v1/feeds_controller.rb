@@ -57,6 +57,9 @@ module Api
         else
           render json: { error: 'Feed not found' }, status: :not_found
         end
+      rescue => e
+        Rails.logger.warn("API feed discovery failed: #{e.message}")
+        render json: { error: 'Feed not found' }, status: :not_found
       end
 
       # POST /api/v1/feeds

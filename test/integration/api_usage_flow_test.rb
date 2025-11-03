@@ -55,7 +55,8 @@ class ApiUsageFlowTest < ActionDispatch::IntegrationTest
     # Should return user data with API token
     assert_equal @user.id, json_response["user"]["id"]
     assert_equal @user.email_address, json_response["user"]["email"]
-    assert_equal @user.api_token, json_response["user"]["api_token"]
+    # Reload user to get the newly issued token
+    assert_equal @user.reload.api_token, json_response["user"]["api_token"]
   end
 
   test "API login with invalid credentials returns error" do
@@ -507,7 +508,10 @@ class ApiUsageFlowTest < ActionDispatch::IntegrationTest
          headers: headers,
          as: :json
 
-    feed_id = JSON.parse(response.body)["feed"]["id"]
+    assert_response :ok, "Discovery failed with response: #{response.body}"
+    feed_data = JSON.parse(response.body)
+    assert feed_data["feed"].present?, "No feed returned in discovery response"
+    feed_id = feed_data["feed"]["id"]
 
     FeedRefreshJob.stubs(:perform_later)
 

@@ -11,7 +11,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "renders settings page" do
-    sign_in
+    login_as(@user)
 
     get settings_path
     assert_response :success
@@ -19,7 +19,7 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "updates time zone" do
-    sign_in
+    login_as(@user)
 
     patch settings_path, params: { user: { time_zone: "America/Los_Angeles" } }
 
@@ -29,18 +29,12 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "rejects invalid time zone" do
-    sign_in
+    login_as(@user)
 
     patch settings_path, params: { user: { time_zone: "Invalid/Zone" } }
 
     assert_response :unprocessable_entity
     assert_includes response.body, "Time zone is not included in the list"
     assert_equal "America/New_York", @user.reload.time_zone
-  end
-
-  private
-
-  def sign_in
-    post session_path, params: { email_address: @user.email_address, password: "password" }
   end
 end
