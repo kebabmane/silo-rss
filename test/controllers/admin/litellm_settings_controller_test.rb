@@ -4,7 +4,7 @@ module Admin
   class LitellmSettingsControllerTest < ActionDispatch::IntegrationTest
     setup do
       @user = users(:alice)
-      sign_in_as @user
+      login_as @user
     end
 
     test "should get show" do
@@ -81,7 +81,7 @@ module Admin
 
     private
 
-    def sign_in_as(user)
+    def login_as(user)
       post session_url, params: { email_address: user.email_address, password: "password" }
     end
   end

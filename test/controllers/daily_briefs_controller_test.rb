@@ -3,7 +3,7 @@ require "test_helper"
 class DailyBriefsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:alice)
-    sign_in_as @user
+    login_as @user
 
     @schedule = DailyBriefSchedule.create!(user: @user, time_of_day: Time.parse("08:00"))
     @brief = DailyBrief.create!(
@@ -51,7 +51,7 @@ class DailyBriefsControllerTest < ActionDispatch::IntegrationTest
 
   private
 
-  def sign_in_as(user)
+  def login_as(user)
     post session_url, params: { email_address: user.email_address, password: "password" }
   end
 end
