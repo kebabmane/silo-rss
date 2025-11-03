@@ -9,6 +9,17 @@ export default class extends Controller {
       url: this.urlValue,
       initialPage: this.pageValue
     })
+
+    // Listen for Turbo frame updates to reset page number when articles_list frame reloads
+    const articlesFrame = document.getElementById("articles_list")
+    if (articlesFrame) {
+      articlesFrame.addEventListener("turbo:load", () => {
+        const currentFilter = articlesFrame.getAttribute("data-current-filter")
+        console.log("[InfiniteScroll] Articles frame reloaded with filter:", currentFilter, "- resetting page to 2")
+        this.pageValue = 2
+      })
+    }
+
     this.setupObserver()
   }
 
@@ -53,9 +64,12 @@ export default class extends Controller {
     const url = new URL(this.urlValue, window.location.origin)
     url.searchParams.set("page", this.pageValue)
 
+    // Get the current filter from the articles_list frame's data attribute
+    const articlesFrame = document.getElementById("articles_list")
+    const filter = articlesFrame ? articlesFrame.getAttribute("data-current-filter") : "unread"
+
     // Preserve current filters from the page URL
     const currentUrl = new URL(window.location.href)
-    const filter = currentUrl.searchParams.get("filter")
     const feedId = currentUrl.searchParams.get("feed_id")
     const category = currentUrl.searchParams.get("category")
 

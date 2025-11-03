@@ -3,7 +3,7 @@
   <%= render "dashboard/onboarding_modal" %>
 <% end %>
 
-<div data-controller="focus-mode" data-focus-mode-target="layout" class="dashboard-layout flex h-[calc(100vh-4rem)]">
+<div data-controller="focus-mode" data-focus-mode-target="layout" class="dashboard-layout flex h-[calc(100vh-4rem)]" data-current-filter="<%= params[:filter] || 'unread' %>">
   <!-- Left Sidebar: Categories and Feeds -->
   <div class="dashboard-sidebar w-64 flex-shrink-0 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
     <div class="p-4">
@@ -41,7 +41,7 @@
   </div>
 
   <!-- Middle: Articles List -->
-  <%= turbo_frame_tag "articles_list", class: "dashboard-article-list w-96 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col" do %>
+  <%= turbo_frame_tag "articles_list", class: "dashboard-article-list w-96 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col", data: { current_filter: params[:filter] || "unread" } do %>
     <!-- Mobile search bar -->
     <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 md:hidden">
       <%= form_with url: search_path, method: :get, data: { turbo_frame: "articles_list" }, class: "relative" do |f| %>
