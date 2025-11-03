@@ -29,7 +29,7 @@
             <%= category.upcase %>
           </h3>
           <% (@subscriptions_by_category[category] || []).each do |subscription| %>
-            <%= link_to dashboard_path(feed_id: subscription.feed_id, filter: params[:filter]),
+            <%= link_to dashboard_path(feed_id: subscription.feed_id, filter: "all"),
                 class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
                 data: { turbo_frame: "articles_list", feed_link: true, feed_id: subscription.feed_id } do %>
               <%= subscription.display_name %>
