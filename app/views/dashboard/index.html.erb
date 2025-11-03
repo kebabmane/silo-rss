@@ -29,9 +29,9 @@
             <%= category.upcase %>
           </h3>
           <% (@subscriptions_by_category[category] || []).each do |subscription| %>
-            <%= link_to dashboard_path(feed_id: subscription.feed_id),
-                class: "block px-3 py-2.5 text-sm rounded-md transition #{params[:feed_id].to_i == subscription.feed_id ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200 font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}",
-                data: { turbo_frame: "articles_list" } do %>
+            <%= link_to dashboard_path(feed_id: subscription.feed_id, filter: params[:filter]),
+                class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
+                data: { turbo_frame: "articles_list", feed_link: true, feed_id: subscription.feed_id } do %>
               <%= subscription.display_name %>
             <% end %>
           <% end %>

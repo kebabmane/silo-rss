@@ -15,8 +15,9 @@ export default class extends Controller {
   }
 
   updateHighlight() {
-    const articlesFrame = document.getElementById("articles_list")
-    const currentFilter = articlesFrame?.getAttribute("data-current-filter") || "unread"
+    const trigger = document.getElementById("load-more-trigger")
+    const currentFilter = trigger?.getAttribute("data-current-filter") || "unread"
+    const currentFeedId = trigger?.getAttribute("data-current-feed-id")
 
     // Update all filter links
     document.querySelectorAll('[data-filter-link]').forEach((link) => {
@@ -28,6 +29,20 @@ export default class extends Controller {
         link.classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900', 'dark:text-blue-200')
       } else {
         link.classList.remove('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900', 'dark:text-blue-200')
+        link.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700')
+      }
+    })
+
+    // Update all feed links
+    document.querySelectorAll('[data-feed-link]').forEach((link) => {
+      const feedId = link.getAttribute('data-feed-id')
+      const isActive = feedId === currentFeedId
+
+      if (isActive) {
+        link.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700')
+        link.classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900', 'dark:text-blue-200', 'font-medium')
+      } else {
+        link.classList.remove('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900', 'dark:text-blue-200', 'font-medium')
         link.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700')
       }
     })
