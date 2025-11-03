@@ -122,6 +122,9 @@ export default class extends Controller {
           }
         }
       })
+
+      // Dispatch turbo:load to initialize Stimulus controllers on new elements
+      document.dispatchEvent(new CustomEvent('turbo:load'))
     })
     .catch(error => {
       console.error("Error loading more articles:", error)
