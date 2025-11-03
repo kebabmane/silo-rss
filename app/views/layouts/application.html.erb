@@ -16,32 +16,6 @@
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const dropdowns = document.querySelectorAll('.dropdown-trigger');
-
-        dropdowns.forEach(dropdown => {
-          const details = dropdown.querySelector('details');
-
-          dropdown.addEventListener('mouseenter', () => {
-            // Close all other dropdowns
-            dropdowns.forEach(d => {
-              if (d !== dropdown) {
-                const otherDetails = d.querySelector('details');
-                if (otherDetails) otherDetails.removeAttribute('open');
-              }
-            });
-            // Open this dropdown
-            if (details) details.setAttribute('open', 'open');
-          });
-
-          dropdown.addEventListener('mouseleave', () => {
-            // Close this dropdown
-            if (details) details.removeAttribute('open');
-          });
-        });
-      });
-    </script>
   </head>
 
   <body class="h-full bg-gray-100 dark:bg-black" data-controller="keyboard theme">
@@ -72,7 +46,7 @@
               <%= link_to "Add Feed", new_feed_path, class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2", aria_label: "Add new feed" %>
 
               <% if Current.user&.admin? %>
-                <div class="relative dropdown-trigger">
+                <div class="relative dropdown-trigger" data-controller="dropdown">
                   <details class="nav-menu">
                     <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="Admin panel" aria-label="Admin menu" onclick="event.preventDefault()">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
@@ -93,7 +67,7 @@
                 </div>
               <% end %>
 
-              <div class="relative dropdown-trigger">
+              <div class="relative dropdown-trigger" data-controller="dropdown">
                 <details class="nav-menu">
                   <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="More options" aria-label="Menu" onclick="event.preventDefault()">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
