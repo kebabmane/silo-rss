@@ -112,7 +112,13 @@ module Api
         state = @article.state_for(current_user)
         state.update(read: params[:read])
 
-        render json: { state: { read: state.read } }
+        render json: {
+          state: {
+            read: state.read,
+            starred: state.starred,
+            archived: state.archived
+          }
+        }
       end
 
       # PATCH /api/v1/articles/:id/star
@@ -120,7 +126,13 @@ module Api
         state = @article.state_for(current_user)
         state.update(starred: params[:starred])
 
-        render json: { state: { starred: state.starred } }
+        render json: {
+          state: {
+            read: state.read,
+            starred: state.starred,
+            archived: state.archived
+          }
+        }
       end
 
       # PATCH /api/v1/articles/:id/archive
@@ -128,7 +140,13 @@ module Api
         state = @article.state_for(current_user)
         state.update(archived: params[:archived])
 
-        render json: { state: { archived: state.archived } }
+        render json: {
+          state: {
+            read: state.read,
+            starred: state.starred,
+            archived: state.archived
+          }
+        }
       end
 
       # GET /api/v1/articles/search

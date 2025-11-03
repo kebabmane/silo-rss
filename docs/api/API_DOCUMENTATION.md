@@ -181,7 +181,7 @@ Returns the full content plus state (read/starred/archived).
 - **PATCH** `/api/v1/articles/:id/mark_starred` with `{ "starred": true }`
 - **PATCH** `/api/v1/articles/:id/mark_archived` with `{ "archived": true }`
 
-Each endpoint returns the updated state fragment.
+Each endpoint returns the full state payload (`read`, `starred`, `archived`) after the update.
 
 ### Search
 

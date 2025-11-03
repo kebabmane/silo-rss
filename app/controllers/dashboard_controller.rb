@@ -113,7 +113,10 @@ class DashboardController < ApplicationController
     end
   rescue StandardError => e
     # Handle any errors (invalid page, etc.)
-    render :more_articles, locals: { articles: [] }
+    @articles = []
+    respond_to do |format|
+      format.turbo_stream { render :more_articles }
+    end
   end
 
   def mark_onboarding_completed
