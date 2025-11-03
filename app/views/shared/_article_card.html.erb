@@ -1,0 +1,28 @@
+<%= link_to dashboard_path(article_id: article.id),
+    class: card_classes,
+    data: {
+      turbo_frame: "article_content",
+      action: "click->keyboard#selectArticle",
+      article_id: article.id
+    } do %>
+  <div class="flex items-start gap-3">
+    <span class="mt-1.5 h-3 w-3 rounded-full flex-shrink-0 <%= read ? 'bg-gray-300 dark:bg-gray-600' : 'bg-blue-500 dark:bg-blue-400' %>"></span>
+    <div class="flex-1 min-w-0">
+      <p class="text-sm font-medium <%= read ? 'text-gray-700 dark:text-gray-200' : 'text-gray-900 dark:text-gray-100' %> transition group-hover:text-blue-600 dark:group-hover:text-blue-300 line-clamp-2">
+        <%= article.title %>
+      </p>
+      <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+        <span class="truncate max-w-xs"><%= article.feed.title %></span>
+        <% if article.published_at.present? %>
+          <span aria-hidden="true">•</span>
+          <time datetime="<%= article.published_at.iso8601 %>"><%= format_user_time(article.published_at, style: :short_date) %></time>
+        <% end %>
+      </div>
+    </div>
+    <% if state.starred? %>
+      <span class="flex items-center text-yellow-500 dark:text-yellow-400" aria-label="Starred">
+        ⭐
+      </span>
+    <% end %>
+  </div>
+<% end %>

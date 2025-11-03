@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   # Public landing page + main application
   root "home#index"
   get "dashboard", to: "dashboard#index"
+  get "dashboard/more_articles", to: "dashboard#more_articles"
 
   resources :feeds, only: [:index, :new, :create, :destroy] do
     collection do

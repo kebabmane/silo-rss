@@ -62,7 +62,7 @@
       <% end %>
     </div>
 
-    <div class="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
+    <div id="articles-list" class="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
       <% @articles.each do |article| %>
         <% cache(article) do %>
           <% state = article.state_for(Current.user) %>
@@ -110,6 +110,8 @@
           <p>No articles found</p>
           <p class="text-sm mt-2">Add some feeds to get started!</p>
         </div>
+      <% elsif @pagy.next %>
+        <%= render "dashboard/load_more_trigger", next_page: @pagy.next %>
       <% end %>
     </div>
   <% end %>

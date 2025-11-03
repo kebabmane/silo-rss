@@ -51,7 +51,7 @@ gem "ruby-readability"
 gem "mission_control-jobs"
 
 # Pagination
-gem "kaminari"
+gem "pagy"
 
 # Markdown rendering
 gem "redcarpet"

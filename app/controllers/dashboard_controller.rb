@@ -11,43 +11,44 @@ class DashboardController < ApplicationController
     @suggested_feeds_by_category = @suggested_feeds.group_by(&:category)
 
     # Get articles for the selected feed/category or all articles
-    @articles = Article.joins(feed: :subscriptions)
-                      .where(subscriptions: { user_id: Current.user.id })
-                      .includes(:feed)
-                      .recent
+    articles_query = Article.joins(feed: :subscriptions)
+                            .where(subscriptions: { user_id: Current.user.id })
+                            .includes(:feed)
+                            .recent
 
     # Apply filters
     if params[:feed_id].present?
-      @articles = @articles.where(feed_id: params[:feed_id])
+      articles_query = articles_query.where(feed_id: params[:feed_id])
       @selected_feed = Current.user.feeds.find_by(id: params[:feed_id])
     end
 
     if params[:category].present?
       # Avoid duplicate joins - already joined above
-      @articles = @articles.where(subscriptions: { category: params[:category] })
+      articles_query = articles_query.where(subscriptions: { category: params[:category] })
       @selected_category = params[:category]
     end
 
     # Default: show unread articles only
-    filter = params[:filter] || "unread"
-    if filter == "unread"
-      @articles = @articles.left_joins(:article_states)
-                          .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", Current.user.id, false)
-    elsif filter == "starred"
-      @articles = @articles.joins(:article_states)
-                          .where(article_states: { user_id: Current.user.id, starred: true })
-    elsif filter == "archived"
-      @articles = @articles.joins(:article_states)
-                          .where(article_states: { user_id: Current.user.id, archived: true })
+    @filter = params[:filter] || "unread"
+    if @filter == "unread"
+      articles_query = articles_query.left_joins(:article_states)
+                                    .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", Current.user.id, false)
+    elsif @filter == "starred"
+      articles_query = articles_query.joins(:article_states)
+                                    .where(article_states: { user_id: Current.user.id, starred: true })
+    elsif @filter == "archived"
+      articles_query = articles_query.joins(:article_states)
+                                    .where(article_states: { user_id: Current.user.id, archived: true })
     end
 
     # Always exclude archived from default views unless explicitly filtered
-    unless filter == "archived"
-      @articles = @articles.left_joins(:article_states)
-                          .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
+    unless @filter == "archived"
+      articles_query = articles_query.left_joins(:article_states)
+                                    .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
     end
 
-    @articles = @articles.limit(50)
+    # Paginate articles - 20 per page for faster initial load
+    @pagy, @articles = pagy(articles_query, items: 20)
 
     # Eager load article states for current user to prevent N+1 queries
     preload_article_states(@articles, Current.user)
@@ -61,6 +62,50 @@ class DashboardController < ApplicationController
         .find_by(id: params[:article_id])
     else
       @selected_article = @articles.first
+    end
+  end
+
+  def more_articles
+    # Fetch additional articles for infinite scrolling
+    @categories = Current.user.subscriptions.distinct.pluck(:category).compact.sort
+    subscriptions = Current.user.subscriptions.includes(:feed).order(:category, :custom_name).to_a
+    @subscriptions_by_category = subscriptions.group_by(&:category)
+
+    articles_query = Article.joins(feed: :subscriptions)
+                            .where(subscriptions: { user_id: Current.user.id })
+                            .includes(:feed)
+                            .recent
+
+    if params[:feed_id].present?
+      articles_query = articles_query.where(feed_id: params[:feed_id])
+    end
+
+    if params[:category].present?
+      articles_query = articles_query.where(subscriptions: { category: params[:category] })
+    end
+
+    filter = params[:filter] || "unread"
+    if filter == "unread"
+      articles_query = articles_query.left_joins(:article_states)
+                                    .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", Current.user.id, false)
+    elsif filter == "starred"
+      articles_query = articles_query.joins(:article_states)
+                                    .where(article_states: { user_id: Current.user.id, starred: true })
+    elsif filter == "archived"
+      articles_query = articles_query.joins(:article_states)
+                                    .where(article_states: { user_id: Current.user.id, archived: true })
+    end
+
+    unless filter == "archived"
+      articles_query = articles_query.left_joins(:article_states)
+                                    .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
+    end
+
+    @pagy, @articles = pagy(articles_query, items: 20)
+    preload_article_states(@articles, Current.user)
+
+    respond_to do |format|
+      format.turbo_stream
     end
   end
 
