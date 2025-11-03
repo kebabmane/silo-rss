@@ -105,14 +105,7 @@ class DashboardController < ApplicationController
     page = (params[:page] || 1).to_i
     page = 1 if page < 1
 
-    puts "[InfiniteScroll Server] Fetching page #{page}, filter: #{filter}, feed_id: #{params[:feed_id]}, category: #{params[:category]}"
-    puts "[InfiniteScroll Server] Total articles matching query: #{articles_query.count}"
-
     @pagy, @articles = pagy(articles_query, items: 20, page: page)
-
-    puts "[InfiniteScroll Server] Page #{page} returned #{@articles.count} articles"
-    puts "[InfiniteScroll Server] @pagy.next: #{@pagy.next.inspect}"
-    puts "[InfiniteScroll Server] @pagy.last?: #{@pagy.last?}"
 
     preload_article_states(@articles, Current.user)
 
