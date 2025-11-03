@@ -63,6 +63,45 @@ Authenticates with email/password and returns an API token + expiry.
 }
 ```
 
+### Request Password Reset
+
+**POST** `/api/v1/passwords`
+
+Sends reset instructions to the provided email address. Always returns success to avoid leaking registered emails.
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**200 OK**
+```json
+{
+  "message": "If your account exists, we've emailed password reset instructions."
+}
+```
+
+### Reset Password
+
+**PATCH** `/api/v1/passwords/{token}`
+
+Updates the password using the token from the reset email. Tokens expire after 15 minutes.
+
+```json
+{
+  "password": "newsecurepassword",
+  "password_confirmation": "newsecurepassword"
+}
+```
+
+**200 OK**
+```json
+{
+  "message": "Password has been reset."
+}
+```
+
 ### Refresh Token
 
 **POST** `/api/v1/auth/refresh`

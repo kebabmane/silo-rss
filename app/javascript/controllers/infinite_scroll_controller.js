@@ -44,7 +44,7 @@ export default class extends Controller {
     if (feedId) url.searchParams.set("feed_id", feedId)
     if (category) url.searchParams.set("category", category)
 
-    // Use Turbo.visit with frame targeting for turbo_stream response
+    // Fetch and process Turbo Stream response
     fetch(url.toString(), {
       method: "GET",
       headers: {
@@ -53,14 +53,44 @@ export default class extends Controller {
     })
     .then(response => response.text())
     .then(html => {
-      // Parse and apply Turbo Stream actions
+      // Parse and apply Turbo Stream response
       const parser = new DOMParser()
       const doc = parser.parseFromString(html, 'text/html')
 
-      // Find all turbo-stream elements and apply them
+      // Find all turbo-stream elements and process them
       const streams = doc.querySelectorAll('turbo-stream')
       streams.forEach(stream => {
-        stream.requestSubmit?.() || Turbo.StreamActions[stream.action]?.(stream)
+        // Extract the action and target
+        const action = stream.getAttribute('action')
+        const target = stream.getAttribute('target')
+        const template = stream.querySelector('template')
+
+        if (action && target && template) {
+          const targetElement = document.getElementById(target)
+          if (!targetElement) return
+
+          const content = template.content.cloneNode(true)
+
+          // Apply the appropriate action
+          switch (action) {
+            case 'append':
+              targetElement.appendChild(content)
+              break
+            case 'prepend':
+              targetElement.prepend(content)
+              break
+            case 'replace':
+              targetElement.replaceWith(content)
+              break
+            case 'remove':
+              targetElement.remove()
+              break
+            case 'update':
+              targetElement.innerHTML = ''
+              targetElement.appendChild(content)
+              break
+          }
+        }
       })
     })
     .catch(error => {

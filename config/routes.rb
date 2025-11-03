@@ -80,6 +80,9 @@ Rails.application.routes.draw do
       post 'auth/refresh', to: 'auth#refresh'
       delete 'auth/logout', to: 'auth#logout'
 
+      # Passwords
+      resources :passwords, only: [:create, :update], param: :token
+
       # Feeds
       resources :feeds, only: [:index, :create, :destroy] do
         collection do
