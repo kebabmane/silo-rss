@@ -123,6 +123,18 @@ export default class extends Controller {
         }
       })
 
+      // Update articles_list frame data attributes to reflect current state
+      const articlesFrame = document.getElementById("articles_list")
+      if (articlesFrame) {
+        articlesFrame.setAttribute("data-current-filter", this.filterValue)
+        // feed_id and category don't change with infinite scroll, but update anyway for consistency
+        const currentUrl = new URL(window.location.href)
+        const feedId = currentUrl.searchParams.get("feed_id")
+        const category = currentUrl.searchParams.get("category")
+        if (feedId) articlesFrame.setAttribute("data-current-feed-id", feedId)
+        if (category) articlesFrame.setAttribute("data-current-category", category)
+      }
+
       // Dispatch turbo:load to initialize Stimulus controllers on new elements
       document.dispatchEvent(new CustomEvent('turbo:load'))
     })

@@ -15,9 +15,9 @@ export default class extends Controller {
   }
 
   updateHighlight() {
-    const trigger = document.getElementById("load-more-trigger")
-    const currentFilter = trigger?.getAttribute("data-current-filter") || "unread"
-    const currentFeedId = trigger?.getAttribute("data-current-feed-id")
+    const articlesFrame = document.getElementById("articles_list")
+    const currentFilter = articlesFrame?.getAttribute("data-current-filter") || "unread"
+    const currentFeedId = articlesFrame?.getAttribute("data-current-feed-id")
 
     // Update all filter links
     document.querySelectorAll('[data-filter-link]').forEach((link) => {
