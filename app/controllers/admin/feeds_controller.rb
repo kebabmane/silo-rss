@@ -3,8 +3,20 @@ class Admin::FeedsController < ApplicationController
   before_action :set_feed, only: [:destroy]
 
   def index
+    # Load feeds with eager-loaded subscriptions to avoid N+1 queries
     @feeds = Feed.includes(:subscriptions).order(updated_at: :desc)
-    @orphaned_feeds = @feeds.select { |feed| feed.subscriptions.empty? }
+
+    # Add subscriber_count to each feed from already-loaded subscriptions
+    @feeds.each do |feed|
+      feed.define_singleton_method(:subscriber_count) { subscriptions.size }
+    end
+
+    # Calculate orphaned feeds count for display
+    @orphaned_feeds_count = Feed.left_outer_joins(:subscriptions)
+                                  .group("feeds.id")
+                                  .having("COUNT(subscriptions.id) = 0")
+                                  .count
+                                  .size
   end
 
   def destroy

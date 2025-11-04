@@ -3,17 +3,17 @@
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Feed Management</h1>
       <p class="text-gray-600 dark:text-gray-400">
-        Total Feeds: <span class="font-semibold"><%= @feeds.count %></span> |
-        Orphaned: <span class="font-semibold text-orange-600"><%= @orphaned_feeds.count %></span>
+        Total Feeds: <span class="font-semibold"><%= Feed.count %></span> |
+        Orphaned: <span class="font-semibold text-orange-600"><%= @orphaned_feeds_count %></span>
       </p>
     </div>
 
     <!-- Orphaned Feeds Warning -->
-    <% if @orphaned_feeds.any? %>
+    <% if @orphaned_feeds_count > 0 %>
       <div class="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
         <h2 class="text-lg font-semibold text-orange-900 dark:text-orange-100 mb-2">⚠️ Orphaned Feeds</h2>
         <p class="text-sm text-orange-800 dark:text-orange-200 mb-3">
-          <%= @orphaned_feeds.count %> feed(s) have no subscribers and can be deleted to clean up the database.
+          <%= @orphaned_feeds_count %> feed(s) have no subscribers and can be deleted to clean up the database.
         </p>
       </div>
     <% end %>
@@ -52,7 +52,7 @@
                   </td>
                   <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                      <%= feed.subscriptions.count %>
+                      <%= feed.subscriber_count %>
                     </span>
                   </td>
                   <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">
