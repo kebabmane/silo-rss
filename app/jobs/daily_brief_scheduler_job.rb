@@ -5,6 +5,13 @@ class DailyBriefSchedulerJob < ApplicationJob
   def perform
     current_time = Time.current
 
+    # Check if LiteLLM is configured
+    unless LitellmSetting.configured?
+      Rails.logger.warn("Skipping daily brief scheduler: LiteLLM not configured. Disabling all active schedules.")
+      disable_all_schedules
+      return
+    end
+
     # Find all active schedules
     DailyBriefSchedule.active.find_each do |schedule|
       # Check if this schedule should run now
@@ -30,5 +37,10 @@ class DailyBriefSchedulerJob < ApplicationJob
                    current_time.beginning_of_hour,
                    current_time.end_of_hour)
             .exists?
+  end
+
+  # Disable all active schedules when LiteLLM becomes unavailable
+  def disable_all_schedules
+    DailyBriefSchedule.active.update_all(active: false)
   end
 end

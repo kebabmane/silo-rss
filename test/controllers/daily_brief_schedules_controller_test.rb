@@ -63,9 +63,23 @@ class DailyBriefSchedulesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to daily_brief_schedules_url
   end
 
-  private
+  test "should enable daily_brief_schedule" do
+    schedule = DailyBriefSchedule.create!(user: @user, time_of_day: Time.parse("08:00"), active: false)
 
-  def login_as(user)
-    post session_url, params: { email_address: user.email_address, password: "password" }
+    patch enable_daily_brief_schedule_url(schedule)
+
+    assert_redirected_to daily_brief_schedules_url
+    schedule.reload
+    assert schedule.active
+  end
+
+  test "should disable daily_brief_schedule" do
+    schedule = DailyBriefSchedule.create!(user: @user, time_of_day: Time.parse("08:00"), active: true)
+
+    patch disable_daily_brief_schedule_url(schedule)
+
+    assert_redirected_to daily_brief_schedules_url
+    schedule.reload
+    assert_not schedule.active
   end
 end

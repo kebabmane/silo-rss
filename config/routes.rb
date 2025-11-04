@@ -36,6 +36,8 @@ Rails.application.routes.draw do
   resources :daily_brief_schedules do
     member do
       post :generate_now
+      patch :enable
+      patch :disable
     end
   end
   resources :daily_briefs, only: [:index, :show] do
@@ -66,6 +68,8 @@ Rails.application.routes.draw do
     resources :suggested_feeds
 
     resources :daily_brief_prompts, only: [:index]
+
+    resources :feeds, only: [:index, :destroy]
   end
 
   # API routes
@@ -80,6 +84,9 @@ Rails.application.routes.draw do
       post 'auth/refresh', to: 'auth#refresh'
       delete 'auth/logout', to: 'auth#logout'
 
+      # Profile/Settings
+      resource :profile, only: [:show, :update]
+
       # Passwords
       resources :passwords, only: [:create, :update], param: :token
 
@@ -88,6 +95,7 @@ Rails.application.routes.draw do
         collection do
           get :browse
           post :discover
+          post :sync
         end
       end
 
@@ -116,6 +124,16 @@ Rails.application.routes.draw do
           get :latest
         end
       end
+
+      resources :daily_brief_schedules, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post :generate_now
+          patch :enable
+          patch :disable
+        end
+      end
+
+      resources :device_registrations, only: [:create, :destroy], param: :device_token
     end
   end
 

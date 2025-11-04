@@ -249,7 +249,9 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
       post feeds_url, params: { feed_id: @tech_crunch.id, category: "Tech" }
     end
 
-    assert_response :unprocessable_entity
+    # Idempotent behavior: should redirect with success message, not error
+    assert_redirected_to dashboard_path
+    assert_match /Feed added successfully/, flash[:notice]
   end
 
   test "should render new with errors when subscription is invalid" do

@@ -34,6 +34,14 @@ module Api
         }
       end
 
+      # POST /api/v1/feeds/sync - sync/refresh all feeds for the user
+      def sync
+        UserFeedRefreshJob.perform_later(current_user.id)
+        render json: {
+          message: 'Sync started. Your feeds will refresh shortly.'
+        }, status: :ok
+      end
+
       # POST /api/v1/feeds/discover
       def discover
         discovery_result = FeedDiscoveryService.new(params[:url]).discover
@@ -65,32 +73,27 @@ module Api
       # POST /api/v1/feeds
       def create
         feed = Feed.find(params[:feed_id])
-        subscription = current_user.subscriptions.build(
-          feed: feed,
-          category: params[:category],
-          custom_name: params[:custom_name]
-        )
-
-        if subscription.save
-          # Trigger background fetch
-          FeedRefreshJob.perform_later(feed.id)
-
-          render json: {
-            subscription: {
-              id: subscription.id,
-              category: subscription.category,
-              custom_name: subscription.custom_name,
-              feed: {
-                id: feed.id,
-                title: feed.title,
-                feed_url: feed.feed_url,
-                site_url: feed.site_url
-              }
-            }
-          }, status: :created
-        else
-          render json: { error: subscription.errors.full_messages }, status: :unprocessable_entity
+        subscription = current_user.subscriptions.find_or_create_by(feed: feed) do |sub|
+          sub.category = params[:category]
+          sub.custom_name = params[:custom_name]
         end
+
+        # Trigger background fetch
+        FeedRefreshJob.perform_later(feed.id)
+
+        render json: {
+          subscription: {
+            id: subscription.id,
+            category: subscription.category,
+            custom_name: subscription.custom_name,
+            feed: {
+              id: feed.id,
+              title: feed.title,
+              feed_url: feed.feed_url,
+              site_url: feed.site_url
+            }
+          }
+        }, status: :created
       end
 
       # DELETE /api/v1/feeds/:id

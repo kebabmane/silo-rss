@@ -286,18 +286,19 @@ module Api
         end
       end
 
-      test "create returns unprocessable entity for duplicate subscription" do
+      test "create returns created for duplicate subscription (idempotent)" do
         # Alice is already subscribed to tech_crunch
+        # With idempotent behavior, resubscribing returns success with existing subscription
         post api_v1_feeds_url,
              params: { feed_id: @tech_crunch.id, category: "Tech" },
              headers: api_headers(@alice),
              as: :json
 
-        assert_response :unprocessable_entity
+        assert_response :created
         json = JSON.parse(response.body)
 
-        assert json.key?("error")
-        assert json["error"].is_a?(Array)
+        assert json.key?("subscription")
+        assert_equal @tech_crunch.id, json["subscription"]["feed"]["id"]
       end
 
       test "create returns not found for non-existent feed" do

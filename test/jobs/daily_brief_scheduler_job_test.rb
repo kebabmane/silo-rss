@@ -3,6 +3,8 @@ require "test_helper"
 class DailyBriefSchedulerJobTest < ActiveJob::TestCase
   setup do
     @user = users(:alice)
+    # Mock LiteLLM configuration as enabled
+    LitellmSetting.stubs(:configured?).returns(true)
   end
 
   test "enqueues generation jobs for due schedules" do
@@ -74,5 +76,26 @@ class DailyBriefSchedulerJobTest < ActiveJob::TestCase
         end
       end
     end
+  end
+
+  test "disables all schedules and skips when LiteLLM not configured" do
+    # Create an active schedule
+    schedule = DailyBriefSchedule.create!(
+      user: @user,
+      time_of_day: Time.zone.parse("08:00"),
+      active: true
+    )
+
+    # Stub LiteLLM as not configured
+    LitellmSetting.unstub(:configured?)
+    LitellmSetting.stubs(:configured?).returns(false)
+
+    assert_no_enqueued_jobs do
+      DailyBriefSchedulerJob.perform_now
+    end
+
+    # Schedule should be disabled
+    schedule.reload
+    assert_not schedule.active
   end
 end

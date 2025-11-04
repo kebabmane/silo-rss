@@ -1,5 +1,5 @@
 class DailyBriefSchedulesController < ApplicationController
-  before_action :set_schedule, only: [:edit, :update, :destroy, :generate_now]
+  before_action :set_schedule, only: [:edit, :update, :destroy, :generate_now, :enable, :disable]
 
   def index
     @schedules = Current.user.daily_brief_schedules.order(created_at: :desc)
@@ -52,6 +52,16 @@ class DailyBriefSchedulesController < ApplicationController
     job = DailyBriefGenerationJob.perform_later(@schedule.id)
 
     redirect_to daily_briefs_path, notice: "Daily brief generation started. Check back in a moment to see your new brief!"
+  end
+
+  def enable
+    @schedule.update(active: true)
+    redirect_to daily_brief_schedules_path, notice: "Daily brief schedule enabled."
+  end
+
+  def disable
+    @schedule.update(active: false)
+    redirect_to daily_brief_schedules_path, notice: "Daily brief schedule disabled."
   end
 
   private

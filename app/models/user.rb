@@ -27,6 +27,7 @@ class User < ApplicationRecord
   has_many :article_states, dependent: :destroy
   has_many :daily_brief_schedules, dependent: :destroy
   has_many :daily_briefs, dependent: :destroy
+  has_many :device_registrations, dependent: :destroy
 
   validates :email_address,
             presence: true,

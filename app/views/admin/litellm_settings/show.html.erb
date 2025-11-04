@@ -1,7 +1,8 @@
-<div class="container mx-auto px-4 py-8 max-w-4xl">
-  <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">LiteLLM Settings</h1>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">LiteLLM Settings</h1>
 
-  <div class="bg-white dark:bg-gray-950 rounded-lg shadow p-6">
+    <div class="bg-white dark:bg-gray-950 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-6">
     <%= form_with(model: @setting, url: admin_litellm_settings_path, method: :patch, local: true, class: "space-y-6", data: { turbo: false }) do |form| %>
       <% if @setting.errors.any? %>
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-800 dark:border-red-600 dark:text-red-100">
@@ -76,8 +77,9 @@
       </div>
     <% end %>
 
-    <div class="mt-4 flex space-x-3">
-      <%= button_to "Test Connection", test_connection_admin_litellm_settings_path, method: :post, class: "px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" %>
+      <div class="mt-4 flex space-x-3">
+        <%= button_to "Test Connection", test_connection_admin_litellm_settings_path, method: :post, class: "px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" %>
+      </div>
     </div>
   </div>
 </div>

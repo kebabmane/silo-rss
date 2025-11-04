@@ -9,7 +9,7 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 mb-8">
       <!-- Total Users -->
       <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
         <div class="p-5">
@@ -67,12 +67,31 @@
         </div>
       </div>
 
+      <!-- Orphaned Feeds -->
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-orange-200 dark:border-orange-700 <%= @orphaned_feeds_count > 0 ? 'bg-orange-50 dark:bg-orange-900/20' : '' %>">
+        <div class="p-5">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="flex items-center justify-center h-12 w-12 rounded-md <%= @orphaned_feeds_count > 0 ? 'bg-orange-500' : 'bg-gray-400' %> text-white text-2xl">
+                🗑️
+              </div>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Orphaned Feeds</dt>
+                <dd class="text-3xl font-semibold <%= @orphaned_feeds_count > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-white' %>"><%= @orphaned_feeds_count %></dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Database Size -->
       <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-orange-500 text-white text-2xl">
+              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-slate-500 text-white text-2xl">
                 💾
               </div>
             </div>
@@ -136,6 +155,16 @@
               <div class="ml-4">
                 <p class="text-sm font-medium text-gray-900 dark:text-white">Manage Users</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">View and manage user accounts</p>
+              </div>
+            <% end %>
+
+            <%= link_to admin_feeds_path, class: "flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" do %>
+              <div class="flex-shrink-0">
+                <span class="text-2xl">🗂️</span>
+              </div>
+              <div class="ml-4">
+                <p class="text-sm font-medium text-gray-900 dark:text-white">Manage Feeds</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">View all feeds and cleanup orphaned</p>
               </div>
             <% end %>
 

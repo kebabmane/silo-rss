@@ -5,6 +5,7 @@ class Admin::DashboardController < ApplicationController
     @total_users = User.count
     @total_feeds = Feed.count
     @total_articles = Article.count
+    @orphaned_feeds_count = calculate_orphaned_feeds_count
     @recent_users = User.order(created_at: :desc).limit(5)
     @system_stats = {
       active_jobs: ActiveJob::Base.queue_adapter.instance_variable_get(:@enqueued_jobs)&.size || 0,
@@ -28,5 +29,12 @@ class Admin::DashboardController < ApplicationController
     result ? result["size"] : "N/A"
   rescue
     "N/A"
+  end
+
+  def calculate_orphaned_feeds_count
+    Feed.left_outer_joins(:subscriptions)
+        .group("feeds.id")
+        .having("COUNT(subscriptions.id) = 0")
+        .count
   end
 end

@@ -159,7 +159,7 @@ class DailyBriefGeneratorService
       content: summary,
       article_count: article_count,
       generated_at: Time.current
-    )
+    ).tap { |brief| notify_brief_created(brief) }
   end
 
   def create_empty_brief
@@ -169,7 +169,13 @@ class DailyBriefGeneratorService
       content: "No new articles to summarize from the past 24 hours.",
       article_count: 0,
       generated_at: Time.current
-    )
+    ).tap { |brief| notify_brief_created(brief) }
+  end
+
+  def notify_brief_created(brief)
+    PushNotificationService.daily_brief_generated(@user, brief)
+  rescue => e
+    Rails.logger.warn("Daily brief push failed: #{e.message}")
   end
 
   def truncate_content(text, max_length)

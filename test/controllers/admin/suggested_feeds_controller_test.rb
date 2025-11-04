@@ -293,9 +293,9 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
   test "edit handles non-existent feed" do
     login_as @admin
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      get edit_admin_suggested_feed_url(id: 999999)
-    end
+    get edit_admin_suggested_feed_url(id: 999999)
+
+    assert_response :not_found
   end
 
   # Update action tests
@@ -368,11 +368,11 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
   test "update handles non-existent feed" do
     login_as @admin
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      patch admin_suggested_feed_url(id: 999999), params: {
-        suggested_feed: { title: "New Title" }
-      }
-    end
+    patch admin_suggested_feed_url(id: 999999), params: {
+      suggested_feed: { title: "New Title" }
+    }
+
+    assert_response :not_found
   end
 
   # Destroy action tests
@@ -399,9 +399,9 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
   test "destroy handles non-existent feed" do
     login_as @admin
 
-    assert_raises(ActiveRecord::RecordNotFound) do
-      delete admin_suggested_feed_url(id: 999999)
-    end
+    delete admin_suggested_feed_url(id: 999999)
+
+    assert_response :not_found
   end
 
   # Parameter filtering tests
@@ -451,8 +451,8 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
       }
     }
 
-    # Should either succeed or fail gracefully
-    assert_response [ :redirect, :unprocessable_entity ]
+    # Should either succeed (redirect) or fail gracefully (unprocessable_entity)
+    assert [302, 303, 307, 308, 422].include?(response.status), "Response status #{response.status} not in expected range"
   end
 
   test "handles special characters in inputs" do

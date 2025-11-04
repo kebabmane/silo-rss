@@ -2,11 +2,10 @@ class DailyBriefsController < ApplicationController
   before_action :set_brief, only: [:show, :mark_read, :mark_unread]
 
   def index
-    @briefs = Current.user.daily_briefs
+    briefs_query = Current.user.daily_briefs
                           .includes(:daily_brief_schedule)
                           .recent
-                          .page(params[:page])
-                          .per(20)
+    @pagy, @briefs = pagy(briefs_query, items: 20)
   end
 
   def show

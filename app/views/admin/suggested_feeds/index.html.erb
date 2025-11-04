@@ -1,11 +1,11 @@
-<div class="min-h-screen bg-gray-100 dark:bg-black py-8">
-  <div class="max-w-6xl mx-auto px-4">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Suggested Feeds</h1>
       <%= link_to "Add Suggested Feed", new_admin_suggested_feed_path, class: "px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md" %>
     </div>
 
-    <div class="bg-white dark:bg-gray-950 rounded-lg shadow">
+    <div class="bg-white dark:bg-gray-950 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
       <% if @suggested_feeds.any? %>
         <div class="overflow-x-auto">
           <table class="w-full">

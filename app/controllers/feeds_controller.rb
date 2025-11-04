@@ -35,17 +35,12 @@ class FeedsController < ApplicationController
 
   def create
     @feed = Feed.find(params[:feed_id])
-    @subscription = Current.user.subscriptions.build(
-      feed: @feed,
-      category: params[:category],
-      custom_name: params[:custom_name]
-    )
-
-    if @subscription.save
-      redirect_to dashboard_path, notice: "Feed added successfully"
-    else
-      render :new, status: :unprocessable_entity
+    @subscription = Current.user.subscriptions.find_or_create_by(feed: @feed) do |sub|
+      sub.category = params[:category]
+      sub.custom_name = params[:custom_name]
     end
+
+    redirect_to dashboard_path, notice: "Feed added successfully"
   end
 
   def destroy
