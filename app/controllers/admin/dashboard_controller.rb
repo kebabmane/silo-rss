@@ -36,5 +36,6 @@ class Admin::DashboardController < ApplicationController
         .group("feeds.id")
         .having("COUNT(subscriptions.id) = 0")
         .count
+        .size
   end
 end
