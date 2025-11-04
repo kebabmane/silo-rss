@@ -32,10 +32,13 @@ class Admin::DashboardController < ApplicationController
   end
 
   def calculate_orphaned_feeds_count
-    Feed.left_outer_joins(:subscriptions)
-        .group("feeds.id")
-        .having("COUNT(subscriptions.id) = 0")
-        .count
-        .size
+    # Use cached count to reduce database queries
+    Rails.cache.fetch('orphaned_feeds_count', expires_in: 1.hour) do
+      Feed.left_outer_joins(:subscriptions)
+          .group("feeds.id")
+          .having("COUNT(subscriptions.id) = 0")
+          .count
+          .size
+    end
   end
 end

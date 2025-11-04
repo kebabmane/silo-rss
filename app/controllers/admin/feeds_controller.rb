@@ -4,6 +4,7 @@ class Admin::FeedsController < ApplicationController
 
   def index
     # Load feeds with eager-loaded subscriptions to avoid N+1 queries
+    # Note: For very large datasets (>10k feeds), add pagination with pagy gem
     @feeds = Feed.includes(:subscriptions).order(updated_at: :desc)
 
     # Add subscriber_count to each feed from already-loaded subscriptions
@@ -11,12 +12,19 @@ class Admin::FeedsController < ApplicationController
       feed.define_singleton_method(:subscriber_count) { subscriptions.size }
     end
 
-    # Calculate orphaned feeds count for display
-    @orphaned_feeds_count = Feed.left_outer_joins(:subscriptions)
-                                  .group("feeds.id")
-                                  .having("COUNT(subscriptions.id) = 0")
-                                  .count
-                                  .size
+    # Get cached orphaned feeds count or calculate if not cached
+    @orphaned_feeds_count = begin
+      Rails.cache.fetch('orphaned_feeds_count', expires_in: 1.hour) do
+        Feed.left_outer_joins(:subscriptions)
+            .group("feeds.id")
+            .having("COUNT(subscriptions.id) = 0")
+            .count
+            .size
+      end
+    rescue StandardError => e
+      Rails.logger.debug("Error fetching orphaned feeds count: #{e.message}")
+      0
+    end
   end
 
   def destroy
@@ -29,6 +37,14 @@ class Admin::FeedsController < ApplicationController
 
     feed_title = @feed.title
     @feed.destroy
+
+    # Invalidate orphaned feeds cache
+    begin
+      Rails.cache.delete('orphaned_feeds_count')
+    rescue StandardError => e
+      Rails.logger.debug("Error deleting orphaned feeds cache: #{e.message}")
+    end
+
     redirect_to admin_feeds_path, notice: "Feed '#{feed_title}' has been deleted."
   end
 

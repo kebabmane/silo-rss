@@ -6,4 +6,16 @@ class Feed < ApplicationRecord
 
   validates :feed_url, presence: true, uniqueness: true
   validates :title, presence: true
+
+  # Invalidate orphaned feeds cache when feeds are created or destroyed
+  after_create :invalidate_orphaned_feeds_cache
+  after_destroy :invalidate_orphaned_feeds_cache
+
+  private
+
+  def invalidate_orphaned_feeds_cache
+    Rails.cache.delete('orphaned_feeds_count')
+  rescue StandardError => e
+    Rails.logger.debug("Error invalidating orphaned feeds cache: #{e.message}")
+  end
 end
