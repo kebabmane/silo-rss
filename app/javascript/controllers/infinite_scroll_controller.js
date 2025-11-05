@@ -53,6 +53,12 @@ export default class extends Controller {
     this.isLoading = true
     this.lastLoadTime = now
 
+    // CRITICAL FIX: Unobserve the trigger element BEFORE fetching
+    // This prevents the observer from firing multiple times while content is loading
+    if (this.observer) {
+      this.observer.unobserve(this.element)
+    }
+
     // Build URL with page parameter and current filters
     const url = new URL(this.urlValue, window.location.origin)
     url.searchParams.set("page", this.pageValue)
@@ -144,6 +150,12 @@ export default class extends Controller {
     .finally(() => {
       this.pageValue++
       this.isLoading = false
+
+      // Re-observe the trigger element after loading
+      // Check if the element still exists in the DOM (it gets replaced by turbo stream)
+      if (this.element && this.element.isConnected && this.observer) {
+        this.observer.observe(this.element)
+      }
     })
   }
 
