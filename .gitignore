@@ -10,10 +10,10 @@
 
 # === Environment & Secrets ===
 /.env*
+/docker.env
+/.kamal/
 /config/master.key
 /config/credentials.yml.enc
-/.kamal/secrets
-/.kamal/secrets.*
 
 # === Logs & Temporary Files ===
 /log/*
