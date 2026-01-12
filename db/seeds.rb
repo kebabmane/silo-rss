@@ -8,6 +8,21 @@
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
 
+# Auto-create admin user for Home Assistant addon
+if ENV["SILO_ADMIN_EMAIL"].present? && ENV["SILO_ADMIN_PASSWORD"].present?
+  unless User.exists?(email_address: ENV["SILO_ADMIN_EMAIL"])
+    User.create!(
+      email_address: ENV["SILO_ADMIN_EMAIL"],
+      password: ENV["SILO_ADMIN_PASSWORD"],
+      password_confirmation: ENV["SILO_ADMIN_PASSWORD"],
+      admin: true,
+      confirmed_at: Time.current,
+      onboarding_completed_at: Time.current
+    )
+    puts "Created admin user: #{ENV["SILO_ADMIN_EMAIL"]}"
+  end
+end
+
 # Seed default suggested feeds
 default_feeds = [
   # News
