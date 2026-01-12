@@ -16,7 +16,12 @@ Rails.application.configure do
     policy.style_src   :self, :unsafe_inline
     # Allow connecting to self and any HTTPS for fetching feeds
     policy.connect_src :self, :https
-    policy.frame_ancestors :none
+    # Allow embedding in Home Assistant Ingress iframe when RAILS_RELATIVE_URL_ROOT is set
+    if ENV["RAILS_RELATIVE_URL_ROOT"].present?
+      policy.frame_ancestors :self, "*"
+    else
+      policy.frame_ancestors :none
+    end
     policy.base_uri    :self
     policy.form_action :self
   end

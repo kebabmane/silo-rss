@@ -7,6 +7,9 @@ Rails.application.configure do
   # SECRET_KEY_BASE_DUMMY=1 is set during Docker builds to bypass this requirement
   config.require_master_key = !ENV["SECRET_KEY_BASE_DUMMY"]
 
+  # Support relative URL root for Home Assistant Ingress and other reverse proxy setups
+  config.relative_url_root = ENV["RAILS_RELATIVE_URL_ROOT"] if ENV["RAILS_RELATIVE_URL_ROOT"].present?
+
   # Code is not reloaded between requests.
   config.enable_reloading = false
 
@@ -41,11 +44,16 @@ Rails.application.configure do
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # ActionCable allowed origins for WebSocket connections
-  config.action_cable.allowed_request_origins = [
-    "https://#{ENV.fetch('APPLICATION_HOST', 'localhost')}",
-    "http://localhost:3000",  # Local Docker development
-    "http://127.0.0.1:3000"
-  ]
+  if ENV["ACTION_CABLE_ALLOWED_REQUEST_ORIGINS"] == "*"
+    # Allow all origins (for Home Assistant Ingress where HA manages auth)
+    config.action_cable.disable_request_forgery_protection = true
+  else
+    config.action_cable.allowed_request_origins = [
+      "https://#{ENV.fetch('APPLICATION_HOST', 'localhost')}",
+      "http://localhost:3000",  # Local Docker development
+      "http://127.0.0.1:3000"
+    ]
+  end
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
