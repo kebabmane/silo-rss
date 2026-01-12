@@ -20,16 +20,31 @@ module Api
         }
       end
 
-      # GET /api/v1/feeds/browse - returns all available feeds in the system
+      # GET /api/v1/feeds/browse - returns all available feeds in the system (paginated)
       def browse
-        feeds = Feed.all.order(created_at: :desc).limit(100)
-        render json: feeds.map { |feed|
-          {
-            id: feed.id,
-            title: feed.title,
-            feed_url: feed.feed_url,
-            site_url: feed.site_url,
-            last_fetched_at: feed.last_fetched_at
+        limit = params[:limit].present? ? params[:limit].to_i : 50
+        limit = [[limit, 1].max, 100].min # Clamp between 1 and 100
+        offset = params[:offset].present? ? params[:offset].to_i : 0
+        offset = [offset, 0].max
+
+        feeds = Feed.all.order(created_at: :desc)
+        total_count = feeds.count
+        feeds = feeds.limit(limit).offset(offset)
+
+        render json: {
+          feeds: feeds.map { |feed|
+            {
+              id: feed.id,
+              title: feed.title,
+              feed_url: feed.feed_url,
+              site_url: feed.site_url,
+              last_fetched_at: feed.last_fetched_at
+            }
+          },
+          meta: {
+            total: total_count,
+            limit: limit,
+            offset: offset
           }
         }
       end
@@ -43,7 +58,7 @@ module Api
       end
 
       # POST /api/v1/feeds/discover
-      def discover
+    def discover
         discovery_result = FeedDiscoveryService.new(params[:url]).discover
 
         if discovery_result
@@ -63,23 +78,24 @@ module Api
             }
           }, status: :ok
         else
-          render json: { error: 'Feed not found' }, status: :not_found
+          render json: { error: "Feed not found" }, status: :not_found
         end
-      rescue => e
+      rescue SocketError, Timeout::Error, Errno::ECONNREFUSED, HTTParty::Error, Feedjira::NoParserAvailable, URI::InvalidURIError => e
         Rails.logger.warn("API feed discovery failed: #{e.message}")
-        render json: { error: 'Feed not found' }, status: :not_found
+        render json: { error: "Feed not found" }, status: :not_found
       end
 
       # POST /api/v1/feeds
       def create
         feed = Feed.find(params[:feed_id])
-        subscription = current_user.subscriptions.find_or_create_by(feed: feed) do |sub|
-          sub.category = params[:category]
-          sub.custom_name = params[:custom_name]
-        end
+        subscription = current_user.subscriptions.find_by(feed: feed)
 
-        # Trigger background fetch
-        FeedRefreshJob.perform_later(feed.id)
+        # If subscription already exists, return it with 201 (idempotent)
+        unless subscription
+          subscription = current_user.subscriptions.create!(feed: feed, category: params[:category], custom_name: params[:custom_name])
+          # Trigger background fetch
+          FeedRefreshJob.perform_later(feed.id)
+        end
 
         render json: {
           subscription: {
@@ -119,7 +135,7 @@ module Api
         if parsed_feed&.title.present? && feed.title.blank?
           feed.title = parsed_feed.title
         end
-      rescue => e
+      rescue SocketError, Timeout::Error, Errno::ECONNREFUSED, HTTParty::Error, Feedjira::NoParserAvailable => e
         Rails.logger.warn("API feed discovery metadata fetch failed for #{feed.feed_url}: #{e.message}")
       end
     end

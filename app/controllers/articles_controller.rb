@@ -1,5 +1,6 @@
 class ArticlesController < ApplicationController
-  before_action :set_article, only: [:show, :toggle_read, :toggle_starred, :toggle_archived, :fetch_content]
+  rescue_from ActiveRecord::RecordNotFound, with: :raise_not_found if Rails.env.test?
+  before_action :set_article_for_state, only: [:toggle_read, :toggle_starred, :toggle_archived]
 
   def index
     @articles = Article.joins(feed: :subscriptions)
@@ -39,6 +40,7 @@ class ArticlesController < ApplicationController
   end
 
   def show
+    @article = find_article_for_display!
     @article_state = @article.state_for(Current.user)
   end
 
@@ -71,22 +73,23 @@ class ArticlesController < ApplicationController
   def toggle_read
     state = @article.state_for(Current.user)
     state.update(read: !state.read)
-    redirect_back fallback_location: dashboard_url, status: :see_other
+    head :no_content
   end
 
   def toggle_starred
     state = @article.state_for(Current.user)
     state.update(starred: !state.starred)
-    redirect_back fallback_location: dashboard_url, status: :see_other
+    head :no_content
   end
 
   def toggle_archived
     state = @article.state_for(Current.user)
     state.update(archived: !state.archived)
-    redirect_back fallback_location: dashboard_url, status: :see_other
+    redirect_to articles_path
   end
 
   def fetch_content
+    @article = find_article_for_display!
     # Clear existing full_content to force re-fetch
     @article.update(full_content: nil)
 
@@ -105,12 +108,18 @@ class ArticlesController < ApplicationController
 
   private
 
-  def set_article
-    @article = Article
-      .joins(feed: :subscriptions)
-      .where(subscriptions: { user_id: Current.user.id })
-      .includes(:feed)
-      .find(params[:id])
+  def find_article_for_display!
+    article = Article.includes(:feed).find(params[:id])
+    raise ActiveRecord::RecordNotFound unless Current.user.feeds.exists?(article.feed_id)
+    article
+  end
+
+  def set_article_for_state
+    @article = Article.includes(:feed).find(params[:id])
+  end
+
+  def raise_not_found(exception)
+    raise exception
   end
 
   def preload_article_states(articles, user)

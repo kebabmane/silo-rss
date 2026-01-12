@@ -148,8 +148,8 @@ class UserAuthenticationFlowTest < ActionDispatch::IntegrationTest
     # Session should be destroyed
     assert_not Session.exists?(current_session.id)
 
-    # Cookie should be deleted
-    assert_nil cookies[:session_id]
+    # Cookie should be deleted (returns empty string in tests)
+    assert cookies[:session_id].blank?
   end
 
   test "authentication required for protected pages" do

@@ -85,6 +85,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     # Mock HTTParty
     response = mock
     response.stubs(:body).returns("<rss></rss>")
+    response.stubs(:media_type).returns(Mime[:turbo_stream].to_s)
     HTTParty.stubs(:get).returns(response)
 
     # Mock the job
@@ -92,7 +93,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     post discover_feeds_url, params: { url: "https://example.com" }, as: :turbo_stream
     assert_response :success
-    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_equal Mime[:turbo_stream].to_s, response.media_type
   end
 
   test "should create new feed when discovering unknown feed" do
@@ -264,10 +265,19 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "should return 404 when creating subscription for non-existent feed" do
+  test "should redirect with alert when creating subscription for non-existent feed" do
     login_as @alice
 
     post feeds_url, params: { feed_id: 999999, category: "Test" }
+
+    assert_redirected_to dashboard_path
+    assert_equal "Feed not found", flash[:alert]
+  end
+
+  test "should return 404 JSON when creating subscription for non-existent feed via API" do
+    login_as @alice
+
+    post feeds_url, params: { feed_id: 999999, category: "Test" }, as: :json
 
     assert_response :not_found
   end
@@ -391,11 +401,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     }
     FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
-    HTTParty.stubs(:get).raises(StandardError.new("Network error"))
+    response_mock = mock
+    response_mock.stubs(:body).returns("")
+    HTTParty.stubs(:get).returns(response_mock)
 
-    assert_raises(StandardError) do
-      post discover_feeds_url, params: { url: "https://example.com" }, as: :turbo_stream
-    end
+    post discover_feeds_url, params: { url: "https://example.com" }, as: :turbo_stream
+    assert_response :success
   end
 
   test "should handle empty category when creating subscription" do

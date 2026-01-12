@@ -21,26 +21,73 @@ class FeedsController < ApplicationController
       if @feed.new_record?
         @feed.site_url = discovery_result[:site_url]
         fetch_initial_metadata(@feed)
-        @feed.save
-        FeedRefreshJob.perform_later(@feed.id)
+        @feed.save(validate: false)
       end
+
+      FeedRefreshJob.perform_later(@feed.id)
 
       @existing_categories = Current.user.subscriptions.distinct.pluck(:category).compact.sort
 
-      render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovered_feed", locals: { feed: @feed, existing_categories: @existing_categories })
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovered_feed", locals: { feed: @feed, existing_categories: @existing_categories }), formats: :turbo_stream
+        end
+        format.html do
+          render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovered_feed", locals: { feed: @feed, existing_categories: @existing_categories }), formats: :turbo_stream
+        end
+      end
     else
-      render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error")
+      respond_to do |format|
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
+        format.html { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
+      end
+    end
+  rescue SocketError, Timeout::Error, Errno::ECONNREFUSED, HTTParty::Error, Feedjira::NoParserAvailable, URI::InvalidURIError => e
+    Rails.logger.warn("Feed discovery error: #{e.message}")
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
+      format.html { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
     end
   end
 
   def create
-    @feed = Feed.find(params[:feed_id])
-    @subscription = Current.user.subscriptions.find_or_create_by(feed: @feed) do |sub|
-      sub.category = params[:category]
-      sub.custom_name = params[:custom_name]
+    @feed = find_or_create_feed_from_params
+    unless @feed
+      respond_to do |format|
+        format.html { redirect_to dashboard_path, alert: "Feed not found" }
+        format.json { render json: { error: "Feed not found" }, status: :not_found }
+      end
+      return
     end
 
-    redirect_to dashboard_path, notice: "Feed added successfully"
+    @subscription = Current.user.subscriptions.find_by(feed: @feed)
+
+    if @subscription
+      # Idempotent: return success for existing subscriptions
+      respond_to do |format|
+        format.html { redirect_to dashboard_path, notice: "Feed added successfully" }
+        format.json { render json: { status: "already_subscribed", feed_id: @feed.id }, status: :ok }
+        format.turbo_stream { head :ok }
+      end
+      return
+    end
+
+    @subscription = Current.user.subscriptions.build(feed: @feed, category: params[:category], custom_name: params[:custom_name])
+
+    if @subscription.save
+      FeedRefreshJob.perform_later(@feed.id)
+      respond_to do |format|
+        format.html { redirect_to dashboard_path, notice: "Feed added successfully" }
+        format.json { render json: { status: "subscribed", feed_id: @feed.id }, status: :created }
+        format.turbo_stream { head :created }
+      end
+    else
+      respond_to do |format|
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { errors: @subscription.errors.full_messages }, status: :unprocessable_entity }
+        format.turbo_stream { head :unprocessable_entity }
+      end
+    end
   end
 
   def destroy
@@ -70,9 +117,9 @@ class FeedsController < ApplicationController
 
     count = OpmlService.import(Current.user, file)
     redirect_to dashboard_path, notice: "Successfully imported #{count} feeds"
-  rescue => e
+  rescue Nokogiri::XML::SyntaxError, ArgumentError => e
     Rails.logger.error("OPML import failed: #{e.message}")
-    redirect_to feeds_path, alert: "Failed to import OPML file."
+    redirect_to feeds_path, alert: "Failed to import OPML file. Please ensure it's a valid OPML format."
   end
 
   def refresh_all
@@ -91,15 +138,44 @@ class FeedsController < ApplicationController
 
   def set_feed
     @feed = Current.user.feeds.find_by(id: params[:id])
-
     return if @feed
 
-    redirect_to feeds_path, alert: "Feed not found."
-    throw :abort
+    # If the feed exists but not subscribed, redirect for HTML, 404 otherwise.
+    feed_exists = Feed.exists?(id: params[:id])
+    respond_to do |format|
+      format.html do
+        if feed_exists
+          redirect_to feeds_path, alert: "Feed not found."
+        else
+          head :not_found
+        end
+      end
+      format.any { head(feed_exists ? :not_found : :not_found) }
+    end
   end
 
   def subscription_params
     params.require(:subscription).permit(:category, :custom_name)
+  end
+
+  def find_or_create_feed_from_params
+    # First try to find an existing Feed
+    feed = Feed.find_by(id: params[:feed_id])
+    return feed if feed
+
+    # If not found, check if it's a SuggestedFeed ID
+    suggested_feed = SuggestedFeed.find_by(id: params[:feed_id])
+    return nil unless suggested_feed
+
+    # Create or find a Feed from the SuggestedFeed's URL
+    feed = Feed.find_or_initialize_by(feed_url: suggested_feed.feed_url)
+    if feed.new_record?
+      feed.title = suggested_feed.title
+      feed.site_url = suggested_feed.site_url
+      fetch_initial_metadata(feed)
+      feed.save(validate: false)
+    end
+    feed
   end
 
   def fetch_initial_metadata(feed)
@@ -111,7 +187,7 @@ class FeedsController < ApplicationController
     if parsed_feed&.title.present? && feed.title.blank?
       feed.title = parsed_feed.title
     end
-  rescue => e
+  rescue SocketError, Timeout::Error, Errno::ECONNREFUSED, HTTParty::Error, Feedjira::NoParserAvailable => e
     Rails.logger.warn("Feed discovery metadata fetch failed for #{feed.feed_url}: #{e.message}")
   end
 end

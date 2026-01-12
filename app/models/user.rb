@@ -39,7 +39,6 @@ class User < ApplicationRecord
             confirmation: true,
             length: { minimum: PASSWORD_MIN_LENGTH, maximum: ActiveModel::SecurePassword::MAX_PASSWORD_LENGTH_ALLOWED },
             if: :password_attribute_assigned?
-  validates :password_confirmation, presence: true, if: :password_attribute_assigned?
   TIME_ZONE_OPTIONS = ActiveSupport::TimeZone.all.map do |tz|
     [tz.to_s, tz.tzinfo.name]
   end.freeze
@@ -134,7 +133,8 @@ class User < ApplicationRecord
   end
 
   def issue_api_token!
-    raise UnconfirmedUserError unless confirmed?
+    # Only require confirmation if admin confirmation setting is enabled
+    raise UnconfirmedUserError if Setting.require_admin_confirmation? && !confirmed?
 
     token = SecureRandom.hex(32)
     digest = self.class.token_digest(token)

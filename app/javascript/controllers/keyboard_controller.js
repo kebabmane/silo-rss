@@ -4,16 +4,25 @@ export default class extends Controller {
   connect() {
     this.currentArticleIndex = 0
     this.articles = []
-    document.addEventListener("keydown", this.handleKeyPress.bind(this))
+    this.boundHandleKeyPress = this.handleKeyPress.bind(this)
+    document.addEventListener("keydown", this.boundHandleKeyPress)
   }
 
   disconnect() {
-    document.removeEventListener("keydown", this.handleKeyPress.bind(this))
+    document.removeEventListener("keydown", this.boundHandleKeyPress)
   }
 
   handleKeyPress(event) {
-    // Don't trigger shortcuts if user is typing in an input
-    if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") {
+    // Don't trigger shortcuts if user is typing in an input or editable element
+    const target = event.target
+    const tagName = target.tagName
+    if (
+      tagName === "INPUT" ||
+      tagName === "TEXTAREA" ||
+      tagName === "SELECT" ||
+      target.isContentEditable ||
+      target.closest('[contenteditable="true"]')
+    ) {
       return
     }
 
@@ -66,17 +75,21 @@ export default class extends Controller {
   }
 
   toggleRead() {
-    const button = document.querySelector('[data-turbo-method="patch"][formaction*="toggle_read"]')
+    // button_to creates a form with action, find the form and click its button
+    const form = document.querySelector('form[action*="toggle_read"]')
+    const button = form?.querySelector('button')
     if (button) button.click()
   }
 
   toggleStar() {
-    const button = document.querySelector('[data-turbo-method="patch"][formaction*="toggle_starred"]')
+    const form = document.querySelector('form[action*="toggle_starred"]')
+    const button = form?.querySelector('button')
     if (button) button.click()
   }
 
   archive() {
-    const button = document.querySelector('[data-turbo-method="patch"][formaction*="toggle_archived"]')
+    const form = document.querySelector('form[action*="toggle_archived"]')
+    const button = form?.querySelector('button')
     if (button) button.click()
   }
 

@@ -1,0 +1,32 @@
+{
+  "name": "feed_reader",
+  "version": "1.0.0",
+  "description": "Silo is your personal internet inbox: a modern, self-hosted RSS/Atom feed reader built with Rails 8. Curate the sites you care about, catch up with daily briefs, and read in a calm three-pane interface with dark mode, keyboard shortcuts, and powerful feed management tools.",
+  "main": "tailwind.config.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test:js": "vitest",
+    "test:js:ui": "vitest --ui"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kebabmane/silo-rss.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kebabmane/silo-rss/issues"
+  },
+  "homepage": "https://github.com/kebabmane/silo-rss#readme",
+  "devDependencies": {
+    "@hotwired/stimulus": "^3.2.2",
+    "happy-dom": "^20.0.10",
+    "vitest": "^4.0.13"
+  }
+}

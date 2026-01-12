@@ -4,6 +4,7 @@ class Subscription < ApplicationRecord
 
   validates :user_id, uniqueness: { scope: :feed_id }
   normalizes :category, with: ->(value) { value&.strip.presence }
+  normalizes :custom_name, with: ->(value) { value&.strip.presence }
 
   # Invalidate orphaned feeds cache when subscriptions change
   after_create :invalidate_orphaned_feeds_cache

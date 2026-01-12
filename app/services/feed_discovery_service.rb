@@ -35,7 +35,7 @@ class FeedDiscoveryService
     uri = UrlSafety.safe_uri_for(url)
     return false unless uri
 
-    response = HTTParty.get(uri.to_s, timeout: 10)
+    response = HTTParty.get(uri.to_s, timeout: 5)
     content_type = response.headers["content-type"]
 
     # Check if it's an RSS/Atom feed by content type or by parsing

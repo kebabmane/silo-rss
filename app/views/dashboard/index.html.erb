@@ -135,11 +135,13 @@
                 <time datetime="<%= @selected_article.published_at.iso8601 %>" class="text-gray-500 dark:text-gray-500"><%= format_user_time(@selected_article.published_at, style: :long_date) %></time>
               <% end %>
             </div>
-            <div class="flex items-center gap-2">
-              <a href="<%= @selected_article.url %>" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full text-blue-600 dark:text-blue-300 border border-transparent hover:bg-blue-50 dark:hover:bg-blue-900/30 transition whitespace-nowrap">
-                View Original →
-              </a>
-            </div>
+            <% if @selected_article.url.present? %>
+              <div class="flex items-center gap-2">
+                <a href="<%= @selected_article.url %>" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full text-blue-600 dark:text-blue-300 border border-transparent hover:bg-blue-50 dark:hover:bg-blue-900/30 transition whitespace-nowrap">
+                  View Original →
+                </a>
+              </div>
+            <% end %>
           </div>
         </header>
 
@@ -181,7 +183,7 @@
       <!-- Auto-mark as read -->
       <% unless state.read? %>
         <%= turbo_stream_from "article_#{@selected_article.id}" %>
-        <script>
+        <script nonce="<%= request.content_security_policy_nonce %>">
           setTimeout(() => {
             fetch('<%= toggle_read_article_path(@selected_article) %>', {
               method: 'PATCH',

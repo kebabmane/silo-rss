@@ -54,7 +54,10 @@ class OpmlImportExportFlowTest < ActionDispatch::IntegrationTest
   test "export filename includes current date" do
     get export_opml_feeds_path
 
-    expected_filename = "silo_export_#{Date.current}.opml"
+    # Use the user's time zone for the date
+    time_zone = @user.time_zone
+    current_date = Time.now.in_time_zone(time_zone).to_date
+    expected_filename = "silo_export_#{current_date}.opml"
     assert_match expected_filename, response.headers["Content-Disposition"]
   end
 

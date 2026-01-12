@@ -19,13 +19,27 @@ class Setting < ApplicationRecord
     end
 
     def require_admin_confirmation=(value)
-      # Convert boolean to string "true" or "false"
-      string_value = value ? "true" : "false"
+      bool_value = ActiveModel::Type::Boolean.new.cast(value)
+      string_value = bool_value ? "true" : "false"
       set("require_admin_confirmation", string_value)
     end
   end
 
   def self.require_admin_confirmation
     require_admin_confirmation?
+  end
+
+  def self.push_notifications_enabled?
+    get("push_notifications_enabled", "false") == "true"
+  end
+
+  def self.push_notifications_enabled=(value)
+    # Convert boolean to string "true" or "false"
+    string_value = value ? "true" : "false"
+    set("push_notifications_enabled", string_value)
+  end
+
+  def self.push_notifications_enabled
+    push_notifications_enabled?
   end
 end

@@ -2,8 +2,8 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     # Allow requests from any origin during development
-    # In production, replace '*' with specific mobile app origins
-    origins Rails.env.production? ? ENV.fetch("CORS_ORIGINS", "*").split(",") : "*"
+    # In production, CORS_ORIGINS must be set (no wildcard fallback for security)
+    origins Rails.env.production? ? (ENV["CORS_ORIGINS"]&.split(",") || []) : "*"
 
     resource "/api/*",
       headers: :any,

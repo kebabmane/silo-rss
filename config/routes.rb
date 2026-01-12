@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  # Favicon redirect (browsers request this automatically)
+  get "favicon.ico", to: redirect("/icon.png")
+
+  # Service Worker
+  get "service-worker", to: "service_worker#show", format: :js
+
   # Authentication
   resource :session
   resources :passwords, param: :token

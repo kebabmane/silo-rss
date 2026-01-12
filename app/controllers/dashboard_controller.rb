@@ -112,8 +112,8 @@ class DashboardController < ApplicationController
     respond_to do |format|
       format.turbo_stream
     end
-  rescue StandardError => e
-    # Handle any errors (invalid page, etc.)
+  rescue Pagy::OverflowError
+    # Handle invalid page numbers (e.g., page exceeds total pages)
     @articles = []
     respond_to do |format|
       format.turbo_stream { render :more_articles }

@@ -268,3 +268,4 @@ class UserLoginTest < ApplicationSystemTestCase
     # Should successfully log in due to email normalization
     assert_current_path dashboard_path
   end
+end

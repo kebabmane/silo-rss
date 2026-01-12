@@ -496,3 +496,4 @@ class ArticleStateManagementTest < ApplicationSystemTestCase
     # Starred articles should have visual indicator (e.g., star icon)
     assert_text @article.title
   end
+end

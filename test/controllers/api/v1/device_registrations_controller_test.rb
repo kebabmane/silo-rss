@@ -5,9 +5,16 @@ module Api
     class DeviceRegistrationsControllerTest < ActionDispatch::IntegrationTest
       setup do
         @user = users(:alice)
+        # Enable push notifications for tests
+        Setting.push_notifications_enabled = true
       end
 
-      test "register device token" do
+      teardown do
+        # Reset to default disabled state
+        Setting.push_notifications_enabled = false
+      end
+
+      test "register device token when enabled" do
         assert_difference -> { DeviceRegistration.where(user: @user).count }, 1 do
           post api_v1_device_registrations_url,
                params: { device: { device_token: "token-123", platform: "android" } },
@@ -21,7 +28,21 @@ module Api
         assert_not_nil registration.last_seen_at
       end
 
-      test "register updates existing token" do
+      test "register device token when disabled (returns success but no-op)" do
+        Setting.push_notifications_enabled = false
+
+        assert_no_difference -> { DeviceRegistration.where(user: @user).count } do
+          post api_v1_device_registrations_url,
+               params: { device: { device_token: "token-456", platform: "ios" } },
+               headers: api_headers(@user),
+               as: :json
+        end
+
+        # Still returns success for idempotency
+        assert_response :created
+      end
+
+      test "register updates existing token when enabled" do
         DeviceRegistration.create!(user: @user, device_token: "token-xyz", platform: "ios")
 
         assert_no_difference -> { DeviceRegistration.where(user: @user).count } do
@@ -36,7 +57,7 @@ module Api
         assert_equal "android", registration.platform
       end
 
-      test "destroy registration" do
+      test "destroy registration when enabled" do
         DeviceRegistration.create!(user: @user, device_token: "token-abc", platform: "android")
 
         assert_difference -> { DeviceRegistration.where(user: @user).count }, -1 do
@@ -48,12 +69,25 @@ module Api
         assert_response :no_content
       end
 
-      test "destroy ignores missing token" do
+      test "destroy when disabled returns success (no-op)" do
+        DeviceRegistration.create!(user: @user, device_token: "token-def", platform: "android")
+        Setting.push_notifications_enabled = false
+
+        assert_no_difference -> { DeviceRegistration.where(user: @user).count } do
+          delete api_v1_device_registration_url("token-def"),
+                 headers: api_headers(@user),
+                 as: :json
+        end
+
+        assert_response :no_content
+      end
+
+      test "destroy missing token returns success" do
         delete api_v1_device_registration_url("missing"),
                headers: api_headers(@user),
                as: :json
 
-        assert_response :not_found
+        assert_response :no_content
       end
 
       test "create requires auth" do

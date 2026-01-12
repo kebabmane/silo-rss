@@ -10,7 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_18_035637) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_04_203722) do
+  create_table "action_push_native_devices", force: :cascade do |t|
+    t.string "name"
+    t.string "platform", null: false
+    t.string "token", null: false
+    t.string "owner_type"
+    t.integer "owner_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_type", "owner_id"], name: "index_action_push_native_devices_on_owner"
+  end
+
   create_table "article_states", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "article_id", null: false
@@ -82,6 +93,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_18_035637) do
     t.index ["generated_at"], name: "index_daily_briefs_on_generated_at"
     t.index ["user_id", "generated_at"], name: "index_daily_briefs_on_user_id_and_generated_at"
     t.index ["user_id"], name: "index_daily_briefs_on_user_id"
+  end
+
+  create_table "device_registrations", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "device_token", null: false
+    t.string "platform", default: "android", null: false
+    t.datetime "last_seen_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["device_token"], name: "index_device_registrations_on_device_token"
+    t.index ["user_id", "device_token"], name: "index_device_registrations_on_user_id_and_device_token", unique: true
+    t.index ["user_id", "platform"], name: "index_device_registrations_on_user_id_and_platform"
+    t.index ["user_id"], name: "index_device_registrations_on_user_id"
   end
 
   create_table "feeds", force: :cascade do |t|
@@ -300,6 +324,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_18_035637) do
   add_foreign_key "daily_brief_schedules", "users"
   add_foreign_key "daily_briefs", "daily_brief_schedules"
   add_foreign_key "daily_briefs", "users"
+  add_foreign_key "device_registrations", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

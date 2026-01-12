@@ -1,5 +1,4 @@
-class Admin::FeedsController < ApplicationController
-  before_action :ensure_admin!
+class Admin::FeedsController < AdminController
   before_action :set_feed, only: [:destroy]
 
   def index
@@ -52,9 +51,5 @@ class Admin::FeedsController < ApplicationController
 
   def set_feed
     @feed = Feed.find(params[:id])
-  end
-
-  def ensure_admin!
-    redirect_to dashboard_path, alert: "Access denied." unless Current.user&.admin?
   end
 end

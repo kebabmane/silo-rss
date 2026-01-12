@@ -13,7 +13,7 @@ class Admin::SettingsControllerTest < ActionDispatch::IntegrationTest
     get admin_settings_url
 
     assert_redirected_to dashboard_path
-    assert_equal "Access denied.", flash[:alert]
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   test "requires admin authentication for update" do
@@ -22,7 +22,7 @@ class Admin::SettingsControllerTest < ActionDispatch::IntegrationTest
     patch admin_settings_url, params: { require_admin_confirmation: "1" }
 
     assert_redirected_to dashboard_path
-    assert_equal "Access denied.", flash[:alert]
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   test "redirects to login when not authenticated" do
@@ -111,12 +111,16 @@ class Admin::SettingsControllerTest < ActionDispatch::IntegrationTest
     assert_not Setting.require_admin_confirmation?
   end
 
-  test "update with nil sets to false" do
+  test "update with nil does not change existing setting" do
     login_as @admin
+    # Set initial value
+    Setting.set("require_admin_confirmation", "true")
 
+    # Update with empty params doesn't change the setting
     patch admin_settings_url, params: {}
 
-    assert_not Setting.require_admin_confirmation?
+    # Setting should remain unchanged
+    assert Setting.require_admin_confirmation?
   end
 
   test "update with empty string sets to false" do

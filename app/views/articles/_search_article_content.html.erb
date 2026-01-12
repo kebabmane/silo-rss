@@ -1,53 +1,63 @@
 <% if article %>
   <% state = article.state_for(Current.user) %>
-  <article class="max-w-4xl mx-auto p-8">
-    <header class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-        <%= article.title %>
-      </h1>
-      <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-        <div>
-          <span><%= article.feed.title %></span>
-          <span class="mx-2">•</span>
-          <span><%= format_user_time(article.published_at, style: :long_date) %></span>
+  <article class="max-w-2xl mx-auto px-6 py-10 md:px-8 md:py-12 space-y-8">
+    <header class="space-y-4 mb-8">
+      <div class="space-y-3">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-snug">
+          <%= article.title %>
+        </h1>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-4 text-base text-gray-600 dark:text-gray-400">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="font-semibold text-gray-700 dark:text-gray-300"><%= article.feed.title %></span>
+          <% if article.published_at.present? %>
+            <span aria-hidden="true">•</span>
+            <time datetime="<%= article.published_at.iso8601 %>" class="text-gray-500 dark:text-gray-500"><%= format_user_time(article.published_at, style: :long_date) %></time>
+          <% end %>
         </div>
-        <a href="<%= article.url %>" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
-          View Original →
-        </a>
+        <% if article.url.present? %>
+          <div class="flex items-center gap-2">
+            <a href="<%= article.url %>" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full text-blue-600 dark:text-blue-300 border border-transparent hover:bg-blue-50 dark:hover:bg-blue-900/30 transition whitespace-nowrap">
+              View Original →
+            </a>
+          </div>
+        <% end %>
       </div>
     </header>
 
+    <% base_toolbar_classes = "inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
+
     <!-- Article Actions -->
-    <div class="mb-6 flex space-x-2">
+    <div class="flex flex-wrap items-center gap-3">
       <%= button_to toggle_read_article_path(article),
           method: :patch,
-          class: "px-3 py-1 text-sm rounded-md border #{state.read? ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600' : 'bg-blue-50 dark:bg-blue-900 border-blue-300 dark:border-blue-700'} text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600",
+          class: "#{base_toolbar_classes} #{state.read? ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700' : 'bg-blue-50 dark:bg-blue-900/50 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800/60'}",
           data: { turbo: false } do %>
         <%= state.read? ? "Mark Unread" : "Mark Read" %>
       <% end %>
 
       <%= button_to toggle_starred_article_path(article),
           method: :patch,
-          class: "px-3 py-1 text-sm rounded-md border #{state.starred? ? 'bg-yellow-50 dark:bg-yellow-900 border-yellow-300 dark:border-yellow-700' : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600'} text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600",
+          class: "#{base_toolbar_classes} #{state.starred? ? 'bg-amber-50 dark:bg-amber-900/50 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-800/60' : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}",
           data: { turbo: false } do %>
         <%= state.starred? ? "⭐ Starred" : "☆ Star" %>
       <% end %>
 
       <%= button_to toggle_archived_article_path(article),
           method: :patch,
-          class: "px-3 py-1 text-sm rounded-md border bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600" do %>
+          class: "#{base_toolbar_classes} bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700" do %>
         Archive
       <% end %>
 
       <%= button_to fetch_content_article_path(article),
           method: :post,
-          class: "px-3 py-1 text-sm rounded-md border #{article.full_content_fetched? ? 'bg-green-100 dark:bg-green-800 border-green-400 dark:border-green-600 text-green-800 dark:text-green-100' : 'bg-purple-100 dark:bg-purple-800 border-purple-400 dark:border-purple-600 text-purple-800 dark:text-purple-100'} hover:opacity-80" do %>
+          class: "#{base_toolbar_classes} #{article.full_content_fetched? ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-800/50' : 'bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-800/50'}" do %>
         <%= article.full_content_fetched? ? "🔄 Re-fetch Content" : "📥 Fetch Full Content" %>
       <% end %>
     </div>
 
     <!-- Article Content -->
-    <div class="prose max-w-none article-content">
+    <div class="prose prose-base dark:prose-invert max-w-none article-content leading-relaxed [&_p]:leading-relaxed [&_p]:text-gray-700 [&_p]:dark:text-gray-300 [&_p]:text-base [&_li]:text-gray-700 [&_li]:dark:text-gray-300">
       <%= sanitize article.display_content, tags: %w[div p br strong em a h1 h2 h3 h4 h5 h6 ul ol li blockquote img pre code span table thead tbody tr th td], attributes: %w[href src alt class] %>
     </div>
   </article>
@@ -55,7 +65,7 @@
   <!-- Auto-mark as read -->
   <% unless state.read? %>
     <%= turbo_stream_from "article_#{article.id}" %>
-    <script>
+    <script nonce="<%= request.content_security_policy_nonce %>">
       setTimeout(() => {
         fetch('<%= toggle_read_article_path(article) %>', {
           method: 'PATCH',
@@ -67,7 +77,19 @@
     </script>
   <% end %>
 <% else %>
-  <div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-    <p>Select an article to read</p>
+  <div class="flex items-center justify-center h-full">
+    <div class="text-center max-w-sm px-6">
+      <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full">
+        <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        Select an article to read
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        Click on an article from the search results to view its content
+      </p>
+    </div>
   </div>
 <% end %>

@@ -219,21 +219,23 @@ module Api
                          .where(subscriptions: { user_id: current_user.id })
                          .where(id: article_ids)
 
-        case action_name
-        when 'mark_read'
-          articles.each do |article|
-            state = article.state_for(current_user)
-            state.update(read: value)
-          end
-        when 'mark_starred'
-          articles.each do |article|
-            state = article.state_for(current_user)
-            state.update(starred: value)
-          end
-        when 'mark_archived'
-          articles.each do |article|
-            state = article.state_for(current_user)
-            state.update(archived: value)
+        ActiveRecord::Base.transaction do
+          case action_name
+          when 'mark_read'
+            articles.each do |article|
+              state = article.state_for(current_user)
+              state.update!(read: value)
+            end
+          when 'mark_starred'
+            articles.each do |article|
+              state = article.state_for(current_user)
+              state.update!(starred: value)
+            end
+          when 'mark_archived'
+            articles.each do |article|
+              state = article.state_for(current_user)
+              state.update!(archived: value)
+            end
           end
         end
 
@@ -253,10 +255,12 @@ module Api
                           .where(subscriptions: { category: category, user_id: current_user.id }) if category.present?
 
         count = 0
-        articles.each do |article|
-          state = article.state_for(current_user)
-          state.update(read: true) unless state.read
-          count += 1
+        ActiveRecord::Base.transaction do
+          articles.each do |article|
+            state = article.state_for(current_user)
+            state.update!(read: true) unless state.read
+            count += 1
+          end
         end
 
         render json: { success: true, marked_count: count }

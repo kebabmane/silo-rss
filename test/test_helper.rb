@@ -22,6 +22,10 @@ require "mocha/minitest"
 # Disable external HTTP requests during tests
 WebMock.disable_net_connect!(allow_localhost: true)
 
+# Ensure exceptions bubble up in integration/controller tests
+Rails.application.env_config["action_dispatch.show_exceptions"] = false
+Rails.application.env_config["action_dispatch.show_detailed_exceptions"] = false
+
 module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
@@ -32,7 +36,8 @@ module ActiveSupport
 
     # Reset Settings between tests to prevent state leakage
     setup do
-      Setting.require_admin_confirmation = false
+      Rails.cache.clear
+      Setting.require_admin_confirmation = true
     end
 
     # Add more helper methods to be used by all tests here...

@@ -94,9 +94,8 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
 
   test "should return 404 for non-existent article" do
     login_as @alice
-    assert_raises(ActiveRecord::RecordNotFound) do
-      get article_url(id: 999999)
-    end
+    get article_url(id: 999999)
+    assert_response :not_found
   end
 
   # Search action tests
@@ -324,9 +323,8 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
 
   test "should return 404 when fetching content for non-existent article" do
     login_as @alice
-    assert_raises(ActiveRecord::RecordNotFound) do
-      post fetch_content_article_url(id: 999999)
-    end
+    post fetch_content_article_url(id: 999999)
+    assert_response :not_found
   end
 
   # User isolation tests

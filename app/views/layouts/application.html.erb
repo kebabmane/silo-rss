@@ -16,9 +16,17 @@
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+
+    <script nonce="<%= content_security_policy_nonce %>">
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker', { scope: '/' })
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed:', err));
+      }
+    </script>
   </head>
 
-  <body class="h-full bg-gray-100 dark:bg-black" data-controller="keyboard theme">
+  <body class="h-full bg-gray-100 dark:bg-gray-950" data-controller="keyboard theme">
     <% if Current.user %>
       <nav class="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-10" role="navigation" aria-label="Main navigation">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,50 +50,55 @@
                 </div>
               <% end %>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3">
               <%= link_to "Add Feed", new_feed_path, class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2", aria_label: "Add new feed" %>
+
+              <div class="relative dropdown-trigger" data-controller="dropdown">
+                <details class="nav-menu">
+                  <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="Menu" aria-label="Menu" onclick="event.preventDefault()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                    </svg>
+                    <span>Menu</span>
+                  </summary>
+                  <div class="absolute right-0 mt-2 z-30 w-52 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
+                    <%= link_to "Sync Feeds", refresh_all_feeds_path, data: { turbo_method: :post }, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", aria_label: "Synchronize all feeds" %>
+                    <hr class="my-1 border-gray-200 dark:border-gray-700" />
+                    <%= link_to "Daily Briefs", daily_briefs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+                    <%= link_to "Settings", settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+                    <hr class="my-1 border-gray-200 dark:border-gray-700" />
+                    <button type="button" data-action="click->focus-mode#toggle" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="Toggle focus mode">
+                      Focus Mode
+                    </button>
+                    <button type="button" data-action="click->keyboard#showHelp" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="Show keyboard shortcuts">
+                      Keyboard Shortcuts
+                    </button>
+                  </div>
+                </details>
+              </div>
 
               <% if Current.user&.admin? %>
                 <div class="relative dropdown-trigger" data-controller="dropdown">
                   <details class="nav-menu">
-                    <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="Admin panel" aria-label="Admin menu" onclick="event.preventDefault()">
+                    <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="Admin Menu" aria-label="Admin Menu" onclick="event.preventDefault()">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                       <span>Admin</span>
                     </summary>
-                    <div class="absolute right-0 mt-2 z-30 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
+                    <div class="absolute right-0 mt-2 z-30 w-52 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
                       <%= link_to "Dashboard", admin_root_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
                       <%= link_to "Users", admin_users_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
                       <%= link_to "Suggested Feeds", admin_suggested_feeds_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                      <hr class="my-1 border-gray-200 dark:border-gray-700" />
                       <%= link_to "Settings", admin_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
                       <%= link_to "Jobs", mission_control_jobs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                      <%= link_to "Daily Brief Prompt", admin_daily_brief_prompts_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Daily Brief Prompts", admin_daily_brief_prompts_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
                       <%= link_to "LiteLLM Settings", admin_litellm_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
                     </div>
                   </details>
                 </div>
               <% end %>
-
-              <div class="relative dropdown-trigger" data-controller="dropdown">
-                <details class="nav-menu">
-                  <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="More options" aria-label="Menu" onclick="event.preventDefault()">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                    </svg>
-                    <span>More</span>
-                  </summary>
-                  <div class="absolute right-0 mt-2 z-30 w-48 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
-                    <%= link_to "Sync Feeds", refresh_all_feeds_path, data: { turbo_method: :post }, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", aria_label: "Synchronize all feeds" %>
-                    <button type="button" onclick="window.location.reload()" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Refresh view">
-                      Refresh View
-                    </button>
-                    <hr class="my-1 border-gray-200 dark:border-gray-700" />
-                    <%= link_to "Daily Briefs", daily_briefs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-                    <%= link_to "Settings", settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-                  </div>
-                </details>
-              </div>
 
               <button data-action="click->theme#toggle" class="inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Toggle dark mode">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -112,14 +125,14 @@
       </main>
     <% else %>
       <!-- Theme toggle for public pages -->
-      <div class="fixed top-4 right-4 z-50">
-        <button data-controller="theme" data-action="click->theme#toggle" class="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700" aria-label="Toggle dark mode">
+      <div class="fixed top-4 right-4 z-50" data-controller="theme">
+        <button data-action="click->theme#toggle" class="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700" aria-label="Toggle dark mode">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
           </svg>
         </button>
       </div>
-      <main class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <main class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950">
         <%= yield %>
       </main>
     <% end %>

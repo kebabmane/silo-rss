@@ -3,8 +3,9 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
-  # Require the master key for encrypted credentials (Rails 8 requirement)
-  config.require_master_key = true
+  # Only require master key at runtime, not during asset precompilation builds
+  # SECRET_KEY_BASE_DUMMY=1 is set during Docker builds to bypass this requirement
+  config.require_master_key = !ENV["SECRET_KEY_BASE_DUMMY"]
 
   # Code is not reloaded between requests.
   config.enable_reloading = false
@@ -27,14 +28,24 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  config.assume_ssl = true
+  # Allow HTTP for local Docker development (set DISABLE_SSL=true in .env)
+  unless ENV["DISABLE_SSL"]
+    # Assume all access to the app is happening through a SSL-terminating reverse proxy.
+    config.assume_ssl = true
 
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+    # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+    config.force_ssl = true
+  end
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+
+  # ActionCable allowed origins for WebSocket connections
+  config.action_cable.allowed_request_origins = [
+    "https://#{ENV.fetch('APPLICATION_HOST', 'localhost')}",
+    "http://localhost:3000",  # Local Docker development
+    "http://127.0.0.1:3000"
+  ]
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]

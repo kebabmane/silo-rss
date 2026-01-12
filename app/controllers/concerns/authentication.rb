@@ -55,13 +55,14 @@ module Authentication
           value: session.id,
           httponly: true,
           same_site: :lax,
-          secure: Rails.env.production?
+          secure: Rails.env.production? && !ENV["DISABLE_SSL"]
         }
       end
     end
 
     def terminate_session
       Current.session&.destroy
+      Current.session = nil
       Current.time_zone = nil
       cookies.delete(:session_id)
     end

@@ -1,14 +1,22 @@
-<div class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4" data-controller="onboarding">
-  <div class="bg-white dark:bg-gray-950 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+<% subscribed_feed_urls = @subscriptions.map { |s| s.feed.feed_url } %>
+
+<div class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4"
+     data-controller="onboarding"
+     data-onboarding-feeds-path-value="<%= feeds_path %>"
+     data-onboarding-mark-completed-path-value="<%= mark_onboarding_completed_path %>"
+     data-onboarding-subscribed-feed-urls-value="<%= subscribed_feed_urls.to_json %>"
+     data-opml-path="<%= import_opml_feeds_path %>">
+  <div class="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
     <!-- Header -->
-    <div class="sticky top-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4 flex justify-between items-center">
+    <div class="sticky top-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-4 flex justify-between items-center z-10">
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-        Welcome to Silo! 🎉
+        Welcome to Silo!
       </h2>
       <button type="button"
               data-action="click->onboarding#close"
-              class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-2xl leading-none">
-        ×
+              class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-2xl leading-none p-1"
+              aria-label="Close">
+        &times;
       </button>
     </div>
 
@@ -28,26 +36,33 @@
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <% feeds.each do |feed| %>
-                  <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <h4 class="font-medium text-gray-900 dark:text-white">
+                  <% already_subscribed = subscribed_feed_urls.include?(feed.feed_url) %>
+                  <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex-1 min-w-0">
+                        <h4 class="font-medium text-gray-900 dark:text-white truncate">
                           <%= feed.title %>
                         </h4>
                         <% if feed.description.present? %>
-                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                             <%= feed.description %>
                           </p>
                         <% end %>
                       </div>
-                      <button type="button"
-                              data-action="click->onboarding#addFeed"
-                              data-feed-id="<%= feed.id %>"
-                              data-feed-url="<%= feed.feed_url %>"
-                              data-feed-category="<%= feed.category %>"
-                              class="ml-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md whitespace-nowrap">
-                        Add
-                      </button>
+                      <% if already_subscribed %>
+                        <span class="flex-shrink-0 px-3 py-1 bg-green-600 text-white text-sm rounded-md cursor-default">
+                          Added
+                        </span>
+                      <% else %>
+                        <button type="button"
+                                data-action="click->onboarding#addFeed"
+                                data-feed-id="<%= feed.id %>"
+                                data-feed-url="<%= feed.feed_url %>"
+                                data-feed-category="<%= feed.category %>"
+                                class="flex-shrink-0 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md whitespace-nowrap transition">
+                          Add
+                        </button>
+                      <% end %>
                     </div>
                   </div>
                 <% end %>
@@ -56,7 +71,7 @@
           <% end %>
         </div>
       <% else %>
-        <div class="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
+        <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
           <p class="text-gray-600 dark:text-gray-400">
             No suggested feeds available yet. Your admin can add some via the admin panel.
           </p>
@@ -66,134 +81,29 @@
       <!-- Manual Entry / Other Options -->
       <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Or...
+          Or add your own...
         </h3>
         <div class="space-y-3">
-          <%= link_to "Add a Custom Feed", new_feed_path,
-              class: "block p-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-center transition" %>
-          <%= link_to "Import from OPML", "javascript:void(0)",
-              data: { action: "click->onboarding#showOPML" },
-              class: "block p-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-center transition" %>
+          <%= link_to new_feed_path,
+              class: "block p-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-center transition" do %>
+            Add a Custom Feed
+          <% end %>
           <button type="button"
-                  data-action="click->onboarding#skip"
-                  class="block w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-            Skip for Now
+                  data-action="click->onboarding#showOPML"
+                  class="block w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-center transition">
+            Import from OPML
           </button>
         </div>
       </div>
+
+      <!-- Footer Actions -->
+      <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+        <button type="button"
+                data-action="click->onboarding#skip"
+                class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition">
+          Skip for now
+        </button>
+      </div>
     </div>
   </div>
-<!-- Hidden form for adding feeds -->
-<div id="hidden_feed_form" style="display: none;">
-  <%= form_with url: feeds_path, method: :post, local: true, id: "feed_form" do |f| %>
-    <%= f.hidden_field :feed_id %>
-    <%= f.hidden_field :category %>
-    <%= f.hidden_field :custom_name %>
-  <% end %>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.querySelector('[data-controller="onboarding"]');
-    if (!modal) return;
-
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-    window.onboardingHandlers = {
-      close: function() {
-        fetch('<%= mark_onboarding_completed_path %>', {
-          method: 'POST',
-          headers: {
-            'X-CSRF-Token': csrfToken
-          }
-        }).finally(() => modal.remove());
-      },
-
-      skip: function() {
-        window.onboardingHandlers.close();
-      },
-
-      addFeed: function(feedId, feedUrl, category) {
-        const form = document.getElementById('feed_form');
-        form.querySelector('[name="feed_id"]').value = '';
-        form.querySelector('[name="category"]').value = category || '';
-        form.querySelector('[name="custom_name"]').value = '';
-
-        if (feedId) {
-          const subForm = document.createElement('form');
-          subForm.method = 'POST';
-          subForm.action = '<%= feeds_path %>';
-          subForm.innerHTML = `
-            <input type="hidden" name="feed_id" value="${feedId}">
-            <input type="hidden" name="category" value="${category || ''}">
-            <input type="hidden" name="authenticity_token" value="${csrfToken}">
-          `;
-          document.body.appendChild(subForm);
-          subForm.submit();
-          return;
-        }
-
-        fetch('<%= discover_feeds_path %>', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRF-Token': csrfToken
-          },
-          body: `url=${encodeURIComponent(feedUrl)}`
-        })
-        .then(response => response.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const discoveredFeedId = doc.querySelector('[data-feed-id]')?.dataset.feedId;
-
-          if (discoveredFeedId) {
-            const subForm = document.createElement('form');
-            subForm.method = 'POST';
-            subForm.action = '<%= feeds_path %>';
-            subForm.innerHTML = `
-              <input type="hidden" name="feed_id" value="${discoveredFeedId}">
-              <input type="hidden" name="category" value="${category || ''}">
-              <input type="hidden" name="authenticity_token" value="${csrfToken}">
-            `;
-            document.body.appendChild(subForm);
-            subForm.submit();
-          }
-        })
-        .catch(error => console.error('Error adding feed:', error));
-      },
-
-      showOPML: function() {
-        const opmlForm = document.createElement('form');
-        opmlForm.method = 'POST';
-        opmlForm.action = '<%= import_opml_feeds_path %>';
-        opmlForm.enctype = 'multipart/form-data';
-        opmlForm.innerHTML = `
-          <input type="file" name="opml_file" accept=".opml,.xml" style="display:none">
-          <input type="hidden" name="authenticity_token" value="${csrfToken}">
-        `;
-        document.body.appendChild(opmlForm);
-        const fileInput = opmlForm.querySelector('input[type="file"]');
-        fileInput.addEventListener('change', () => opmlForm.submit(), { once: true });
-        fileInput.click();
-      }
-    };
-
-    const bind = (selector, handler) => {
-      modal.querySelectorAll(selector).forEach(element => {
-        element.addEventListener('click', event => {
-          event.preventDefault();
-          handler(event);
-        });
-      });
-    };
-
-    bind('[data-action="click->onboarding#close"]', () => window.onboardingHandlers.close());
-    bind('[data-action="click->onboarding#skip"]', () => window.onboardingHandlers.skip());
-    bind('[data-action="click->onboarding#addFeed"]', event => {
-      const button = event.currentTarget;
-      window.onboardingHandlers.addFeed(button.dataset.feedId, button.dataset.feedUrl, button.dataset.feedCategory);
-    });
-    bind('[data-action="click->onboarding#showOPML"]', () => window.onboardingHandlers.showOPML());
-  });
-</script>

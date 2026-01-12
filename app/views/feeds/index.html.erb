@@ -46,8 +46,17 @@
     <% end %>
 
     <% if @subscriptions.empty? %>
-      <div class="p-8 text-center text-gray-500 dark:text-gray-400">
-        <p>No feeds yet. Add your first feed to get started!</p>
+      <div class="p-12 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-full">
+          <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 00-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 100-1.5.75.75 0 000 1.5z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No feeds yet</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+          Add your first feed to start reading articles.
+        </p>
+        <%= link_to "Add Your First Feed", new_feed_path, class: "inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition" %>
       </div>
     <% end %>
   </div>

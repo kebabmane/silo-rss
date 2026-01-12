@@ -17,16 +17,14 @@ class ApiUsageFlowTest < ActionDispatch::IntegrationTest
     assert_response :created
     json_response = JSON.parse(response.body)
 
-    # Should return user data with API token
+    # Should return user data (api_token is only issued on login, not registration)
     assert json_response["user"].present?
     assert_equal "apiuser@example.com", json_response["user"]["email"]
-    assert json_response["user"]["api_token"].present?
     assert json_response["user"]["id"].present?
 
     # Verify user was created
     user = User.find_by(email_address: "apiuser@example.com")
     assert user
-    assert user.api_token.present?
   end
 
   test "API registration with invalid data returns errors" do
@@ -435,8 +433,9 @@ class ApiUsageFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "API discovery handles feed not found" do
-    stub_request(:get, "https://notfound.com")
-      .to_return(status: 404)
+    # Stub the main URL and common feed paths that discovery tries
+    stub_request(:get, /https:\/\/notfound\.com.*/)
+      .to_return(status: 404, body: "Not Found", headers: { "Content-Type" => "text/html" })
 
     post discover_api_v1_feeds_path,
          params: { url: "https://notfound.com" },
@@ -452,14 +451,15 @@ class ApiUsageFlowTest < ActionDispatch::IntegrationTest
     feed = feeds(:tech_crunch)
 
     # Alice already has this subscription
+    # Idempotent behavior: returns 201 with existing subscription
     post api_v1_feeds_path,
          params: { feed_id: feed.id, category: "Tech" },
          headers: api_headers(@user),
          as: :json
 
-    assert_response :unprocessable_entity
+    assert_response :created
     json_response = JSON.parse(response.body)
-    assert json_response["error"].present?
+    assert json_response["subscription"].present?
   end
 
   test "API unsubscribe non-existent subscription returns not found" do
@@ -478,6 +478,9 @@ class ApiUsageFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "complete new user API journey: register, discover, subscribe, manage articles" do
+    # Ensure admin confirmation is not required for this test
+    Setting.set("require_admin_confirmation", "false")
+
     # Step 1: Register new user
     post api_v1_auth_register_path, params: {
       email: "journey@example.com",
@@ -486,6 +489,14 @@ class ApiUsageFlowTest < ActionDispatch::IntegrationTest
     }, as: :json
 
     assert_response :created
+
+    # Step 1b: Login to get API token (registration doesn't return token)
+    post api_v1_auth_login_path, params: {
+      email: "journey@example.com",
+      password: "journey123"
+    }, as: :json
+
+    assert_response :ok
     user_data = JSON.parse(response.body)["user"]
     token = user_data["api_token"]
     headers = { "Authorization" => "Bearer #{token}" }
