@@ -26,13 +26,22 @@
               <div class="flex-1">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   <%= format_user_time(brief.generated_at, style: :long) %>
+                  <% if brief.digest? %>
+                    <span class="ml-2 px-2 py-1 text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded">Digest</span>
+                  <% else %>
+                    <span class="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded">Brief</span>
+                  <% end %>
                   <% unless brief.read? %>
-                    <span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 rounded">Unread</span>
+                    <span class="ml-1 px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 rounded">Unread</span>
                   <% end %>
                 </h3>
 
                 <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                  <p><%= brief.article_count %> <%= "article".pluralize(brief.article_count) %> summarized</p>
+                  <p>
+                    <%= brief.article_count %> <%= "article".pluralize(brief.article_count) %> summarized
+                    <span class="mx-1">&middot;</span>
+                    <%= brief.reading_time %> min read
+                  </p>
                   <% if brief.emailed? %>
                     <p>Emailed on <%= format_user_time(brief.emailed_at, style: :month_day_time) %></p>
                   <% end %>

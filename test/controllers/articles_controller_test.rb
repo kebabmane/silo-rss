@@ -286,23 +286,23 @@ class ArticlesControllerTest < ActionDispatch::IntegrationTest
   test "should fetch content successfully" do
     login_as @alice
 
-    # Mock the service call
-    ArticleContentFetcherService.any_instance.stubs(:fetch).returns(true)
-
-    post fetch_content_article_url(@article)
+    # Content fetch is now async — job is enqueued instead of running inline
+    assert_enqueued_with(job: ArticleContentFetchJob) do
+      post fetch_content_article_url(@article)
+    end
     assert_redirected_to dashboard_path(article_id: @article.id)
-    assert_equal "Full content fetched successfully!", flash[:notice]
+    assert_equal "Full content fetch has been queued.", flash[:notice]
   end
 
   test "should handle fetch content failure" do
     login_as @alice
 
-    # Mock the service to fail
-    ArticleContentFetcherService.any_instance.stubs(:fetch).returns(false)
-
-    post fetch_content_article_url(@article)
+    # Content fetch is now async — job is always enqueued, no inline failure path
+    assert_enqueued_with(job: ArticleContentFetchJob) do
+      post fetch_content_article_url(@article)
+    end
     assert_redirected_to dashboard_path(article_id: @article.id)
-    assert_equal "Failed to fetch full content. Please try again later.", flash[:alert]
+    assert_nil flash[:alert]
   end
 
   test "should clear existing full_content before fetching" do

@@ -387,9 +387,10 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
       post discover_feeds_url, params: { url: "https://example.com" }, as: :turbo_stream
     end
 
-    # Feed should still be created but without title
+    # Feed should be created with a fallback title (hostname) when Feedjira can't parse
     feed = Feed.last
-    assert_nil feed.title
+    assert_not_nil feed.title, "Feed should have a fallback title when Feedjira parsing fails"
+    assert_equal "example.com", feed.title
   end
 
   test "should handle HTTParty errors during discovery" do

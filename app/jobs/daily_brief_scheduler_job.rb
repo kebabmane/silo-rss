@@ -7,8 +7,7 @@ class DailyBriefSchedulerJob < ApplicationJob
 
     # Check if LiteLLM is configured
     unless LitellmSetting.configured?
-      Rails.logger.warn("Skipping daily brief scheduler: LiteLLM not configured. Disabling all active schedules.")
-      disable_all_schedules
+      Rails.logger.warn("Skipping daily brief scheduler: LiteLLM not configured. Schedules remain active and will resume when LiteLLM becomes available.")
       return
     end
 
@@ -39,8 +38,6 @@ class DailyBriefSchedulerJob < ApplicationJob
             .exists?
   end
 
-  # Disable all active schedules when LiteLLM becomes unavailable
-  def disable_all_schedules
-    DailyBriefSchedule.active.update_all(active: false)
-  end
+  # Previously disabled all schedules on LiteLLM failure — removed to prevent
+  # permanent data loss. Generation is simply skipped until LiteLLM is available again.
 end

@@ -1,4 +1,6 @@
 class ArticlesController < ApplicationController
+  include ArticleStatePreloader
+
   rescue_from ActiveRecord::RecordNotFound, with: :raise_not_found if Rails.env.test?
   before_action :set_article_for_state, only: [:toggle_read, :toggle_starred, :toggle_archived]
 
@@ -19,18 +21,14 @@ class ArticlesController < ApplicationController
     end
 
     if params[:filter] == "unread"
-      @articles = @articles.left_joins(:article_states)
-                          .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", Current.user.id, false)
+      @articles = @articles.unread_for(Current.user)
     elsif params[:filter] == "starred"
-      @articles = @articles.joins(:article_states)
-                          .where(article_states: { user_id: Current.user.id, starred: true })
+      @articles = @articles.starred_for(Current.user).all_unarchived_for(Current.user)
     elsif params[:filter] == "archived"
-      @articles = @articles.joins(:article_states)
-                          .where(article_states: { user_id: Current.user.id, archived: true })
+      @articles = @articles.archived_for(Current.user)
     else
       # Default: exclude archived
-      @articles = @articles.left_joins(:article_states)
-                          .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
+      @articles = @articles.all_unarchived_for(Current.user)
     end
 
     @articles = @articles.limit(50)
@@ -93,17 +91,10 @@ class ArticlesController < ApplicationController
     # Clear existing full_content to force re-fetch
     @article.update(full_content: nil)
 
-    # Fetch content synchronously for immediate feedback
-    success = ArticleContentFetcherService.new(@article).fetch
+    # Enqueue background job for async content fetching
+    ArticleContentFetchJob.perform_later(@article.id)
 
-    if success
-      flash[:notice] = "Full content fetched successfully!"
-    else
-      flash[:alert] = "Failed to fetch full content. Please try again later."
-    end
-
-    # Redirect to reload the article with updated content
-    redirect_to dashboard_path(article_id: @article.id)
+    redirect_to dashboard_path(article_id: @article.id), notice: "Full content fetch has been queued."
   end
 
   private
@@ -115,28 +106,12 @@ class ArticlesController < ApplicationController
   end
 
   def set_article_for_state
-    @article = Article.includes(:feed).find(params[:id])
+    @article = Article.joins(feed: :subscriptions)
+                      .where(subscriptions: { user_id: Current.user.id })
+                      .find(params[:id])
   end
 
   def raise_not_found(exception)
     raise exception
-  end
-
-  def preload_article_states(articles, user)
-    # Get article IDs
-    article_ids = articles.map(&:id)
-
-    # Load all article states for these articles and this user in one query
-    states = ArticleState.where(article_id: article_ids, user_id: user.id).to_a
-
-    # Create a hash for quick lookup
-    states_by_article_id = states.index_by(&:article_id)
-
-    # Preload the states into the articles association
-    articles.each do |article|
-      state = states_by_article_id[article.id]
-      article.association(:article_states).target = state ? [state] : []
-      article.association(:article_states).loaded!
-    end
   end
 end

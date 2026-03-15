@@ -3,8 +3,8 @@ class Admin::FeedsController < AdminController
 
   def index
     # Load feeds with eager-loaded subscriptions to avoid N+1 queries
-    # Note: For very large datasets (>10k feeds), add pagination with pagy gem
-    @feeds = Feed.includes(:subscriptions).order(updated_at: :desc)
+    feeds_scope = Feed.includes(:subscriptions).order(updated_at: :desc)
+    @pagy, @feeds = pagy(feeds_scope, items: 100)
 
     # Add subscriber_count to each feed from already-loaded subscriptions
     @feeds.each do |feed|

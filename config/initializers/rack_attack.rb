@@ -23,6 +23,13 @@ class Rack::Attack
     end
   end
 
+  # Throttle password reset requests by IP (5 per hour)
+  throttle("password_resets/ip", limit: 5, period: 1.hour) do |req|
+    if req.path == "/passwords" && req.post?
+      req.ip
+    end
+  end
+
   # Throttle API requests by token (300rpm per user)
   throttle("api/token", limit: 300, period: 1.minute) do |req|
     if req.path.start_with?("/api/")

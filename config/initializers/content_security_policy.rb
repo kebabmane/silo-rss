@@ -18,7 +18,13 @@ Rails.application.configure do
     policy.connect_src :self, :https
     # Allow embedding in Home Assistant Ingress iframe when RAILS_RELATIVE_URL_ROOT is set
     if ENV["RAILS_RELATIVE_URL_ROOT"].present?
-      policy.frame_ancestors :self, "*"
+      ha_origin = ENV.fetch("HA_ORIGIN", nil)
+      if ha_origin.present?
+        policy.frame_ancestors :self, ha_origin
+      else
+        # Allow the parent HA instance to embed via Ingress — restrict to same origin
+        policy.frame_ancestors :self
+      end
     else
       policy.frame_ancestors :none
     end

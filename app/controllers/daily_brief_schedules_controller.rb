@@ -76,6 +76,7 @@ class DailyBriefSchedulesController < ApplicationController
       :email_delivery,
       :include_all_feeds,
       :summary_length,
+      :digest_type,
       :active,
       days_of_week: []
     )

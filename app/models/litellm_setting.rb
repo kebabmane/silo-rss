@@ -13,7 +13,7 @@ class LitellmSetting < ApplicationRecord
 
   # Singleton methods
   def self.instance
-    first_or_create!(id: 1) do |setting|
+    first_or_create! do |setting|
       setting.server_url = ENV.fetch("LITELLM_SERVER_URL", "http://localhost:4000")
       setting.default_model = ENV.fetch("LITELLM_DEFAULT_MODEL", "gpt-3.5-turbo")
       setting.enabled = false

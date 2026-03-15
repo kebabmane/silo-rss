@@ -6,18 +6,9 @@ module Api
 
       # POST /api/v1/auth/login
       def login
-        user = User.find_by(email_address: params[:email])
+        user = User.authenticate_by(email_address: params[:email], password: params[:password])
 
-        # Always run password check to prevent timing attacks
         if user
-          authenticated = user.authenticate(params[:password])
-        else
-          # Run a dummy BCrypt check to prevent timing attacks
-          BCrypt::Password.create("dummy")
-          authenticated = false
-        end
-
-        if authenticated
           # Check if admin confirmation is required (same logic as web login)
           if Setting.require_admin_confirmation? && !user.confirmed?
             render json: { error: "Account pending admin approval" }, status: :forbidden

@@ -183,16 +183,9 @@
       <!-- Auto-mark as read -->
       <% unless state.read? %>
         <%= turbo_stream_from "article_#{@selected_article.id}" %>
-        <script nonce="<%= request.content_security_policy_nonce %>">
-          setTimeout(() => {
-            fetch('<%= toggle_read_article_path(@selected_article) %>', {
-              method: 'PATCH',
-              headers: {
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-              }
-            });
-          }, 2000);
-        </script>
+        <div data-controller="auto-read"
+             data-auto-read-url-value="<%= toggle_read_article_path(@selected_article) %>">
+        </div>
       <% end %>
     <% else %>
       <div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">

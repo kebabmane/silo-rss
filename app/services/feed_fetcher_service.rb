@@ -3,6 +3,25 @@ class FeedFetcherService
     @feed = feed
   end
 
+  # Fetch only the feed metadata (title, site_url) without creating articles.
+  # Only assigns attributes — does not persist. Used before the first full refresh.
+  def fetch_metadata
+    uri = UrlSafety.safe_uri_for(@feed.feed_url)
+    unless uri
+      Rails.logger.warn("Feed metadata fetch blocked unsafe URL for feed #{@feed.feed_url}")
+      return
+    end
+
+    response = HTTParty.get(uri.to_s, timeout: 10)
+    parsed_feed = Feedjira.parse(response.body)
+    return unless parsed_feed
+
+    @feed.title = parsed_feed.title if parsed_feed.title.present? && @feed.title.blank?
+    @feed.site_url = parsed_feed.try(:url) if parsed_feed.try(:url).present? && @feed.site_url.blank?
+  rescue => e
+    Rails.logger.warn("Feed metadata fetch failed for #{@feed.feed_url}: #{e.message}")
+  end
+
   def fetch
     uri = UrlSafety.safe_uri_for(@feed.feed_url)
     unless uri
@@ -87,10 +106,16 @@ class FeedFetcherService
   end
 
   def clean_content(content)
-    # Remove script tags and their content
-    content = content.gsub(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi, "")
+    # First, use Loofah to completely remove dangerous elements and their content
+    doc = Loofah.fragment(content.to_s)
+    doc.scrub!(:prune) # Removes unsafe elements and their contents entirely
 
-    # Keep the HTML but ensure it's safe
-    content.strip
+    # Then sanitize to only allow safe formatting tags
+    ActionController::Base.helpers.sanitize(
+      doc.to_s,
+      tags: %w[p br div span strong b em i u a ul ol li blockquote pre code
+               h1 h2 h3 h4 h5 h6 img figure figcaption table thead tbody tr th td],
+      attributes: %w[href src alt title class]
+    ).strip
   end
 end

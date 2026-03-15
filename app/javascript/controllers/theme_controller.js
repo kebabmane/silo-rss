@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   connect() {
     // Load theme from localStorage or use system preference
-    const savedTheme = localStorage.getItem('theme')
+    const savedTheme = this.getStoredTheme()
     if (savedTheme) {
       this.setTheme(savedTheme)
     } else {
@@ -15,6 +15,23 @@ export default class extends Controller {
     this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     this.handleSystemChange = this.handleSystemChange.bind(this)
     this.mediaQuery.addEventListener('change', this.handleSystemChange)
+  }
+
+  // Safe localStorage access - handles private browsing mode
+  getStoredTheme() {
+    try {
+      return localStorage.getItem('theme')
+    } catch {
+      return null
+    }
+  }
+
+  setStoredTheme(theme) {
+    try {
+      localStorage.setItem('theme', theme)
+    } catch {
+      // localStorage unavailable (private browsing) - theme will reset on reload
+    }
   }
 
   disconnect() {
@@ -36,7 +53,7 @@ export default class extends Controller {
     } else {
       document.documentElement.classList.remove('dark')
     }
-    localStorage.setItem('theme', theme)
+    this.setStoredTheme(theme)
   }
 
   applySystemPreference() {
@@ -50,7 +67,7 @@ export default class extends Controller {
 
   handleSystemChange(e) {
     // Only auto-switch if user hasn't manually set a preference
-    const savedTheme = localStorage.getItem('theme')
+    const savedTheme = this.getStoredTheme()
     if (!savedTheme) {
       this.applySystemPreference()
     }

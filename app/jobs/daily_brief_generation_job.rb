@@ -16,8 +16,9 @@ class DailyBriefGenerationJob < ApplicationJob
       return
     end
 
-    # Generate the brief
-    generator = DailyBriefGeneratorService.new(schedule)
+    # Generate the brief using the appropriate service
+    generator_class = schedule.generator_service
+    generator = generator_class.new(schedule)
     brief = generator.generate
 
     # Send email if requested
@@ -25,8 +26,9 @@ class DailyBriefGenerationJob < ApplicationJob
       DailyBriefMailer.brief_email(brief).deliver_later
     end
 
-    Rails.logger.info("Generated daily brief #{brief.id} for user #{schedule.user_id}")
-  rescue DailyBriefGeneratorService::Error => e
+    brief_type = schedule.digest? ? "digest" : "brief"
+    Rails.logger.info("Generated daily #{brief_type} #{brief.id} for user #{schedule.user_id}")
+  rescue DailyBriefGeneratorService::Error, DigestGeneratorService::Error => e
     Rails.logger.error("Failed to generate daily brief for schedule #{schedule_id}: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace.first(10).join("\n")) if e.backtrace
   rescue => e

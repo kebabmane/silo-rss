@@ -85,49 +85,8 @@ export default class extends Controller {
     .then(response => response.text())
     .then(html => {
 
-      // Parse and apply Turbo Stream response
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(html, 'text/html')
-
-      // Find all turbo-stream elements and process them
-      const streams = doc.querySelectorAll('turbo-stream')
-
-      streams.forEach((stream) => {
-        // Extract the action and target
-        const action = stream.getAttribute('action')
-        const target = stream.getAttribute('target')
-        const template = stream.querySelector('template')
-
-        if (action && target && template) {
-          const targetElement = document.getElementById(target)
-
-          if (!targetElement) {
-            return
-          }
-
-          const content = template.content.cloneNode(true)
-
-          // Apply the appropriate action
-          switch (action) {
-            case 'append':
-              targetElement.appendChild(content)
-              break
-            case 'prepend':
-              targetElement.prepend(content)
-              break
-            case 'replace':
-              targetElement.replaceWith(content)
-              break
-            case 'remove':
-              targetElement.remove()
-              break
-            case 'update':
-              targetElement.innerHTML = ''
-              targetElement.appendChild(content)
-              break
-          }
-        }
-      })
+      // Apply Turbo Stream response using the official Turbo API
+      Turbo.renderStreamMessage(html)
 
       // Update articles_list frame data attributes to reflect current state
       const articlesFrame = document.getElementById("articles_list")

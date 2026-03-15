@@ -1,4 +1,4 @@
-<%= form_with(model: schedule, class: "space-y-6") do |form| %>
+<%= form_with(model: schedule, class: "space-y-6", data: { controller: "digest-type" }) do |form| %>
   <% if schedule.errors.any? %>
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded dark:bg-red-800 dark:border-red-600 dark:text-red-100">
       <h2 class="font-bold">Errors:</h2>
@@ -9,6 +9,27 @@
       </ul>
     </div>
   <% end %>
+
+  <div>
+    <%= form.label :digest_type, "Format", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+    <%= form.select :digest_type,
+                     [
+                       ["Quick Brief (1-2 min read)", "brief"],
+                       ["Daily Tech Digest (15-20 min read)", "digest"]
+                     ],
+                     {},
+                     class: "w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white",
+                     data: { action: "change->digest-type#toggle" } %>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+      <span data-digest-type-target="description">
+        <% if schedule.digest? %>
+          Narrative-style digest with trend analysis and cross-story connections.
+        <% else %>
+          Concise article-by-article summary.
+        <% end %>
+      </span>
+    </p>
+  </div>
 
   <div>
     <%= form.label :time_of_day, "Time of Day", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
@@ -30,12 +51,13 @@
     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave unchecked to run every day</p>
   </div>
 
-  <div>
+  <div id="summary-length-wrapper" class="<%= 'hidden' if schedule.digest? %>" data-digest-type-target="summaryLength">
     <%= form.label :summary_length, "Summary Length", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
     <%= form.select :summary_length,
                      [["Short", "short"], ["Medium", "medium"], ["Detailed", "detailed"]],
                      {},
                      class: "w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" %>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Only applies to Quick Brief format.</p>
   </div>
 
   <div>

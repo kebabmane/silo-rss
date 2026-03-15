@@ -33,9 +33,18 @@ module Authentication
     end
 
     def find_session_by_cookie
-      if cookies.signed[:session_id]
-        Session.includes(:user).find_by(id: cookies.signed[:session_id])
+      return unless cookies.signed[:session_id]
+
+      session = Session.includes(:user).find_by(id: cookies.signed[:session_id])
+      return unless session
+
+      if session.expires_at.present? && session.expires_at <= Time.current
+        session.destroy
+        cookies.delete(:session_id)
+        return nil
       end
+
+      session
     end
 
     def request_authentication

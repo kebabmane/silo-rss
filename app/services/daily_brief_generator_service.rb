@@ -1,4 +1,6 @@
 class DailyBriefGeneratorService
+  include UnreadArticlesQuery
+
   class Error < StandardError; end
 
   def initialize(schedule)
@@ -44,22 +46,6 @@ class DailyBriefGeneratorService
 
   private
 
-  def fetch_unread_articles
-    # Get feeds to include
-    feeds = @schedule.feeds_to_include
-    feed_ids = feeds.map(&:id) # Use map instead of pluck to avoid extra query if already loaded
-
-    # Get articles from the past 24 hours that are unread
-    # Use left_joins for better performance and safety
-    Article
-      .includes(:feed)
-      .left_joins(:article_states)
-      .where(feed_id: feed_ids)
-      .where("articles.published_at >= ?", 24.hours.ago)
-      .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", @user.id, false)
-      .order(published_at: :desc)
-      .limit(100) # Limit to prevent overwhelming the LLM
-  end
 
   def prepare_content_for_summary(articles)
     summary_instructions = case @schedule.summary_length

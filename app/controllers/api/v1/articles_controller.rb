@@ -1,12 +1,13 @@
 module Api
   module V1
     class ArticlesController < BaseController
+      include ArticleStatePreloader
+
       before_action :set_article, only: [:mark_read, :mark_starred, :mark_archived]
 
       # GET /api/v1/articles
       def index
-        articles = Article.joins(feed: :subscriptions)
-                         .where(subscriptions: { user_id: current_user.id })
+        articles = Article.for_user(current_user)
                          .includes(:feed)
                          .recent
 
@@ -19,23 +20,18 @@ module Api
         articles = articles.where(feed_id: params[:feed_id]) if params[:feed_id].present?
 
         if params[:category].present?
-          # Avoid duplicate joins - already joined above
           articles = articles.where(subscriptions: { category: params[:category] })
         end
 
         if params[:filter] == 'unread'
-          articles = articles.left_joins(:article_states)
-                           .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", current_user.id, false)
+          articles = articles.unread_for(current_user)
         elsif params[:filter] == 'starred'
-          articles = articles.joins(:article_states)
-                           .where(article_states: { user_id: current_user.id, starred: true })
+          articles = articles.starred_for(current_user).all_unarchived_for(current_user)
         elsif params[:filter] == 'archived'
-          articles = articles.joins(:article_states)
-                           .where(article_states: { user_id: current_user.id, archived: true })
+          articles = articles.archived_for(current_user)
         else
           # Exclude archived by default
-          articles = articles.left_joins(:article_states)
-                           .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", current_user.id, false)
+          articles = articles.all_unarchived_for(current_user)
         end
 
         # Get total count before limiting
@@ -52,22 +48,7 @@ module Api
         render json: {
           articles: articles.map { |article|
             state = article.article_states.first || ArticleState.new(read: false, starred: false, archived: false)
-            {
-              id: article.id,
-              title: article.title,
-              content: article.content&.truncate(300, omission: '...'), # Truncate for mobile bandwidth
-              url: article.url,
-              published_at: article.published_at,
-              feed: {
-                id: article.feed.id,
-                title: article.feed.title
-              },
-              state: {
-                read: state.read,
-                starred: state.starred,
-                archived: state.archived
-              }
-            }
+            Api::V1::ArticleSerializer.new(article, state: state).as_summary
           },
           meta: {
             total: total_count,
@@ -79,31 +60,14 @@ module Api
 
       # GET /api/v1/articles/:id
       def show
-        article = Article.joins(feed: :subscriptions)
-                        .where(subscriptions: { user_id: current_user.id })
+        article = Article.for_user(current_user)
                         .includes(:feed)
                         .find(params[:id])
 
         state = article.state_for(current_user)
 
         render json: {
-          article: {
-            id: article.id,
-            title: article.title,
-            content: article.content,
-            url: article.url,
-            published_at: article.published_at,
-            feed: {
-              id: article.feed.id,
-              title: article.feed.title,
-              site_url: article.feed.site_url
-            },
-            state: {
-              read: state.read,
-              starred: state.starred,
-              archived: state.archived
-            }
-          }
+          article: Api::V1::ArticleSerializer.new(article, state: state).as_detail
         }
       end
 
@@ -113,11 +77,7 @@ module Api
         state.update(read: params[:read])
 
         render json: {
-          state: {
-            read: state.read,
-            starred: state.starred,
-            archived: state.archived
-          }
+          state: Api::V1::ArticleSerializer.new(@article, state: state).state_hash
         }
       end
 
@@ -127,11 +87,7 @@ module Api
         state.update(starred: params[:starred])
 
         render json: {
-          state: {
-            read: state.read,
-            starred: state.starred,
-            archived: state.archived
-          }
+          state: Api::V1::ArticleSerializer.new(@article, state: state).state_hash
         }
       end
 
@@ -141,23 +97,17 @@ module Api
         state.update(archived: params[:archived])
 
         render json: {
-          state: {
-            read: state.read,
-            starred: state.starred,
-            archived: state.archived
-          }
+          state: Api::V1::ArticleSerializer.new(@article, state: state).state_hash
         }
       end
 
       # GET /api/v1/articles/search
       def search
         query = params[:q]
-        # Sanitize query for LIKE to prevent SQL injection
-        sanitized_query = query.to_s.gsub(/[\\%_]/) { |x| "\\#{x}" }
+        return render(json: { articles: [] }) if query.blank?
 
-        articles = Article.joins(feed: :subscriptions)
-                         .where(subscriptions: { user_id: current_user.id })
-                         .where("articles.title LIKE ? OR articles.content LIKE ?", "%#{sanitized_query}%", "%#{sanitized_query}%")
+        articles = Article.for_user(current_user)
+                         .search_text(query)
                          .includes(:feed)
                          .recent
                          .limit(50)
@@ -168,30 +118,14 @@ module Api
         render json: {
           articles: articles.map { |article|
             state = article.article_states.first || ArticleState.new(read: false, starred: false, archived: false)
-            {
-              id: article.id,
-              title: article.title,
-              content: article.content&.truncate(200, omission: '...'), # Safe truncation
-              url: article.url,
-              published_at: article.published_at,
-              feed: {
-                id: article.feed.id,
-                title: article.feed.title
-              },
-              state: {
-                read: state.read,
-                starred: state.starred,
-                archived: state.archived
-              }
-            }
+            Api::V1::ArticleSerializer.new(article, state: state).as_search_result
           }
         }
       end
 
       # GET /api/v1/articles/unread_count
       def unread_count
-        count = Article.joins(feed: :subscriptions)
-                      .where(subscriptions: { user_id: current_user.id })
+        count = Article.for_user(current_user)
                       .left_joins(:article_states)
                       .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ? AND article_states.archived = ?)", current_user.id, false, false)
                       .count
@@ -215,31 +149,25 @@ module Api
           return
         end
 
-        articles = Article.joins(feed: :subscriptions)
-                         .where(subscriptions: { user_id: current_user.id })
-                         .where(id: article_ids)
+        # Only update articles the user is subscribed to
+        valid_ids = Article.for_user(current_user)
+                          .where(id: article_ids)
+                          .pluck(:id)
 
-        ActiveRecord::Base.transaction do
-          case action_name
-          when 'mark_read'
-            articles.each do |article|
-              state = article.state_for(current_user)
-              state.update!(read: value)
-            end
-          when 'mark_starred'
-            articles.each do |article|
-              state = article.state_for(current_user)
-              state.update!(starred: value)
-            end
-          when 'mark_archived'
-            articles.each do |article|
-              state = article.state_for(current_user)
-              state.update!(archived: value)
-            end
-          end
-        end
+        attribute = case action_name
+                    when 'mark_read' then :read
+                    when 'mark_starred' then :starred
+                    when 'mark_archived' then :archived
+                    end
 
-        render json: { success: true, updated_count: articles.count }
+        ArticleState.bulk_set(
+          user: current_user,
+          article_ids: valid_ids,
+          attribute: attribute,
+          value: value
+        )
+
+        render json: { success: true, updated_count: valid_ids.size }
       end
 
       # POST /api/v1/articles/mark_all_read
@@ -247,55 +175,35 @@ module Api
         feed_id = params[:feed_id]
         category = params[:category]
 
-        articles = Article.joins(feed: :subscriptions)
-                         .where(subscriptions: { user_id: current_user.id })
+        articles = Article.for_user(current_user)
 
         articles = articles.where(feed_id: feed_id) if feed_id.present?
-        articles = articles.joins(feed: :subscriptions)
-                          .where(subscriptions: { category: category, user_id: current_user.id }) if category.present?
-
-        count = 0
-        ActiveRecord::Base.transaction do
-          articles.each do |article|
-            state = article.state_for(current_user)
-            state.update!(read: true) unless state.read
-            count += 1
-          end
+        if category.present?
+          articles = articles.where(subscriptions: { category: category })
         end
 
-        render json: { success: true, marked_count: count }
+        article_ids = articles.pluck(:id)
+
+        ArticleState.bulk_set(
+          user: current_user,
+          article_ids: article_ids,
+          attribute: :read,
+          value: true
+        )
+
+        render json: { success: true, marked_count: article_ids.size }
       end
 
       private
 
       def set_article
-        @article = Article
-          .joins(feed: :subscriptions)
-          .where(subscriptions: { user_id: current_user.id })
+        @article = Article.for_user(current_user)
           .find_by(id: params[:id])
 
         return if @article
 
         render json: { error: 'Not Found' }, status: :not_found
         return
-      end
-
-      def preload_article_states(articles, user)
-        # Get article IDs
-        article_ids = articles.map(&:id)
-
-        # Load all article states for these articles and this user in one query
-        states = ArticleState.where(article_id: article_ids, user_id: user.id).to_a
-
-        # Create a hash for quick lookup
-        states_by_article_id = states.index_by(&:article_id)
-
-        # Preload the states into the articles association
-        articles.each do |article|
-          state = states_by_article_id[article.id]
-          article.association(:article_states).target = state ? [state] : []
-          article.association(:article_states).loaded!
-        end
       end
     end
   end
