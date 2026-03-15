@@ -78,7 +78,7 @@ class DailyBriefSchedulerJobTest < ActiveJob::TestCase
     end
   end
 
-  test "disables all schedules and skips when LiteLLM not configured" do
+  test "skips generation but preserves schedules when LiteLLM not configured" do
     # Create an active schedule
     schedule = DailyBriefSchedule.create!(
       user: @user,
@@ -94,8 +94,8 @@ class DailyBriefSchedulerJobTest < ActiveJob::TestCase
       DailyBriefSchedulerJob.perform_now
     end
 
-    # Schedule should be disabled
+    # Schedule should remain active — we no longer permanently disable schedules on LiteLLM failure
     schedule.reload
-    assert_not schedule.active
+    assert schedule.active, "Schedule should remain active when LiteLLM is temporarily unavailable"
   end
 end

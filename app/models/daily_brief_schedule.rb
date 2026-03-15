@@ -4,8 +4,11 @@ class DailyBriefSchedule < ApplicationRecord
   has_many :filtered_feeds, through: :feed_filters, source: :feed
   has_many :daily_briefs, dependent: :destroy
 
+  DIGEST_TYPES = %w[brief digest].freeze
+
   validates :time_of_day, presence: true
   validates :summary_length, inclusion: { in: %w[short medium detailed] }
+  validates :digest_type, inclusion: { in: DIGEST_TYPES }
   validate :days_of_week_format
 
   # Scopes
@@ -49,11 +52,25 @@ class DailyBriefSchedule < ApplicationRecord
       self[:name]
     else
       time_label = time_of_day ? time_of_day.strftime("%I:%M %p") : nil
-      base = "Daily Brief"
+      base = digest? ? "Daily Tech Digest" : "Daily Brief"
       base += " at #{time_label}" if time_label
       base += include_all_feeds? ? "" : " (selected feeds)"
       base
     end
+  end
+
+  # Digest type helpers
+  def digest?
+    digest_type == "digest"
+  end
+
+  def brief?
+    digest_type != "digest"
+  end
+
+  # Return the appropriate generator service class
+  def generator_service
+    digest? ? DigestGeneratorService : DailyBriefGeneratorService
   end
 
   private

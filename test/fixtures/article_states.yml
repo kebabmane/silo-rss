@@ -12,12 +12,19 @@ alice_tc_2:
   article: tc_article_2
   read: true
   starred: false
-  archived: false
+  archived: true
 
 alice_hn_1:
   user: alice
   article: hn_article_1
   read: false
+  starred: false
+  archived: false
+
+alice_ruby_1_archived:
+  user: alice
+  article: ruby_article_1
+  read: true
   starred: false
   archived: true
 

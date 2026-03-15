@@ -5,19 +5,20 @@ class DailyBriefGenerationJob < ApplicationJob
   def perform(schedule_id)
     schedule = DailyBriefSchedule.find_by(id: schedule_id)
     unless schedule
-      Rails.logger.error("Daily brief schedule #{schedule_id} not found")
-      raise ActiveRecord::RecordNotFound, "Schedule #{schedule_id} not found"
+      Rails.logger.warn("Daily brief schedule #{schedule_id} not found")
+      return
     end
 
     # Check if LiteLLM is configured
     unless LitellmSetting.configured?
       error_msg = "Cannot generate daily brief: LiteLLM not configured"
-      Rails.logger.error(error_msg)
-      raise DailyBriefGeneratorService::Error, error_msg
+      Rails.logger.warn(error_msg)
+      return
     end
 
-    # Generate the brief
-    generator = DailyBriefGeneratorService.new(schedule)
+    # Generate the brief using the appropriate service
+    generator_class = schedule.generator_service
+    generator = generator_class.new(schedule)
     brief = generator.generate
 
     # Send email if requested
@@ -25,16 +26,13 @@ class DailyBriefGenerationJob < ApplicationJob
       DailyBriefMailer.brief_email(brief).deliver_later
     end
 
-    Rails.logger.info("Generated daily brief #{brief.id} for user #{schedule.user_id}")
-  rescue DailyBriefGeneratorService::Error => e
+    brief_type = schedule.digest? ? "digest" : "brief"
+    Rails.logger.info("Generated daily #{brief_type} #{brief.id} for user #{schedule.user_id}")
+  rescue DailyBriefGeneratorService::Error, DigestGeneratorService::Error => e
     Rails.logger.error("Failed to generate daily brief for schedule #{schedule_id}: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace.first(10).join("\n")) if e.backtrace
-    # Re-raise to mark job as failed
-    raise
   rescue => e
     Rails.logger.error("Unexpected error generating daily brief for schedule #{schedule_id}: #{e.class} - #{e.message}")
     Rails.logger.error(e.backtrace.first(10).join("\n")) if e.backtrace
-    # Re-raise to mark job as failed
-    raise
   end
 end

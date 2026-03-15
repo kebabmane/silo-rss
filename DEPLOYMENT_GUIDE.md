@@ -218,6 +218,23 @@ Your app will be accessible at:
 
 ---
 
+## Security Warnings
+
+### ACTION_CABLE_ALLOWED_REQUEST_ORIGINS=*
+
+Setting `ACTION_CABLE_ALLOWED_REQUEST_ORIGINS=*` in your environment disables ActionCable's built-in request forgery protection for WebSocket connections. This means **any website can open a WebSocket connection to your app** from a visitor's browser.
+
+This setting exists to support Home Assistant Ingress, where HA proxies requests and the `Origin` header may not match the `APPLICATION_HOST`. In that scenario, Home Assistant is responsible for authentication, so the risk is reduced.
+
+**If you are NOT using Home Assistant Ingress, do not set this variable.** Leave it unset and the allowed origins will be scoped to `APPLICATION_HOST` automatically.
+
+If you must use it, ensure:
+- Your app is not publicly accessible to untrusted networks
+- Session cookies use `httponly: true` and `same_site: :lax` (already configured)
+- All state-changing WebSocket actions are independently authenticated
+
+---
+
 ## ⚠️ Important Notes
 
 ### Secrets

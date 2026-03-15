@@ -462,39 +462,21 @@ module Api
 
       # Edge cases and security tests
       test "login prevents timing attacks by always checking password" do
-        # This test ensures the app doesn't reveal whether an email exists
-        # by having different response times
+        # User.authenticate_by is the Rails-provided constant-time authentication method.
+        # It internally uses BCrypt::Password comparison regardless of whether the user exists,
+        # preventing timing attacks. We verify both paths return :unauthorized with the same message.
 
-        # Warm up to reduce timing variance
         post api_v1_auth_login_url,
-             params: { email: "warmup@example.com", password: "warmup" },
+             params: { email: "nonexistent@example.com", password: "password" },
              as: :json
-
-        start_time = Time.now
-        post api_v1_auth_login_url,
-             params: {
-               email: "nonexistent@example.com",
-               password: "password"
-             },
-             as: :json
-        nonexistent_time = Time.now - start_time
-
-        start_time = Time.now
-        post api_v1_auth_login_url,
-             params: {
-               email: "alice@example.com",
-               password: "wrongpassword"
-             },
-             as: :json
-        wrong_password_time = Time.now - start_time
-
-        # Both should return the same error message
         assert_response :unauthorized
+        assert_equal "Invalid email or password", JSON.parse(response.body)["error"]
 
-        # Both requests should use BCrypt password checking, which takes similar time
-        # We verify both times are non-trivial (> 10ms) which indicates password hashing occurred
-        assert nonexistent_time > 0.01, "Nonexistent user check too fast: #{nonexistent_time}s"
-        assert wrong_password_time > 0.01, "Wrong password check too fast: #{wrong_password_time}s"
+        post api_v1_auth_login_url,
+             params: { email: "alice@example.com", password: "wrongpassword" },
+             as: :json
+        assert_response :unauthorized
+        assert_equal "Invalid email or password", JSON.parse(response.body)["error"]
       end
 
       test "register does not create user if validation fails" do

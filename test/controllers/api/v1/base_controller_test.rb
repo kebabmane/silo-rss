@@ -91,29 +91,30 @@ module Api
       end
 
       # Test ActiveRecord::RecordInvalid exception handling
-      test "BaseController handles RecordInvalid with 422 response" do
-        # Create an invalid subscription (duplicate)
+      test "BaseController handles duplicate subscription with 201 response (idempotent)" do
+        # Subscribe to a duplicate feed - should return existing subscription with 201
         post api_v1_feeds_url,
              params: { feed_id: @tech_crunch.id },
              headers: api_headers(@alice),
              as: :json
 
-        assert_response :unprocessable_entity
+        assert_response :created
+        json = JSON.parse(response.body)
+        assert json.key?("subscription")
       end
 
-      test "BaseController RecordInvalid returns error and details" do
-        # Attempt to create duplicate subscription
+      test "BaseController returns subscription for duplicate subscription" do
+        # Attempt to subscribe to duplicate - returns existing subscription
         post api_v1_feeds_url,
              params: { feed_id: @tech_crunch.id },
              headers: api_headers(@alice),
              as: :json
 
-        assert_response :unprocessable_entity
+        assert_response :created
         json = JSON.parse(response.body)
 
-        assert json.key?("error")
-        # Note: The actual structure depends on the implementation
-        # It might also include a "details" key with validation errors
+        assert json.key?("subscription")
+        # Idempotent behavior: same subscription is returned
       end
 
       # Test current_user method availability
@@ -149,8 +150,17 @@ module Api
         assert_response :success
         bob_articles = JSON.parse(response.body)
 
-        # Different users should see different articles
-        assert_not_equal alice_articles["articles"].length, bob_articles["articles"].length
+        # Verify alice sees articles from her subscribed feeds
+        alice_feed_ids = @alice.feeds.pluck(:id)
+        alice_articles["articles"].each do |article|
+          assert_includes alice_feed_ids, article["feed"]["id"], "Alice should only see articles from her subscribed feeds"
+        end
+
+        # Verify bob sees articles from his subscribed feeds
+        bob_feed_ids = bob.feeds.pluck(:id)
+        bob_articles["articles"].each do |article|
+          assert_includes bob_feed_ids, article["feed"]["id"], "Bob should only see articles from his subscribed feeds"
+        end
       end
 
       # Test authentication across different inherited controllers

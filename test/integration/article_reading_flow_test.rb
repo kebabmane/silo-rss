@@ -123,8 +123,8 @@ class ArticleReadingFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "unarchive article" do
-    article = articles(:hn_article_1)
-    state = article_states(:alice_hn_1)
+    article = articles(:tc_article_2)
+    state = article_states(:alice_tc_2)
 
     # Article is archived
     assert state.archived
@@ -217,7 +217,7 @@ class ArticleReadingFlowTest < ActionDispatch::IntegrationTest
 
     # Step 4: Mark as read
     patch toggle_read_article_path(article)
-    assert_response :ok
+    assert_response :no_content
 
     state = article_states(:alice_tc_1)
     state.reload
@@ -225,7 +225,7 @@ class ArticleReadingFlowTest < ActionDispatch::IntegrationTest
 
     # Step 5: Star the article (it was already starred, so this will unstar)
     patch toggle_starred_article_path(article)
-    assert_response :ok
+    assert_response :no_content
 
     state.reload
     assert_not state.starred  # Changed: it was starred, now it's not
@@ -290,11 +290,11 @@ class ArticleReadingFlowTest < ActionDispatch::IntegrationTest
 
     # Toggle article 1 read (unread -> read)
     patch toggle_read_article_path(article1)
-    assert_response :ok
+    assert_response :no_content
 
     # Toggle article 1 starred (starred -> unstarred)
     patch toggle_starred_article_path(article1)
-    assert_response :ok
+    assert_response :no_content
 
     state1 = article_states(:alice_tc_1)
     state1.reload
@@ -303,11 +303,11 @@ class ArticleReadingFlowTest < ActionDispatch::IntegrationTest
 
     # Toggle article 2 read (read -> unread)
     patch toggle_read_article_path(article2)
-    assert_response :ok
+    assert_response :no_content
 
     # Toggle article 2 starred (not starred -> starred)
     patch toggle_starred_article_path(article2)
-    assert_response :ok
+    assert_response :no_content
 
     state2 = article_states(:alice_tc_2)
     state2.reload
@@ -320,8 +320,8 @@ class ArticleReadingFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "archived articles don't appear in default view" do
-    article = articles(:hn_article_1)
-    state = article_states(:alice_hn_1)
+    article = articles(:tc_article_2)
+    state = article_states(:alice_tc_2)
 
     # Article is archived
     assert state.archived

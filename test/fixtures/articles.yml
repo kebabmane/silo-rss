@@ -35,3 +35,12 @@ ruby_article_1:
   url: https://rubyweekly.com/issues/688
   guid: ruby_3_4_release
   published_at: <%= 1.week.ago %>
+
+ruby_article_2:
+  feed: ruby_weekly
+  title: "Rails 7.1 Updates"
+  content: "New features in Rails 7.1..."
+  full_content: null
+  url: https://rubyweekly.com/issues/689
+  guid: rails_7_1
+  published_at: <%= 1.5.weeks.ago %>

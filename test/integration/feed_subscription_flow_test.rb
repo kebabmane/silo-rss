@@ -153,7 +153,7 @@ class FeedSubscriptionFlowTest < ActionDispatch::IntegrationTest
 
     # Should show subscribed feeds
     assert_select "body", text: /TechCrunch/
-    assert_select "body", text: /Hacker News/
+    assert_select "body", text: /HN - Custom Name/
 
     # Should not show feeds user isn't subscribed to
     assert_select "body", text: /Ruby Weekly/, count: 0
@@ -227,7 +227,7 @@ class FeedSubscriptionFlowTest < ActionDispatch::IntegrationTest
     # Alice already has this subscription
     assert @user.subscriptions.exists?(feed: feed)
 
-    # Try to subscribe again
+    # Try to subscribe again (idempotent - returns success)
     assert_no_difference "@user.subscriptions.count" do
       post feeds_path, params: {
         feed_id: feed.id,
@@ -236,7 +236,9 @@ class FeedSubscriptionFlowTest < ActionDispatch::IntegrationTest
       }
     end
 
-    assert_response :unprocessable_entity
+    # Idempotent behavior: should redirect with success message
+    assert_redirected_to dashboard_path
+    assert_match /Feed added successfully/, flash[:notice]
   end
 
   test "complete workflow: discover, subscribe, view, unsubscribe" do

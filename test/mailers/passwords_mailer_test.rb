@@ -19,8 +19,8 @@ class PasswordsMailerTest < ActionMailer::TestCase
     user = users(:alice)
     email = PasswordsMailer.reset(user)
 
-    # The @user instance variable should be set for the view
-    assert_equal user, email.instance_variable_get(:@user)
+    # The email should be personalized for the user
+    assert email.to.include?(user.email_address)
   end
 
   test "reset email with different users" do

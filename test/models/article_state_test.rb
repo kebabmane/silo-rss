@@ -31,7 +31,7 @@ class ArticleStateTest < ActiveSupport::TestCase
     article_state1 = article_states(:alice_tc_1)
     article_state2 = ArticleState.new(
       user: user,
-      article: articles(:ruby_article_1),
+      article: articles(:ruby_article_2),
       read: false,
       starred: false,
       archived: false
@@ -122,9 +122,9 @@ class ArticleStateTest < ActiveSupport::TestCase
 
   test "archived scope returns only archived articles" do
     archived_states = ArticleState.archived
-    assert_includes archived_states, article_states(:alice_hn_1)
+    assert_includes archived_states, article_states(:alice_tc_2)
     assert_not_includes archived_states, article_states(:alice_tc_1)
-    assert_not_includes archived_states, article_states(:alice_tc_2)
+    assert_not_includes archived_states, article_states(:alice_hn_1)
     assert_not_includes archived_states, article_states(:bob_ruby_1)
   end
 
@@ -212,7 +212,7 @@ class ArticleStateTest < ActiveSupport::TestCase
   end
 
   test "can be unarchived" do
-    article_state = article_states(:alice_hn_1)
+    article_state = article_states(:alice_tc_2)
     assert_equal true, article_state.archived
     article_state.update!(archived: false)
     assert_equal false, article_state.reload.archived

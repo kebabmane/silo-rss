@@ -1,5 +1,4 @@
-class Admin::SuggestedFeedsController < ApplicationController
-  before_action :ensure_admin!
+class Admin::SuggestedFeedsController < AdminController
   before_action :set_suggested_feed, only: [:edit, :update, :destroy]
 
   def index
@@ -49,9 +48,5 @@ class Admin::SuggestedFeedsController < ApplicationController
 
   def suggested_feed_params
     params.require(:suggested_feed).permit(:title, :feed_url, :category, :description, :display_order)
-  end
-
-  def ensure_admin!
-    redirect_to dashboard_path, alert: "Access denied." unless Current.user&.admin?
   end
 end

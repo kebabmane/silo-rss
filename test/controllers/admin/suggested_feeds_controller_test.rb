@@ -14,7 +14,7 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
     get admin_suggested_feeds_url
 
     assert_redirected_to dashboard_path
-    assert_equal "Access denied.", flash[:alert]
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   test "requires admin authentication for new" do
@@ -23,7 +23,7 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
     get new_admin_suggested_feed_url
 
     assert_redirected_to dashboard_path
-    assert_equal "Access denied.", flash[:alert]
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   test "requires admin authentication for create" do
@@ -40,7 +40,7 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to dashboard_path
-    assert_equal "Access denied.", flash[:alert]
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   test "requires admin authentication for edit" do
@@ -49,7 +49,7 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
     get edit_admin_suggested_feed_url(@suggested_feed)
 
     assert_redirected_to dashboard_path
-    assert_equal "Access denied.", flash[:alert]
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   test "requires admin authentication for update" do
@@ -60,7 +60,7 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to dashboard_path
-    assert_equal "Access denied.", flash[:alert]
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   test "requires admin authentication for destroy" do
@@ -71,7 +71,7 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to dashboard_path
-    assert_equal "Access denied.", flash[:alert]
+    assert_equal "You are not authorized to access that area.", flash[:alert]
   end
 
   test "redirects to login when not authenticated" do

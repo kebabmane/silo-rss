@@ -3,10 +3,7 @@ require "test_helper"
 class DailyBriefGenerationJobTest < ActiveJob::TestCase
   setup do
     @user = users(:alice)
-    @schedule = DailyBriefSchedule.create!(
-      user: @user,
-      time_of_day: Time.parse("08:00")
-    )
+    @schedule = daily_brief_schedules(:one)
 
     LitellmSetting.instance.update!(
       enabled: true,
@@ -44,8 +41,8 @@ class DailyBriefGenerationJobTest < ActiveJob::TestCase
   test "enqueues email delivery when email_delivery is true and articles present" do
     @schedule.update!(email_delivery: true)
 
-    feed = feeds(:tech_crunch)
-    @user.subscriptions.create!(feed: feed)
+    feed = feeds(:ruby_weekly)
+    @user.subscriptions.find_or_create_by!(feed: feed)
     feed.articles.create!(
       title: "Test",
       content: "Content",

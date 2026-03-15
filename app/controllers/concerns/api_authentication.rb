@@ -23,6 +23,7 @@ module ApiAuthentication
 
     unless @current_user
       render json: { error: 'Unauthorized' }, status: :unauthorized
+      return
     end
   end
 

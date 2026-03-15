@@ -1,6 +1,7 @@
 class SessionsController < ApplicationController
-  allow_unauthenticated_access only: %i[ new create ]
-  rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_session_url, alert: "Try again later." }
+  allow_unauthenticated_access only: %i[new create]
+  rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_session_url, alert: "Try again later." } unless Rails.env.test?
+  rate_limit to: 5, within: 20.seconds, by: -> { params[:email_address] }, only: :create, with: -> { redirect_to new_session_url, alert: "Too many login attempts. Try again shortly." } unless Rails.env.test?
 
   def new
   end

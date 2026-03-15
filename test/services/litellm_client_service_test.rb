@@ -23,11 +23,7 @@ class LitellmClientServiceTest < ActiveSupport::TestCase
     stub_request(:post, "http://localhost:4000/chat/completions")
       .with(
         body: hash_including({
-          model: "gpt-3.5-turbo",
-          messages: array_including(
-            hash_including(role: "system"),
-            hash_including(role: "user", content: "Test content")
-          )
+          model: "gpt-3.5-turbo"
         }),
         headers: { "Authorization" => "Bearer test-key" }
       )

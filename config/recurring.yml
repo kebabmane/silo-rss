@@ -12,6 +12,12 @@ development:
     schedule: every 15 minutes
     description: "Check and enqueue daily brief generation jobs"
 
+  database_backup:
+    class: DatabaseBackupJob
+    queue: default
+    schedule: every day at 2am
+    description: "Daily SQLite database backup with 7-day retention"
+
 production:
   refresh_all_feeds:
     class: ScheduledRefreshJob
@@ -29,3 +35,9 @@ production:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: every hour at minute 12
     description: "Clean up finished jobs from the database"
+
+  database_backup:
+    class: DatabaseBackupJob
+    queue: default
+    schedule: every day at 2am
+    description: "Daily SQLite database backup with 7-day retention"

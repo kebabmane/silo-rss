@@ -43,8 +43,28 @@ module ApplicationHelper
       local_time.strftime("%B %d, %Y at %I:%M %p")
     when :month_day_time
       local_time.strftime("%B %d at %I:%M %p")
+    when :relative
+      time_ago_in_words(time)
     else
       local_time.to_s
+    end
+  end
+
+  def relative_time(time)
+    return "" if time.blank?
+    "#{time_ago_in_words(time)} ago"
+  end
+
+  def truncate_html(text, length = 150)
+    return "" if text.blank?
+
+    # Remove HTML tags for preview
+    clean_text = text.gsub(/<[^>]*>/, '')
+    # Truncate and add ellipsis if needed
+    if clean_text.length > length
+      clean_text[0...length].sub(/\s+\S*\z/, '') + '...'
+    else
+      clean_text
     end
   end
 end

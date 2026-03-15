@@ -4,14 +4,20 @@ export default class extends Controller {
   static targets = ["layout", "toggle", "label"]
 
   connect() {
-    this.focused = this.layoutTarget.classList.contains("focus-mode-active")
+    if (this.hasLayoutTarget) {
+      this.focused = this.layoutTarget.classList.contains("focus-mode-active")
+    } else {
+      this.focused = false
+    }
     this.updateToggleAppearance()
   }
 
   toggle(event) {
     event.preventDefault()
     this.focused = !this.focused
-    this.layoutTarget.classList.toggle("focus-mode-active", this.focused)
+    if (this.hasLayoutTarget) {
+      this.layoutTarget.classList.toggle("focus-mode-active", this.focused)
+    }
     this.updateToggleAppearance()
   }
 

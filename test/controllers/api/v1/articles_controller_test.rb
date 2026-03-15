@@ -24,12 +24,13 @@ module Api
 
         assert json.key?("articles")
         assert json.key?("meta")
-        assert_equal 3, json["articles"].length
+        assert_equal 2, json["articles"].length
 
         # Alice has subscriptions to tech_crunch and hacker_news
+        # tc_article_2 is archived so it's excluded
         article_ids = json["articles"].map { |a| a["id"] }
         assert_includes article_ids, @tc_article_1.id
-        assert_includes article_ids, @tc_article_2.id
+        assert_not_includes article_ids, @tc_article_2.id
         assert_includes article_ids, @hn_article_1.id
         assert_not_includes article_ids, @ruby_article_1.id
       end
@@ -79,8 +80,8 @@ module Api
         json = JSON.parse(response.body)
 
         article_ids = json["articles"].map { |a| a["id"] }
-        # hn_article_1 is archived for alice
-        assert_not_includes article_ids, @hn_article_1.id
+        # tc_article_2 is archived for alice
+        assert_not_includes article_ids, @tc_article_2.id
       end
 
       test "index filters by feed_id" do
@@ -92,7 +93,8 @@ module Api
         assert_response :success
         json = JSON.parse(response.body)
 
-        assert_equal 2, json["articles"].length
+        # Only tc_article_1 is returned (tc_article_2 is archived)
+        assert_equal 1, json["articles"].length
         json["articles"].each do |article|
           assert_equal @tech_crunch.id, article["feed"]["id"]
         end
@@ -210,11 +212,16 @@ module Api
         assert_equal true, tc_1["state"]["starred"]
         assert_equal false, tc_1["state"]["archived"]
 
+        # tc_article_2 is archived so it's not returned
         tc_2 = json["articles"].find { |a| a["id"] == @tc_article_2.id }
-        assert_not_nil tc_2
-        assert_equal true, tc_2["state"]["read"]
-        assert_equal false, tc_2["state"]["starred"]
-        assert_equal false, tc_2["state"]["archived"]
+        assert_nil tc_2
+
+        # Check hn_article_1 instead
+        hn_1 = json["articles"].find { |a| a["id"] == @hn_article_1.id }
+        assert_not_nil hn_1
+        assert_equal false, hn_1["state"]["read"]
+        assert_equal false, hn_1["state"]["starred"]
+        assert_equal false, hn_1["state"]["archived"]
       end
 
       # GET /api/v1/articles/:id

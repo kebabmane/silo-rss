@@ -6,19 +6,13 @@ module Api
 
       # POST /api/v1/auth/login
       def login
-        user = User.find_by(email_address: params[:email])
+        user = User.authenticate_by(email_address: params[:email], password: params[:password])
 
-        # Always run password check to prevent timing attacks
         if user
-          authenticated = user.authenticate(params[:password])
-        else
-          # Run a dummy BCrypt check to prevent timing attacks
-          BCrypt::Password.create("dummy")
-          authenticated = false
-        end
-
-        if authenticated
-          if user.confirmed?
+          # Check if admin confirmation is required (same logic as web login)
+          if Setting.require_admin_confirmation? && !user.confirmed?
+            render json: { error: "Account pending admin approval" }, status: :forbidden
+          else
             api_token = user.issue_api_token!
             render json: {
               user: {
@@ -28,8 +22,6 @@ module Api
                 api_token_expires_at: user.api_token_expires_at
               }
             }, status: :ok
-          else
-            render json: { error: 'Account pending admin approval' }, status: :forbidden
           end
         else
           render json: { error: 'Invalid email or password' }, status: :unauthorized
@@ -45,13 +37,18 @@ module Api
         )
 
         if user.save
+          # Auto-confirm if admin confirmation is not required (same as web registration)
+          unless Setting.require_admin_confirmation?
+            user.confirm!
+          end
+
           render json: {
             user: {
               id: user.id,
               email: user.email_address,
               confirmed: user.confirmed?
             },
-            message: 'Account created. Awaiting admin approval before activation.'
+            message: user.confirmed? ? 'Account created and confirmed.' : 'Account created. Awaiting admin approval before activation.'
           }, status: :created
         else
           render json: { error: user.errors.full_messages }, status: :unprocessable_entity

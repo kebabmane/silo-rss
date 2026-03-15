@@ -1,4 +1,6 @@
 class DashboardController < ApplicationController
+  include ArticleStatePreloader
+
   def index
     @categories = Current.user.subscriptions.distinct.pluck(:category).compact.sort
     subscriptions = Current.user.subscriptions.includes(:feed).order(:category, :custom_name).to_a
@@ -31,20 +33,14 @@ class DashboardController < ApplicationController
     # Default: show unread articles only
     @filter = params[:filter] || "unread"
     if @filter == "unread"
-      articles_query = articles_query.left_joins(:article_states)
-                                    .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", Current.user.id, false)
+      # unread_for scope already excludes archived articles
+      articles_query = articles_query.unread_for(Current.user)
     elsif @filter == "starred"
-      articles_query = articles_query.joins(:article_states)
-                                    .where(article_states: { user_id: Current.user.id, starred: true })
+      articles_query = articles_query.starred_for(Current.user).all_unarchived_for(Current.user)
     elsif @filter == "archived"
-      articles_query = articles_query.joins(:article_states)
-                                    .where(article_states: { user_id: Current.user.id, archived: true })
-    end
-
-    # Always exclude archived from default views unless explicitly filtered
-    unless @filter == "archived"
-      articles_query = articles_query.left_joins(:article_states)
-                                    .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
+      articles_query = articles_query.archived_for(Current.user)
+    else
+      articles_query = articles_query.all_unarchived_for(Current.user)
     end
 
     # Paginate articles - 20 per page for faster initial load
@@ -67,10 +63,6 @@ class DashboardController < ApplicationController
 
   def more_articles
     # Fetch additional articles for infinite scrolling
-    @categories = Current.user.subscriptions.distinct.pluck(:category).compact.sort
-    subscriptions = Current.user.subscriptions.includes(:feed).order(:category, :custom_name).to_a
-    @subscriptions_by_category = subscriptions.group_by(&:category)
-
     articles_query = Article.joins(feed: :subscriptions)
                             .where(subscriptions: { user_id: Current.user.id })
                             .includes(:feed)
@@ -86,19 +78,13 @@ class DashboardController < ApplicationController
 
     filter = params[:filter] || "unread"
     if filter == "unread"
-      articles_query = articles_query.left_joins(:article_states)
-                                    .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", Current.user.id, false)
+      articles_query = articles_query.unread_for(Current.user)
     elsif filter == "starred"
-      articles_query = articles_query.joins(:article_states)
-                                    .where(article_states: { user_id: Current.user.id, starred: true })
+      articles_query = articles_query.starred_for(Current.user).all_unarchived_for(Current.user)
     elsif filter == "archived"
-      articles_query = articles_query.joins(:article_states)
-                                    .where(article_states: { user_id: Current.user.id, archived: true })
-    end
-
-    unless filter == "archived"
-      articles_query = articles_query.left_joins(:article_states)
-                                    .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
+      articles_query = articles_query.archived_for(Current.user)
+    else
+      articles_query = articles_query.all_unarchived_for(Current.user)
     end
 
     # Validate page parameter
@@ -112,8 +98,8 @@ class DashboardController < ApplicationController
     respond_to do |format|
       format.turbo_stream
     end
-  rescue StandardError => e
-    # Handle any errors (invalid page, etc.)
+  rescue Pagy::OverflowError
+    # Handle invalid page numbers (e.g., page exceeds total pages)
     @articles = []
     respond_to do |format|
       format.turbo_stream { render :more_articles }
@@ -125,23 +111,4 @@ class DashboardController < ApplicationController
     head :ok
   end
 
-  private
-
-  def preload_article_states(articles, user)
-    # Get article IDs
-    article_ids = articles.map(&:id)
-
-    # Load all article states for these articles and this user in one query
-    states = ArticleState.where(article_id: article_ids, user_id: user.id).to_a
-
-    # Create a hash for quick lookup
-    states_by_article_id = states.index_by(&:article_id)
-
-    # Preload the states into the articles association
-    articles.each do |article|
-      state = states_by_article_id[article.id]
-      article.association(:article_states).target = state ? [state] : []
-      article.association(:article_states).loaded!
-    end
-  end
 end

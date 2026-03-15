@@ -1,11 +1,10 @@
-class Admin::FeedsController < ApplicationController
-  before_action :ensure_admin!
+class Admin::FeedsController < AdminController
   before_action :set_feed, only: [:destroy]
 
   def index
     # Load feeds with eager-loaded subscriptions to avoid N+1 queries
-    # Note: For very large datasets (>10k feeds), add pagination with pagy gem
-    @feeds = Feed.includes(:subscriptions).order(updated_at: :desc)
+    feeds_scope = Feed.includes(:subscriptions).order(updated_at: :desc)
+    @pagy, @feeds = pagy(feeds_scope, items: 100)
 
     # Add subscriber_count to each feed from already-loaded subscriptions
     @feeds.each do |feed|
@@ -52,9 +51,5 @@ class Admin::FeedsController < ApplicationController
 
   def set_feed
     @feed = Feed.find(params[:id])
-  end
-
-  def ensure_admin!
-    redirect_to dashboard_path, alert: "Access denied." unless Current.user&.admin?
   end
 end

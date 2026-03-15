@@ -1,5 +1,8 @@
 class ArticlesController < ApplicationController
-  before_action :set_article, only: [:show, :toggle_read, :toggle_starred, :toggle_archived, :fetch_content]
+  include ArticleStatePreloader
+
+  rescue_from ActiveRecord::RecordNotFound, with: :raise_not_found if Rails.env.test?
+  before_action :set_article_for_state, only: [:toggle_read, :toggle_starred, :toggle_archived]
 
   def index
     @articles = Article.joins(feed: :subscriptions)
@@ -18,18 +21,14 @@ class ArticlesController < ApplicationController
     end
 
     if params[:filter] == "unread"
-      @articles = @articles.left_joins(:article_states)
-                          .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.read = ?)", Current.user.id, false)
+      @articles = @articles.unread_for(Current.user)
     elsif params[:filter] == "starred"
-      @articles = @articles.joins(:article_states)
-                          .where(article_states: { user_id: Current.user.id, starred: true })
+      @articles = @articles.starred_for(Current.user).all_unarchived_for(Current.user)
     elsif params[:filter] == "archived"
-      @articles = @articles.joins(:article_states)
-                          .where(article_states: { user_id: Current.user.id, archived: true })
+      @articles = @articles.archived_for(Current.user)
     else
       # Default: exclude archived
-      @articles = @articles.left_joins(:article_states)
-                          .where("article_states.id IS NULL OR (article_states.user_id = ? AND article_states.archived = ?)", Current.user.id, false)
+      @articles = @articles.all_unarchived_for(Current.user)
     end
 
     @articles = @articles.limit(50)
@@ -39,6 +38,7 @@ class ArticlesController < ApplicationController
   end
 
   def show
+    @article = find_article_for_display!
     @article_state = @article.state_for(Current.user)
   end
 
@@ -71,63 +71,47 @@ class ArticlesController < ApplicationController
   def toggle_read
     state = @article.state_for(Current.user)
     state.update(read: !state.read)
-    redirect_back fallback_location: dashboard_url, status: :see_other
+    head :no_content
   end
 
   def toggle_starred
     state = @article.state_for(Current.user)
     state.update(starred: !state.starred)
-    redirect_back fallback_location: dashboard_url, status: :see_other
+    head :no_content
   end
 
   def toggle_archived
     state = @article.state_for(Current.user)
     state.update(archived: !state.archived)
-    redirect_back fallback_location: dashboard_url, status: :see_other
+    redirect_to articles_path
   end
 
   def fetch_content
+    @article = find_article_for_display!
     # Clear existing full_content to force re-fetch
     @article.update(full_content: nil)
 
-    # Fetch content synchronously for immediate feedback
-    success = ArticleContentFetcherService.new(@article).fetch
+    # Enqueue background job for async content fetching
+    ArticleContentFetchJob.perform_later(@article.id)
 
-    if success
-      flash[:notice] = "Full content fetched successfully!"
-    else
-      flash[:alert] = "Failed to fetch full content. Please try again later."
-    end
-
-    # Redirect to reload the article with updated content
-    redirect_to dashboard_path(article_id: @article.id)
+    redirect_to dashboard_path(article_id: @article.id), notice: "Full content fetch has been queued."
   end
 
   private
 
-  def set_article
-    @article = Article
-      .joins(feed: :subscriptions)
-      .where(subscriptions: { user_id: Current.user.id })
-      .includes(:feed)
-      .find(params[:id])
+  def find_article_for_display!
+    article = Article.includes(:feed).find(params[:id])
+    raise ActiveRecord::RecordNotFound unless Current.user.feeds.exists?(article.feed_id)
+    article
   end
 
-  def preload_article_states(articles, user)
-    # Get article IDs
-    article_ids = articles.map(&:id)
+  def set_article_for_state
+    @article = Article.joins(feed: :subscriptions)
+                      .where(subscriptions: { user_id: Current.user.id })
+                      .find(params[:id])
+  end
 
-    # Load all article states for these articles and this user in one query
-    states = ArticleState.where(article_id: article_ids, user_id: user.id).to_a
-
-    # Create a hash for quick lookup
-    states_by_article_id = states.index_by(&:article_id)
-
-    # Preload the states into the articles association
-    articles.each do |article|
-      state = states_by_article_id[article.id]
-      article.association(:article_states).target = state ? [state] : []
-      article.association(:article_states).loaded!
-    end
+  def raise_not_found(exception)
+    raise exception
   end
 end

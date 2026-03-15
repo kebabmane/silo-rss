@@ -1,6 +1,4 @@
-class Admin::DashboardController < ApplicationController
-  before_action :require_admin
-
+class Admin::DashboardController < AdminController
   def index
     @total_users = User.count
     @total_feeds = Feed.count
@@ -15,20 +13,44 @@ class Admin::DashboardController < ApplicationController
 
   private
 
-  def require_admin
-    unless Current.user&.admin?
-      redirect_to root_path, alert: "You must be an admin to access this page."
+  def calculate_database_size
+    # For SQLite, get the actual database file size from configuration
+    config = Rails.configuration.database_configuration[Rails.env]
+    db_path = config&.dig("database")
+
+    return "N/A" unless db_path
+
+    # Handle both absolute and relative paths
+    full_path = if Pathname.new(db_path).absolute?
+                  db_path
+                else
+                  File.join(Rails.root, db_path)
+                end
+
+    if File.exist?(full_path)
+      size_bytes = File.size(full_path)
+      format_bytes(size_bytes)
+    else
+      "N/A"
     end
+  rescue => e
+    Rails.logger.debug("Error calculating database size: #{e.message}")
+    "N/A"
   end
 
-  def calculate_database_size
-    # Get approximate database size
-    result = ActiveRecord::Base.connection.execute(
-      "SELECT pg_size_pretty(pg_database_size(current_database())) as size"
-    ).first
-    result ? result["size"] : "N/A"
-  rescue
-    "N/A"
+  def format_bytes(bytes)
+    return "0 B" if bytes == 0
+
+    units = ["B", "KB", "MB", "GB"]
+    size = bytes.to_f
+    unit_index = 0
+
+    while size >= 1024 && unit_index < units.length - 1
+      size /= 1024
+      unit_index += 1
+    end
+
+    "#{size.round(2)} #{units[unit_index]}"
   end
 
   def calculate_orphaned_feeds_count
