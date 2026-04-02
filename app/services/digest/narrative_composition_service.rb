@@ -73,6 +73,8 @@ module Digest
     end
 
     def extract_section(content, type)
+      return default_opening if content.blank?
+
       case type
       when "opening"
         # Try to find content between "Big Picture" and "TRANSITION"
@@ -87,6 +89,8 @@ module Digest
 
     def extract_transitions(content)
       transitions = {}
+
+      return transitions if content.blank?
 
       @summaries.each do |summary|
         theme = summary[:theme]

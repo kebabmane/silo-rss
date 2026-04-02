@@ -1,0 +1,16 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+alice_ios_device:
+  user: alice
+  device_token: alice_ios_token_123456789
+  platform: ios
+
+alice_android_device:
+  user: alice
+  device_token: alice_android_token_987654321
+  platform: android
+
+bob_ios_device:
+  user: bob
+  device_token: bob_ios_token_111222333
+  platform: ios

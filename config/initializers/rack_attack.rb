@@ -11,8 +11,18 @@ class Rack::Attack
   # Throttle login attempts by email (5 attempts per 20 seconds)
   throttle("logins/email", limit: 5, period: 20.seconds) do |req|
     if req.path == "/api/v1/auth/login" && req.post?
-      # Return the email if present
-      req.params["email"].to_s.downcase.presence
+      # Handle both form and JSON requests
+      email = req.params["email"]
+      if email.blank? && req.content_type&.include?("json")
+        begin
+          body = JSON.parse(req.body.read)
+          req.body.rewind if req.body.respond_to?(:rewind)
+          email = body["email"]
+        rescue JSON::ParserError
+          # Ignore parse errors
+        end
+      end
+      email.to_s.downcase.presence
     end
   end
 
@@ -49,10 +59,10 @@ class Rack::Attack
         "Content-Type" => "application/json",
         "Retry-After" => retry_after.to_s
       },
-      [{
+      [ {
         error: "Rate limit exceeded. Please try again later.",
         retry_after: retry_after
-      }.to_json]
+      }.to_json ]
     ]
   end
 end

@@ -102,15 +102,18 @@ module Digest
     def extract_sections(content)
       sections = []
 
-      # Find all h2 headers
-      content.scan(/^## (.+)$/m).each_with_index do |(title), idx|
-        anchor = title.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/^-|-$/, "")
-        sections << {
-          "title" => title,
-          "anchor" => anchor,
-          "level" => 2,
-          "index" => idx
-        }
+      # Find all h2 headers - scan line by line for markdown headers
+      content.to_s.each_line do |line|
+        if line =~ /^## (.+)$/
+          title = $1.strip
+          anchor = title.downcase.gsub(/[^a-z0-9]+/, "-").gsub(/^-|-$/, "")
+          sections << {
+            "title" => title,
+            "anchor" => anchor,
+            "level" => 2,
+            "index" => sections.length
+          }
+        end
       end
 
       sections
