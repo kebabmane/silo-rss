@@ -12,36 +12,17 @@ class DashboardController < ApplicationController
     @suggested_feeds = SuggestedFeed.ordered
     @suggested_feeds_by_category = @suggested_feeds.group_by(&:category)
 
-    # Get articles for the selected feed/category or all articles
-    articles_query = Article.joins(feed: :subscriptions)
-                            .where(subscriptions: { user_id: Current.user.id })
-                            .includes(:feed)
-                            .recent
+    # Use query object for article filtering
+    articles_query = ArticleFilterQuery.new(
+      user: Current.user,
+      feed_id: params[:feed_id],
+      category: params[:category],
+      filter: params[:filter] || "unread"
+    ).call
 
-    # Apply filters
-    if params[:feed_id].present?
-      articles_query = articles_query.where(feed_id: params[:feed_id])
-      @selected_feed = Current.user.feeds.find_by(id: params[:feed_id])
-    end
-
-    if params[:category].present?
-      # Avoid duplicate joins - already joined above
-      articles_query = articles_query.where(subscriptions: { category: params[:category] })
-      @selected_category = params[:category]
-    end
-
-    # Default: show unread articles only
+    @selected_feed = Current.user.feeds.find_by(id: params[:feed_id]) if params[:feed_id].present?
+    @selected_category = params[:category] if params[:category].present?
     @filter = params[:filter] || "unread"
-    if @filter == "unread"
-      # unread_for scope already excludes archived articles
-      articles_query = articles_query.unread_for(Current.user)
-    elsif @filter == "starred"
-      articles_query = articles_query.starred_for(Current.user).all_unarchived_for(Current.user)
-    elsif @filter == "archived"
-      articles_query = articles_query.archived_for(Current.user)
-    else
-      articles_query = articles_query.all_unarchived_for(Current.user)
-    end
 
     # Paginate articles - 20 per page for faster initial load
     @pagy, @articles = pagy(articles_query, items: 20)
@@ -50,42 +31,17 @@ class DashboardController < ApplicationController
     preload_article_states(@articles, Current.user)
 
     # Select first article if available
-    if params[:article_id].present?
-      @selected_article = Article
-        .joins(feed: :subscriptions)
-        .where(subscriptions: { user_id: Current.user.id })
-        .includes(:feed)
-        .find_by(id: params[:article_id])
-    else
-      @selected_article = @articles.first
-    end
+    @selected_article = find_selected_article
   end
 
   def more_articles
-    # Fetch additional articles for infinite scrolling
-    articles_query = Article.joins(feed: :subscriptions)
-                            .where(subscriptions: { user_id: Current.user.id })
-                            .includes(:feed)
-                            .recent
-
-    if params[:feed_id].present?
-      articles_query = articles_query.where(feed_id: params[:feed_id])
-    end
-
-    if params[:category].present?
-      articles_query = articles_query.where(subscriptions: { category: params[:category] })
-    end
-
-    filter = params[:filter] || "unread"
-    if filter == "unread"
-      articles_query = articles_query.unread_for(Current.user)
-    elsif filter == "starred"
-      articles_query = articles_query.starred_for(Current.user).all_unarchived_for(Current.user)
-    elsif filter == "archived"
-      articles_query = articles_query.archived_for(Current.user)
-    else
-      articles_query = articles_query.all_unarchived_for(Current.user)
-    end
+    # Use query object for article filtering
+    articles_query = ArticleFilterQuery.new(
+      user: Current.user,
+      feed_id: params[:feed_id],
+      category: params[:category],
+      filter: params[:filter] || "unread"
+    ).call
 
     # Validate page parameter
     page = (params[:page] || 1).to_i
@@ -111,4 +67,17 @@ class DashboardController < ApplicationController
     head :ok
   end
 
+  private
+
+  def find_selected_article
+    if params[:article_id].present?
+      Article
+        .joins(feed: :subscriptions)
+        .where(subscriptions: { user_id: Current.user.id })
+        .includes(:feed)
+        .find_by(id: params[:article_id])
+    else
+      @articles.first
+    end
+  end
 end

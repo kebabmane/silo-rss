@@ -1,7 +1,7 @@
 class FeedsController < ApplicationController
   OPML_UPLOAD_LIMIT = 1.megabyte
 
-  before_action :set_feed, only: [:destroy]
+  before_action :set_feed, only: [ :destroy ]
 
   def index
     @subscriptions = Current.user.subscriptions.includes(:feed).order(:category, :custom_name)
@@ -16,15 +16,7 @@ class FeedsController < ApplicationController
     discovery_result = FeedDiscoveryService.new(url).discover
 
     if discovery_result
-      @feed = Feed.find_or_initialize_by(feed_url: discovery_result[:feed_url])
-
-      if @feed.new_record?
-        @feed.site_url = discovery_result[:site_url]
-        fetch_initial_metadata(@feed)
-        @feed.title = (URI.parse(@feed.feed_url).host rescue "Unknown Feed") if @feed.title.blank?
-        @feed.save
-      end
-
+      @feed = FeedCreatorService.create_from_discovery(discovery_result)
       FeedRefreshJob.perform_later(@feed.id)
 
       @existing_categories = Current.user.subscriptions.distinct.pluck(:category).compact.sort
@@ -45,6 +37,12 @@ class FeedsController < ApplicationController
     end
   rescue SocketError, Timeout::Error, Errno::ECONNREFUSED, HTTParty::Error, Feedjira::NoParserAvailable, URI::InvalidURIError => e
     Rails.logger.warn("Feed discovery error: #{e.message}")
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
+      format.html { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
+    end
+  rescue FeedCreatorService::Error => e
+    Rails.logger.error("Feed creation error: #{e.message}")
     respond_to do |format|
       format.turbo_stream { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
       format.html { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
@@ -160,7 +158,7 @@ class FeedsController < ApplicationController
   end
 
   def find_or_create_feed_from_params
-    # First try to find an existing Feed
+    # First try to find an existing Feed by ID
     feed = Feed.find_by(id: params[:feed_id])
     return feed if feed
 
@@ -168,19 +166,9 @@ class FeedsController < ApplicationController
     suggested_feed = SuggestedFeed.find_by(id: params[:feed_id])
     return nil unless suggested_feed
 
-    # Create or find a Feed from the SuggestedFeed's URL
-    feed = Feed.find_or_initialize_by(feed_url: suggested_feed.feed_url)
-    if feed.new_record?
-      feed.title = suggested_feed.title
-      feed.site_url = suggested_feed.site_url
-      fetch_initial_metadata(feed)
-      feed.title = (URI.parse(feed.feed_url).host rescue "Unknown Feed") if feed.title.blank?
-      feed.save
-    end
-    feed
-  end
-
-  def fetch_initial_metadata(feed)
-    FeedFetcherService.new(feed).fetch_metadata
+    # Create or find a Feed from the SuggestedFeed
+    FeedCreatorService.create_from_suggested(suggested_feed)
+  rescue FeedCreatorService::Error
+    nil
   end
 end
