@@ -100,7 +100,7 @@ jobs:
 
       - name: Add server to known_hosts
         run: |
-          ssh-keyscan -H ${{ secrets.DROPLET_IP || 'your-droplet-ip' }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Setup SSH agent
         run: |
@@ -108,28 +108,30 @@ jobs:
           ssh-add ~/.ssh/deploy_key
 
       - name: Install Kamal
-        run: gem install kamal
+        run: |
+          gem install kamal -v $(grep -A1 '  kamal' Gemfile.lock | tail -1 | tr -d '()')
 
       - name: Deploy with Kamal
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          KAMAL_DEPLOY_HOST: ${{ secrets.DROPLET_IP }}
         run: |
-          bundle exec kamal deploy
+          kamal deploy
 
       - name: Health check
         run: |
           sleep 5
-          # Check if the app is responding (replace with your actual domain)
+          # Check if the app is responding
           curl -f -s -o /dev/null -w "Health check: %{http_code}\n" \
-            https://app.your-domain.com/up || true
+            https://silo.hannah-co.com/up || true
 
       - name: Deployment success notification
         if: success()
         run: |
           echo "✅ Deployment successful!"
-          echo "App should be live at: https://app.your-domain.com"
+          echo "App should be live at: https://silo.hannah-co.com"
 
       - name: Deployment failure notification
         if: failure()
