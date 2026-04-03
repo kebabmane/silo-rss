@@ -1,0 +1,18 @@
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build  # Use build stage which has build tools
+    command: ["./bin/rails", "test"]
+    volumes:
+      - .:/rails
+      - bundle-cache:/usr/local/bundle
+    environment:
+      - RAILS_ENV=test
+      - SECRET_KEY_BASE=dummy_secret_key_base_for_testing
+      - RAILS_MASTER_KEY=dummy_master_key_for_testing
+    working_dir: /rails
+
+volumes:
+  bundle-cache:
