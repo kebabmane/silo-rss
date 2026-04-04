@@ -101,7 +101,7 @@
     .dashboard-sidebar {
       display: flex;
       overflow-x: auto;
-      max-height: auto;
+      max-height: none;
       padding: 0.5rem;
       gap: 0.5rem;
     }
@@ -115,7 +115,7 @@
     }
 
     .dashboard-article-list {
-      max-height: auto;
+      max-height: none;
     }
   }
 }

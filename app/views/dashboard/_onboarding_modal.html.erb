@@ -1,6 +1,6 @@
 <% subscribed_feed_urls = @subscriptions.map { |s| s.feed.feed_url } %>
 
-<div class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4"
+<div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4"
      data-controller="onboarding"
      data-onboarding-feeds-path-value="<%= feeds_path %>"
      data-onboarding-mark-completed-path-value="<%= mark_onboarding_completed_path %>"

@@ -61,14 +61,14 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
               <% unless user.confirmed? %>
-                <%= button_to "Confirm", confirm_admin_user_path(user), method: :patch, class: "inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md", data: { turbo_confirm: "Confirm #{user.email_address}?" } %>
+                <%= button_to "Confirm", confirm_admin_user_path(user), method: :patch, class: "inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 dark:hover:bg-green-500 text-white text-xs font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900", data: { turbo_confirm: "Confirm #{user.email_address}?" } %>
               <% end %>
 
               <% if user != Current.user %>
                 <% if user.admin? %>
-                  <%= button_to "Revoke Admin", admin_user_path(user, user: { admin: false }), method: :patch, class: "inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md", data: { turbo_confirm: "Remove admin rights from #{user.email_address}?" } %>
+                  <%= button_to "Revoke Admin", admin_user_path(user, user: { admin: false }), method: :patch, class: "inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 dark:hover:bg-red-500 text-white text-xs font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900", data: { turbo_confirm: "Remove admin rights from #{user.email_address}?" } %>
                 <% else %>
-                  <%= button_to "Make Admin", admin_user_path(user, user: { admin: true }), method: :patch, class: "inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md", data: { turbo_confirm: "Grant admin rights to #{user.email_address}?" } %>
+                  <%= button_to "Make Admin", admin_user_path(user, user: { admin: true }), method: :patch, class: "inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white text-xs font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900", data: { turbo_confirm: "Grant admin rights to #{user.email_address}?" } %>
                 <% end %>
               <% end %>
             </td>

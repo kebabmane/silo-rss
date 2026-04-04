@@ -2,8 +2,8 @@
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Feeds</h1>
     <div class="space-x-2">
-      <%= link_to "Add Feed", new_feed_path, class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
-      <%= link_to "Export OPML", export_opml_feeds_path, class: "px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700" %>
+      <%= link_to "Add Feed", new_feed_path, class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900" %>
+      <%= link_to "Export OPML", export_opml_feeds_path, class: "px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900" %>
     </div>
   </div>
 
@@ -13,7 +13,7 @@
     <%= form_with url: import_opml_feeds_path, method: :post, multipart: true do |f| %>
       <div class="flex items-center space-x-4">
         <%= f.file_field :opml_file, accept: '.opml,.xml', class: "block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" %>
-        <%= f.submit "Import", class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+        <%= f.submit "Import", class: "px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900" %>
       </div>
     <% end %>
   </div>
