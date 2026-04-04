@@ -99,24 +99,87 @@ Press `?` to see all shortcuts:
 - `v` - View original article
 - `?` - Show help
 
-### OPML Import/Export
+## API & CLI
 
-**Import:**
-1. Go to **"Manage Feeds"**
-2. Click **"Choose File"** under Import OPML
-3. Select your `.opml` or `.xml` file
-4. Click **"Import"**
+Silo provides both a REST API and a command-line interface for integration with mobile apps, automation scripts, and AI agents.
 
-**Export:**
-1. Go to **"Manage Feeds"**
-2. Click **"Export OPML"**
-3. Save the file for backup or migration
+### REST API
 
-### Dark Mode
+The API is available at `/api/v1` and provides full access to feeds, articles, and user data.
 
-- Click the sun/moon icon in the navigation
-- Theme preference is saved automatically
-- Works across all pages
+**Key Features:**
+- Bearer token authentication
+- Delta sync for mobile offline support (`/api/v1/sync`)
+- Cursor-based pagination for efficient list loading
+- Full-text search across articles
+- Batch operations for bulk updates
+- CLI tokens (non-expiring) for automation
+
+**Quick Example:**
+```bash
+# Login
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password"}'
+
+# List unread articles
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:3000/api/v1/articles?filter=unread&limit=20"
+
+# Delta sync for mobile
+curl -H "Authorization: Bearer $TOKEN" \
+  "http://localhost:3000/api/v1/sync?since=2025-01-01T00:00:00Z"
+```
+
+See [docs/api/API_DOCUMENTATION.md](docs/api/API_DOCUMENTATION.md) for complete API reference and [openapi.yaml](openapi.yaml) for OpenAPI specification.
+
+### CLI Tool
+
+The `silo-cli` gem provides command-line access to your feeds.
+
+**Installation:**
+```bash
+cd cli
+bundle install
+```
+
+**Usage:**
+```bash
+# Authenticate
+silo auth login
+
+# List feeds with unread counts
+silo feeds list
+
+# Add a new feed
+silo feeds add https://example.com/blog --category "Technology"
+
+# Read articles
+silo articles list --filter=unread --limit=10
+silo articles show 123
+
+# Mark as read
+silo articles read 123
+```
+
+See [cli/README.md](cli/README.md) for detailed CLI documentation.
+
+### AI Agent Integration (MCP)
+
+Silo includes an MCP (Model Context Protocol) server for AI agents like Claude:
+
+```bash
+# Start MCP server
+silo mcp
+```
+
+AI agents can then:
+- List feeds and unread counts
+- Search articles
+- Mark articles as read
+- Subscribe to new feeds
+
+See [SKILL.md](SKILL.md) for AI agent configuration.
 
 ## Configuration
 

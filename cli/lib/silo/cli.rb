@@ -390,6 +390,69 @@ module Silo
       end
     end
 
+    desc "export_opml", "Export subscriptions to OPML format"
+    option :output, type: :string, desc: "Output file path (default: stdout)"
+    def export_opml
+      config = load_config
+      ensure_configured!(config)
+
+      response = HTTParty.get(
+        "#{config["api_url"] || "http://localhost:3000/api/v1"}/opml/export",
+        headers: { "Authorization" => config["token"] }
+      )
+
+      if response.success?
+        opml_content = response.body
+        if options[:output]
+          File.write(options[:output], opml_content)
+          say "OPML exported to #{options[:output]}", :green
+        else
+          puts opml_content
+        end
+      else
+        error "Failed to export OPML: #{response.code}"
+        exit 1
+      end
+    end
+
+    desc "import_opml FILE", "Import subscriptions from OPML file"
+    option :category, type: :string, desc: "Category for imported feeds"
+    def import_opml(file)
+      config = load_config
+      ensure_configured!(config)
+
+      unless File.exist?(file)
+        error "File not found: #{file}"
+        exit 1
+      end
+
+      opml_content = File.read(file)
+
+      response = HTTParty.post(
+        "#{config["api_url"] || "http://localhost:3000/api/v1"}/opml/import",
+        body: {
+          opml: opml_content,
+          category: options[:category]
+        }.to_json,
+        headers: {
+          "Authorization" => config["token"],
+          "Content-Type" => "application/json"
+        }
+      )
+
+      if response.success?
+        data = JSON.parse(response.body)
+        say "Imported #{data["imported_count"]} feeds", :green
+        if data["errors"] && !data["errors"].empty?
+          say "Errors:"
+          data["errors"].each { |err| say "  - #{err}" }
+        end
+      else
+        error "Failed to import OPML: #{response.code}"
+        exit 1
+      end
+    end
+
     private
 
     def load_config
@@ -490,6 +553,28 @@ module Silo
       end
     end
 
+    desc "unread ARTICLE_ID", "Mark article as unread"
+    def unread(article_id)
+      config = load_config
+      ensure_configured!(config)
+
+      response = HTTParty.patch(
+        "#{config["api_url"] || "http://localhost:3000/api/v1"}/articles/#{article_id}/mark_read",
+        body: { read: false }.to_json,
+        headers: {
+          "Authorization" => config["token"],
+          "Content-Type" => "application/json"
+        }
+      )
+
+      if response.success?
+        say "Marked as unread", :green
+      else
+        error "Failed to update article: #{response.code}"
+        exit 1
+      end
+    end
+
     desc "star ARTICLE_ID", "Toggle starred status"
     option :unstar, type: :boolean, default: false, desc: "Remove star"
     def star(article_id)
@@ -535,6 +620,28 @@ module Silo
       end
     end
 
+    desc "unarchive ARTICLE_ID", "Unarchive an article"
+    def unarchive(article_id)
+      config = load_config
+      ensure_configured!(config)
+
+      response = HTTParty.patch(
+        "#{config["api_url"] || "http://localhost:3000/api/v1"}/articles/#{article_id}/mark_archived",
+        body: { archived: false }.to_json,
+        headers: {
+          "Authorization" => config["token"],
+          "Content-Type" => "application/json"
+        }
+      )
+
+      if response.success?
+        say "Unarchived", :green
+      else
+        error "Failed to unarchive article: #{response.code}"
+        exit 1
+      end
+    end
+
     desc "show ARTICLE_ID", "Show article details"
     def show(article_id)
       config = load_config
@@ -565,6 +672,84 @@ module Silo
         say "..." if content.length > 2000
       else
         error "Failed to fetch article: #{response.code}"
+        exit 1
+      end
+    end
+
+    desc "mark_read", "Bulk mark articles as read"
+    option :ids, type: :string, desc: "Comma-separated article IDs (e.g., 1,2,3,4)"
+    option :ids_file, type: :string, desc: "File with one article ID per line"
+    option :all, type: :boolean, default: false, desc: "Mark all articles as read"
+    option :feed_id, type: :numeric, desc: "Mark all articles in feed as read"
+    option :category, type: :string, desc: "Mark all articles in category as read"
+    def mark_read
+      config = load_config
+      ensure_configured!(config)
+
+      # Collect article IDs
+      article_ids = []
+
+      if options[:ids]
+        article_ids = options[:ids].split(",").map(&:strip).map(&:to_i)
+      elsif options[:ids_file]
+        if File.exist?(options[:ids_file])
+          article_ids = File.readlines(options[:ids_file]).map(&:strip).reject(&:empty?).map(&:to_i)
+        else
+          error "File not found: #{options[:ids_file]}"
+          exit 1
+        end
+      elsif options[:all] || options[:feed_id] || options[:category]
+        # Use mark_all_read endpoint
+        body = {}
+        body[:feed_id] = options[:feed_id] if options[:feed_id]
+        body[:category] = options[:category] if options[:category]
+
+        response = HTTParty.post(
+          "#{config["api_url"] || "http://localhost:3000/api/v1"}/articles/mark_all_read",
+          body: body.to_json,
+          headers: {
+            "Authorization" => config["token"],
+            "Content-Type" => "application/json"
+          }
+        )
+
+        if response.success?
+          data = JSON.parse(response.body)
+          say "Marked #{data["marked_count"]} articles as read", :green
+        else
+          error "Failed to mark articles as read: #{response.code}"
+          exit 1
+        end
+        return
+      else
+        error "No article IDs provided. Use --ids, --ids-file, --all, --feed-id, or --category"
+        exit 1
+      end
+
+      if article_ids.empty?
+        error "No valid article IDs found"
+        exit 1
+      end
+
+      # Use batch_update endpoint
+      response = HTTParty.post(
+        "#{config["api_url"] || "http://localhost:3000/api/v1"}/articles/batch_update",
+        body: {
+          article_ids: article_ids,
+          bulk_action: "mark_read",
+          value: true
+        }.to_json,
+        headers: {
+          "Authorization" => config["token"],
+          "Content-Type" => "application/json"
+        }
+      )
+
+      if response.success?
+        data = JSON.parse(response.body)
+        say "Marked #{data["updated_count"]} articles as read", :green
+      else
+        error "Failed to mark articles as read: #{response.code}"
         exit 1
       end
     end
@@ -610,33 +795,12 @@ module Silo
       end
     end
 
-    desc "mark_all_read", "Mark all articles as read"
+    desc "mark_all_read", "Mark all articles as read (deprecated: use mark_read --all)"
     option :feed_id, type: :numeric, desc: "Only mark articles from this feed"
     option :category, type: :string, desc: "Only mark articles in this category"
     def mark_all_read
-      config = load_config
-      ensure_configured!(config)
-
-      body = {}
-      body[:feed_id] = options[:feed_id] if options[:feed_id]
-      body[:category] = options[:category] if options[:category]
-
-      response = HTTParty.post(
-        "#{config["api_url"] || "http://localhost:3000/api/v1"}/articles/mark_all_read",
-        body: body.to_json,
-        headers: {
-          "Authorization" => config["token"],
-          "Content-Type" => "application/json"
-        }
-      )
-
-      if response.success?
-        data = JSON.parse(response.body)
-        say "Marked #{data["marked_count"]} articles as read", :green
-      else
-        error "Failed to mark articles as read: #{response.code}"
-        exit 1
-      end
+      # Delegate to mark_read with --all flag
+      invoke :mark_read, [], { all: true, feed_id: options[:feed_id], category: options[:category] }
     end
 
     private
