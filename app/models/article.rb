@@ -34,6 +34,43 @@ class Article < ApplicationRecord
             "%#{sanitized}%", "%#{sanitized}%", "%#{sanitized}%")
     end
   }
+  scope :cursor_after, ->(cursor) {
+    return all if cursor.blank?
+
+    decoded = Article.decode_cursor(cursor)
+    return all if decoded.blank?
+
+    where("published_at < ? OR (published_at = ? AND id < ?)",
+          decoded[:published_at], decoded[:published_at], decoded[:id])
+  }
+  scope :sync_since, ->(timestamp) {
+    return all if timestamp.blank?
+
+    where("articles.updated_at > ?", timestamp)
+  }
+
+  CURSOR_SEPARATOR = "_"
+
+  def self.encode_cursor(article)
+    return nil unless article
+
+    Base64.urlsafe_encode64("#{article.published_at.iso8601}#{CURSOR_SEPARATOR}#{article.id}")
+  end
+
+  def self.decode_cursor(cursor)
+    return nil if cursor.blank?
+
+    decoded = Base64.urlsafe_decode64(cursor)
+    parts = decoded.split(CURSOR_SEPARATOR, 2)
+    return nil unless parts.size == 2
+
+    {
+      published_at: Time.iso8601(parts[0]),
+      id: parts[1].to_i
+    }
+  rescue ArgumentError, StandardError
+    nil
+  end
 
   def self.fts5_available?
     return @fts5_available if defined?(@fts5_available)

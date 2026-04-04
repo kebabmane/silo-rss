@@ -1,0 +1,556 @@
+openapi: 3.1.0
+info:
+  title: Silo API
+  version: 1.1.0
+  description: |
+    RSS feed reader API for mobile apps and AI agents.
+
+    ## Authentication
+    Bearer token in Authorization header:
+    ```
+    Authorization: Bearer YOUR_TOKEN
+    ```
+
+    ## Rate Limits
+    - Authenticated: 300 requests/minute
+    - Unauthenticated: 60 requests/minute
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+  - url: https://api.silo.example.com/api/v1
+    description: Production
+
+paths:
+  /auth/login:
+    post:
+      summary: Login
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: {type: string, format: email}
+                password: {type: string, format: password}
+              required: [email, password]
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        "401":
+          description: Invalid credentials
+
+  /auth/register:
+    post:
+      summary: Register
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: {type: string, format: email}
+                password: {type: string, format: password}
+                password_confirmation: {type: string}
+              required: [email, password, password_confirmation]
+      responses:
+        "201":
+          description: Created
+
+  /auth/cli_token:
+    post:
+      summary: Generate CLI token
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cli_token: {type: string}
+                  generated_at: {type: string, format: date-time}
+
+  /sync:
+    get:
+      summary: Delta sync
+      description: Get changes since last sync for offline apps
+      tags: [Sync]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: ISO8601 timestamp of last sync
+      responses:
+        "200":
+          description: Sync data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResponse'
+
+  /sync_status:
+    get:
+      summary: Sync status
+      tags: [Sync]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Status info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncStatus'
+
+  /articles:
+    get:
+      summary: List articles
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          schema: {type: string}
+          description: Cursor for pagination
+        - name: limit
+          in: query
+          schema: {type: integer, default: 50}
+        - name: feed_id
+          in: query
+          schema: {type: integer}
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: [unread, starred, archived]
+      responses:
+        "200":
+          description: Articles list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticlesResponse'
+
+  /articles/compact:
+    get:
+      summary: Compact articles list
+      description: Minimal data for fast loading
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          schema: {type: string}
+        - name: limit
+          in: query
+          schema: {type: integer, default: 100}
+        - name: feed_id
+          in: query
+          schema: {type: integer}
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: [unread, starred]
+      responses:
+        "200":
+          description: Compact articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompactArticlesResponse'
+
+  /articles/search:
+    get:
+      summary: Search articles
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: {type: string}
+        - name: limit
+          in: query
+          schema: {type: integer, default: 50}
+      responses:
+        "200":
+          description: Search results
+
+  /articles/unread_count:
+    get:
+      summary: Get unread count
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  unread_count: {type: integer}
+
+  /articles/{id}:
+    get:
+      summary: Get article detail
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: integer}
+      responses:
+        "200":
+          description: Article detail
+
+  /articles/{id}/mark_read:
+    patch:
+      summary: Mark read/unread
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: integer}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                read: {type: boolean}
+      responses:
+        "200":
+          description: Updated
+
+  /articles/{id}/mark_starred:
+    patch:
+      summary: Mark starred/unstarred
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: integer}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                starred: {type: boolean}
+      responses:
+        "200":
+          description: Updated
+
+  /articles/mark_all_read:
+    post:
+      summary: Mark all as read
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                feed_id: {type: integer}
+                category: {type: string}
+      responses:
+        "200":
+          description: Marked
+
+  /articles/batch_update:
+    post:
+      summary: Batch update states
+      tags: [Articles]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                article_ids:
+                  type: array
+                  items: {type: integer}
+                bulk_action:
+                  type: string
+                  enum: [mark_read, mark_starred, mark_archived]
+                value: {type: boolean}
+              required: [article_ids, bulk_action, value]
+      responses:
+        "200":
+          description: Updated
+
+  /feeds:
+    get:
+      summary: List feeds
+      tags: [Feeds]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Feed list
+
+    post:
+      summary: Subscribe to feed
+      tags: [Feeds]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                feed_id: {type: integer}
+                category: {type: string}
+                custom_name: {type: string}
+              required: [feed_id]
+      responses:
+        "201":
+          description: Subscribed
+
+  /feeds/{id}:
+    delete:
+      summary: Unsubscribe
+      tags: [Feeds]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: integer}
+      responses:
+        "204":
+          description: Unsubscribed
+
+  /feeds/discover:
+    post:
+      summary: Discover feed from URL
+      tags: [Feeds]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url: {type: string, format: uri}
+              required: [url]
+      responses:
+        "200":
+          description: Discovered
+
+  /feeds/sync:
+    post:
+      summary: Trigger feed sync
+      tags: [Feeds]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Sync triggered
+
+  /feeds/{id}/icon:
+    get:
+      summary: Get feed icon
+      tags: [Feeds]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: integer}
+      responses:
+        "302":
+          description: Redirect to icon
+
+  /profile:
+    get:
+      summary: Get profile
+      tags: [Profile]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Profile
+
+    patch:
+      summary: Update profile
+      tags: [Profile]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Updated
+
+  /health:
+    get:
+      summary: Health check
+      tags: [System]
+      responses:
+        "200":
+          description: Healthy
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id: {type: integer}
+            email: {type: string}
+            api_token: {type: string}
+            api_token_expires_at: {type: string, format: date-time}
+
+    Article:
+      type: object
+      properties:
+        id: {type: integer}
+        title: {type: string}
+        content: {type: string}
+        url: {type: string, format: uri}
+        published_at: {type: string, format: date-time}
+        feed:
+          type: object
+          properties:
+            id: {type: integer}
+            title: {type: string}
+        state:
+          type: object
+          properties:
+            read: {type: boolean}
+            starred: {type: boolean}
+            archived: {type: boolean}
+
+    ArticlesResponse:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
+        pagination:
+          type: object
+          properties:
+            next_cursor: {type: string}
+            has_more: {type: boolean}
+
+    CompactArticlesResponse:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            type: object
+            properties:
+              id: {type: integer}
+              title: {type: string}
+              feed_name: {type: string}
+              feed_id: {type: integer}
+              published_at: {type: string, format: date-time}
+              read: {type: boolean}
+              starred: {type: boolean}
+        pagination:
+          type: object
+          properties:
+            next_cursor: {type: string}
+            has_more: {type: boolean}
+
+    SyncResponse:
+      type: object
+      properties:
+        sync_meta:
+          type: object
+          properties:
+            synced_at: {type: string, format: date-time}
+            since: {type: string, format: date-time}
+            has_more: {type: boolean}
+        articles:
+          type: object
+          properties:
+            added:
+              type: array
+              items:
+                $ref: '#/components/schemas/Article'
+            updated:
+              type: array
+              items:
+                $ref: '#/components/schemas/Article'
+        feeds:
+          type: object
+          properties:
+            added: {type: array}
+            updated: {type: array}
+            deleted:
+              type: array
+              items: {type: integer}
+        states:
+          type: array
+          items:
+            type: object
+            properties:
+              article_id: {type: integer}
+              read: {type: boolean}
+              starred: {type: boolean}
+              archived: {type: boolean}
+              updated_at: {type: string, format: date-time}
+
+    SyncStatus:
+      type: object
+      properties:
+        unread_count: {type: integer}
+        total_articles: {type: integer}
+        starred_count: {type: integer}
+        feeds_count: {type: integer}
+        has_updates: {type: boolean}
+        last_sync_at: {type: string, format: date-time}

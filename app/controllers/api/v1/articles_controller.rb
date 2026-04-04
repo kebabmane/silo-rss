@@ -13,8 +13,6 @@ module Api
 
         limit = params[:limit].present? ? params[:limit].to_i : 50
         limit = 50 if limit <= 0
-        offset = params[:offset].present? ? params[:offset].to_i : 0
-        offset = 0 if offset.negative?
 
         # Apply filters
         articles = articles.where(feed_id: params[:feed_id]) if params[:feed_id].present?
@@ -34,28 +32,59 @@ module Api
           articles = articles.all_unarchived_for(current_user)
         end
 
-        # Get total count before limiting
-        total_count = articles.count(:all)
+        # Cursor-based pagination (preferred for mobile)
+        if params[:cursor].present?
+          articles = articles.cursor_after(params[:cursor])
+          limit = [ limit, 100 ].min
 
-        articles = articles.limit(limit).offset(offset)
+          articles = articles.limit(limit + 1) # Get one extra to check has_more
+          has_more = articles.size > limit
+          articles = articles.to_a
+          articles.pop if has_more
 
-        # Preload article states for current user
-        preload_article_states(articles, current_user)
+          next_cursor = has_more ? Article.encode_cursor(articles.last) : nil
 
-        # Enable ETag caching for mobile apps
-        fresh_when(etag: [ articles, current_user ], last_modified: articles.maximum(:updated_at), public: false)
+          # Preload article states for current user
+          preload_article_states(articles, current_user)
 
-        render json: {
-          articles: articles.map { |article|
-            state = article.article_states.first || ArticleState.new(read: false, starred: false, archived: false)
-            Api::V1::ArticleSerializer.new(article, state: state).as_summary
-          },
-          meta: {
-            total: total_count,
-            limit: limit,
-            offset: offset
+          render json: {
+            articles: articles.map { |article|
+              state = article.article_states.first || ArticleState.new(read: false, starred: false, archived: false)
+              Api::V1::ArticleSerializer.new(article, state: state).as_summary
+            },
+            pagination: {
+              next_cursor: next_cursor,
+              has_more: has_more
+            }
           }
-        }
+        else
+          # Offset-based pagination (legacy)
+          offset = params[:offset].present? ? params[:offset].to_i : 0
+          offset = 0 if offset.negative?
+
+          # Get total count before limiting
+          total_count = articles.count(:all)
+
+          articles = articles.limit(limit).offset(offset)
+
+          # Preload article states for current user
+          preload_article_states(articles, current_user)
+
+          # Enable ETag caching for mobile apps
+          fresh_when(etag: [ articles, current_user ], last_modified: articles.maximum(:updated_at), public: false)
+
+          render json: {
+            articles: articles.map { |article|
+              state = article.article_states.first || ArticleState.new(read: false, starred: false, archived: false)
+              Api::V1::ArticleSerializer.new(article, state: state).as_summary
+            },
+            meta: {
+              total: total_count,
+              limit: limit,
+              offset: offset
+            }
+          }
+        end
       end
 
       # GET /api/v1/articles/:id
@@ -131,6 +160,61 @@ module Api
                       .count
 
         render json: { unread_count: count }
+      end
+
+      # GET /api/v1/articles/compact
+      # Minimal article list for fast loading on mobile
+      def compact
+        articles = Article.for_user(current_user)
+                         .includes(:feed)
+                         .recent
+
+        limit = params[:limit].present? ? params[:limit].to_i : 100
+        limit = 100 if limit <= 0
+
+        if params[:filter] == "unread"
+          articles = articles.unread_for(current_user)
+        elsif params[:filter] == "starred"
+          articles = articles.starred_for(current_user).all_unarchived_for(current_user)
+        else
+          articles = articles.all_unarchived_for(current_user)
+        end
+
+        articles = articles.where(feed_id: params[:feed_id]) if params[:feed_id].present?
+
+        # Use cursor if provided
+        if params[:cursor].present?
+          articles = articles.cursor_after(params[:cursor])
+        end
+
+        articles = articles.limit(limit + 1)
+        has_more = articles.size > limit
+        articles = articles.to_a
+        articles.pop if has_more
+
+        next_cursor = has_more ? Article.encode_cursor(articles.last) : nil
+
+        # Preload states
+        preload_article_states(articles, current_user)
+
+        render json: {
+          articles: articles.map { |article|
+            state = article.article_states.first
+            {
+              id: article.id,
+              title: article.title,
+              feed_name: article.feed.title,
+              feed_id: article.feed_id,
+              published_at: article.published_at,
+              read: state&.read || false,
+              starred: state&.starred || false
+            }
+          },
+          pagination: {
+            next_cursor: next_cursor,
+            has_more: has_more
+          }
+        }
       end
 
       # POST /api/v1/articles/batch_update

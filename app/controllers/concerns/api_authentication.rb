@@ -13,11 +13,17 @@ module ApiAuthentication
     token = extract_token(auth_header)
 
     if token.present?
+      # Try API token first (may be expired)
       @current_user = User.find_by_api_token(token)
 
       if @current_user&.api_token_expired?
         render json: { error: "Token expired. Please refresh your token." }, status: :unauthorized
         return
+      end
+
+      # Try CLI token (never expires)
+      unless @current_user
+        @current_user = User.find_by_cli_token(token)
       end
     end
 

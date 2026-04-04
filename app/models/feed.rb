@@ -6,6 +6,16 @@ class Feed < ApplicationRecord
   validates :feed_url, presence: true, uniqueness: true
   validates :title, presence: true
 
+  # Scopes
+  scope :for_user, ->(user) {
+    joins(:subscriptions).where(subscriptions: { user_id: user.id })
+  }
+  scope :sync_since, ->(timestamp) {
+    return all if timestamp.blank?
+
+    where("feeds.updated_at > ?", timestamp)
+  }
+
   # Invalidate orphaned feeds cache when feeds are created or destroyed
   after_create :invalidate_orphaned_feeds_cache
   after_destroy :invalidate_orphaned_feeds_cache

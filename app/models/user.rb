@@ -20,6 +20,7 @@ class User < ApplicationRecord
 
   has_secure_password
   encrypts :api_token, deterministic: false
+  encrypts :cli_token, deterministic: false
 
   has_many :sessions, dependent: :destroy
   has_many :subscriptions, dependent: :destroy
@@ -77,6 +78,13 @@ class User < ApplicationRecord
 
       digest = token_digest(token)
       confirmed.find_by(api_token_digest: digest)
+    end
+
+    def find_by_cli_token(token)
+      return if token.blank?
+
+      digest = token_digest(token)
+      confirmed.find_by(cli_token_digest: digest)
     end
 
     def token_digest(token)
@@ -159,6 +167,36 @@ class User < ApplicationRecord
     return false if api_token_digest.blank? || token.blank? || !confirmed?
 
     ActiveSupport::SecurityUtils.secure_compare(self.class.token_digest(token), api_token_digest)
+  end
+
+  # CLI Token Methods
+  def generate_cli_token!
+    raise UnconfirmedUserError unless confirmed?
+
+    token = SecureRandom.hex(32)
+    digest = self.class.token_digest(token)
+
+    update!(
+      cli_token: token,
+      cli_token_digest: digest,
+      cli_token_generated_at: Time.current
+    )
+
+    token
+  end
+
+  def revoke_cli_token!
+    update!(
+      cli_token: nil,
+      cli_token_digest: nil,
+      cli_token_generated_at: nil
+    )
+  end
+
+  def cli_token_valid?(token)
+    return false unless cli_token_digest.present? && token.present? && confirmed?
+
+    ActiveSupport::SecurityUtils.secure_compare(self.class.token_digest(token), cli_token_digest)
   end
 
   def confirmed?

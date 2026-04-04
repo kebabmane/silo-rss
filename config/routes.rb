@@ -65,6 +65,11 @@ Rails.application.routes.draw do
       post "auth/refresh", to: "auth#refresh"
       delete "auth/logout", to: "auth#logout"
 
+      # CLI Token management
+      post "auth/cli_token", to: "auth#generate_cli_token"
+      delete "auth/cli_token", to: "auth#revoke_cli_token"
+      get "auth/cli_token/status", to: "auth#cli_token_status"
+
       # Profile/Settings
       resource :profile, only: [ :show, :update ]
 
@@ -78,6 +83,9 @@ Rails.application.routes.draw do
           post :discover
           post :sync
         end
+        member do
+          get :icon, to: "icons#feed_icon"
+        end
       end
 
       # Articles
@@ -90,10 +98,15 @@ Rails.application.routes.draw do
         collection do
           get :search
           get :unread_count
+          get :compact
           post :batch_update
           post :mark_all_read
         end
       end
+
+      # Sync
+      get :sync, to: "sync#index"
+      get :sync_status, to: "sync#status"
     end
   end
 

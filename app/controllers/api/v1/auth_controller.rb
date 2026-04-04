@@ -76,6 +76,43 @@ module Api
         current_user.update(api_token: nil, api_token_digest: nil, api_token_expires_at: nil)
         head :no_content
       end
+
+      # POST /api/v1/auth/cli_token
+      # Generate a non-expiring CLI token for AI agents/CLI tools
+      def generate_cli_token
+        cli_token = current_user.generate_cli_token!
+        render json: {
+          cli_token: cli_token,
+          generated_at: current_user.cli_token_generated_at.iso8601,
+          note: "This token does not expire. Keep it secure."
+        }, status: :ok
+      rescue User::UnconfirmedUserError
+        render json: { error: "Account must be confirmed to generate CLI tokens" }, status: :forbidden
+      end
+
+      # DELETE /api/v1/auth/cli_token
+      # Revoke the CLI token
+      def revoke_cli_token
+        if current_user.cli_token_digest.present?
+          current_user.revoke_cli_token!
+          render json: { message: "CLI token revoked successfully" }, status: :ok
+        else
+          render json: { error: "No CLI token exists" }, status: :not_found
+        end
+      end
+
+      # GET /api/v1/auth/cli_token/status
+      # Check if CLI token exists
+      def cli_token_status
+        if current_user.cli_token_digest.present?
+          render json: {
+            exists: true,
+            generated_at: current_user.cli_token_generated_at&.iso8601
+          }, status: :ok
+        else
+          render json: { exists: false }, status: :ok
+        end
+      end
     end
   end
 end
