@@ -4,13 +4,7 @@ development:
     class: ScheduledRefreshJob
     queue: default
     schedule: every 15 minutes
-    description: "Refresh all RSS feeds every 15 minutes"
-
-  check_daily_brief_schedules:
-    class: DailyBriefSchedulerJob
-    queue: default
-    schedule: every 15 minutes
-    description: "Check and enqueue daily brief generation jobs"
+    description: "Refresh stale RSS feeds every 15 minutes"
 
   database_backup:
     class: DatabaseBackupJob
@@ -23,13 +17,7 @@ production:
     class: ScheduledRefreshJob
     queue: default
     schedule: every 15 minutes
-    description: "Refresh all RSS feeds every 15 minutes"
-
-  check_daily_brief_schedules:
-    class: DailyBriefSchedulerJob
-    queue: default
-    schedule: every 15 minutes
-    description: "Check and enqueue daily brief generation jobs"
+    description: "Refresh stale RSS feeds every 15 minutes"
 
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
