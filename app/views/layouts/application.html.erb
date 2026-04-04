@@ -61,7 +61,7 @@
                     </svg>
                     <span>Menu</span>
                   </summary>
-                  <div class="absolute right-0 mt-2 z-30 w-52 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
+                  <div class="absolute right-0 mt-2 z-30 w-52 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 shadow-lg py-2">
                     <%= link_to "Sync Feeds", refresh_all_feeds_path, data: { turbo_method: :post }, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", aria_label: "Synchronize all feeds" %>
                     <hr class="my-1 border-gray-200 dark:border-gray-700" />
                     <%= link_to "Settings", settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
@@ -85,7 +85,7 @@
                       </svg>
                       <span>Admin</span>
                     </summary>
-                  <div class="absolute right-0 mt-2 z-40 w-52 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
+                  <div class="absolute right-0 mt-2 z-40 w-52 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 shadow-lg py-2">
                       <%= link_to "Dashboard", admin_root_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
                       <%= link_to "Users", admin_users_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
                       <%= link_to "Suggested Feeds", admin_suggested_feeds_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
