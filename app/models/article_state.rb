@@ -30,7 +30,7 @@ class ArticleState < ApplicationRecord
     upsert_all(
       records,
       unique_by: %i[user_id article_id],
-      update_only: [attribute, :updated_at]
+      update_only: [ attribute, :updated_at ]
     )
 
     article_ids.size

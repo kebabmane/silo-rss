@@ -182,3 +182,4 @@ class UserRegistrationTest < ApplicationSystemTestCase
     assert_not_nil user.api_token
     assert user.api_token.length > 0
   end
+end

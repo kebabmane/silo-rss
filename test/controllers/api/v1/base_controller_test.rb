@@ -236,7 +236,7 @@ module Api
             as: :json
 
         # Adjust expectation based on actual implementation
-        assert_includes [200, 401], response.status
+        assert_includes [ 200, 401 ], response.status
       end
 
       test "authentication is case sensitive for Bearer keyword" do
@@ -248,7 +248,7 @@ module Api
 
         # Depending on implementation, this might work or fail
         # Adjust based on actual behavior
-        assert_includes [200, 401], response.status
+        assert_includes [ 200, 401 ], response.status
       end
 
       # Test error handling consistency
@@ -415,7 +415,7 @@ module Api
         options api_v1_articles_url
 
         # Could be 200, 204, or 404 depending on CORS setup
-        assert_includes [200, 204, 404], response.status
+        assert_includes [ 200, 204, 404 ], response.status
       end
     end
   end

@@ -1,5 +1,5 @@
 class Admin::FeedsController < AdminController
-  before_action :set_feed, only: [:destroy]
+  before_action :set_feed, only: [ :destroy ]
 
   def index
     # Load feeds with eager-loaded subscriptions to avoid N+1 queries
@@ -13,7 +13,7 @@ class Admin::FeedsController < AdminController
 
     # Get cached orphaned feeds count or calculate if not cached
     @orphaned_feeds_count = begin
-      Rails.cache.fetch('orphaned_feeds_count', expires_in: 1.hour) do
+      Rails.cache.fetch("orphaned_feeds_count", expires_in: 1.hour) do
         Feed.left_outer_joins(:subscriptions)
             .group("feeds.id")
             .having("COUNT(subscriptions.id) = 0")
@@ -39,7 +39,7 @@ class Admin::FeedsController < AdminController
 
     # Invalidate orphaned feeds cache
     begin
-      Rails.cache.delete('orphaned_feeds_count')
+      Rails.cache.delete("orphaned_feeds_count")
     rescue StandardError => e
       Rails.logger.debug("Error deleting orphaned feeds cache: #{e.message}")
     end

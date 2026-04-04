@@ -1,7 +1,7 @@
 class OpmlService
   def self.export(user)
-    builder = Nokogiri::XML::Builder.new(encoding: 'UTF-8') do |xml|
-      xml.opml(version: '2.0') {
+    builder = Nokogiri::XML::Builder.new(encoding: "UTF-8") do |xml|
+      xml.opml(version: "2.0") {
         xml.head {
           xml.title "Silo Export"
           xml.dateCreated Time.current.rfc2822
@@ -12,7 +12,7 @@ class OpmlService
             xml.outline(text: category, title: category) {
               subscriptions.each do |subscription|
                 xml.outline(
-                  type: 'rss',
+                  type: "rss",
                   text: subscription.display_name,
                   title: subscription.display_name,
                   xmlUrl: subscription.feed.feed_url,
@@ -32,10 +32,10 @@ class OpmlService
     imported_count = 0
 
     # Find all outline elements with xmlUrl (feed entries)
-    doc.xpath('//outline[@xmlUrl]').each do |outline|
-      feed_url = outline['xmlUrl']
-      category = outline.parent['text'] || outline.parent['title'] || 'Imported'
-      custom_name = outline['text'] || outline['title']
+    doc.xpath("//outline[@xmlUrl]").each do |outline|
+      feed_url = outline["xmlUrl"]
+      category = outline.parent["text"] || outline.parent["title"] || "Imported"
+      custom_name = outline["text"] || outline["title"]
 
       begin
         # Find or create feed
@@ -48,7 +48,7 @@ class OpmlService
         feed ||= Feed.create!(
           feed_url: feed_url,
           title: feed_title,
-          site_url: outline['htmlUrl']
+          site_url: outline["htmlUrl"]
         )
 
         # Create subscription if it doesn't exist
@@ -56,7 +56,7 @@ class OpmlService
           # Only set custom_name if it differs from feed title, or if this is a new feed we just created
           subscription_custom_name = if is_new_feed || custom_name != feed.title
                                        custom_name
-                                     end
+          end
 
           user.subscriptions.create!(
             feed: feed,

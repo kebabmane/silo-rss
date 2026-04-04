@@ -2,7 +2,7 @@ class ArticlesController < ApplicationController
   include ArticleStatePreloader
 
   rescue_from ActiveRecord::RecordNotFound, with: :raise_not_found if Rails.env.test?
-  before_action :set_article_for_state, only: [:toggle_read, :toggle_starred, :toggle_archived]
+  before_action :set_article_for_state, only: [ :toggle_read, :toggle_starred, :toggle_archived ]
 
   def index
     @articles = Article.joins(feed: :subscriptions)

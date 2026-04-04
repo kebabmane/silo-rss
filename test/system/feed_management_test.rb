@@ -203,7 +203,7 @@ class FeedManagementTest < ApplicationSystemTestCase
     OPML
 
     # Create a temporary OPML file
-    opml_file = Tempfile.new(["feeds", ".opml"])
+    opml_file = Tempfile.new([ "feeds", ".opml" ])
     opml_file.write(opml_content)
     opml_file.rewind
 
@@ -382,3 +382,4 @@ class FeedManagementTest < ApplicationSystemTestCase
     # This depends on implementation - adjust selector as needed
     assert_text "New Feed", wait: 5
   end
+end

@@ -1,28 +1,28 @@
 <% content_for :title, "Admin Dashboard - Silo" %>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen bg-gray-50 ">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">System overview and quick access to admin tools</p>
+      <h1 class="text-3xl font-bold text-gray-900 ">Admin Dashboard</h1>
+      <p class="mt-2 text-sm text-gray-600 ">System overview and quick access to admin tools</p>
     </div>
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 mb-8">
       <!-- Total Users -->
-      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="bg-white  overflow-hidden shadow-lg rounded-lg border border-gray-200 ">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white text-2xl">
+              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white text-2xl" aria-hidden="true">
                 👥
               </div>
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Users</dt>
-                <dd class="text-3xl font-semibold text-gray-900 dark:text-white"><%= @total_users %></dd>
+                <dt class="text-sm font-medium text-gray-500  truncate">Total Users</dt>
+                <dd class="text-3xl font-semibold text-gray-900 "><%= @total_users %></dd>
               </dl>
             </div>
           </div>
@@ -30,18 +30,18 @@
       </div>
 
       <!-- Total Feeds -->
-      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="bg-white  overflow-hidden shadow-lg rounded-lg border border-gray-200 ">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-500 text-white text-2xl">
+              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-500 text-white text-2xl" aria-hidden="true">
                 📡
               </div>
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Feeds</dt>
-                <dd class="text-3xl font-semibold text-gray-900 dark:text-white"><%= @total_feeds %></dd>
+                <dt class="text-sm font-medium text-gray-500  truncate">Total Feeds</dt>
+                <dd class="text-3xl font-semibold text-gray-900 "><%= @total_feeds %></dd>
               </dl>
             </div>
           </div>
@@ -49,18 +49,18 @@
       </div>
 
       <!-- Total Articles -->
-      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="bg-white  overflow-hidden shadow-lg rounded-lg border border-gray-200 ">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-500 text-white text-2xl">
+              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-500 text-white text-2xl" aria-hidden="true">
                 📰
               </div>
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Articles</dt>
-                <dd class="text-3xl font-semibold text-gray-900 dark:text-white"><%= @total_articles %></dd>
+                <dt class="text-sm font-medium text-gray-500  truncate">Total Articles</dt>
+                <dd class="text-3xl font-semibold text-gray-900 "><%= @total_articles %></dd>
               </dl>
             </div>
           </div>
@@ -68,18 +68,18 @@
       </div>
 
       <!-- Orphaned Feeds -->
-      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-orange-200 dark:border-orange-700 <%= @orphaned_feeds_count > 0 ? 'bg-orange-50 dark:bg-orange-900/20' : '' %>">
+      <div class="bg-white  overflow-hidden shadow-lg rounded-lg border border-orange-200  <%= @orphaned_feeds_count > 0 ? 'bg-orange-50 ' : '' %>">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-12 w-12 rounded-md <%= @orphaned_feeds_count > 0 ? 'bg-orange-500' : 'bg-gray-400' %> text-white text-2xl">
+              <div class="flex items-center justify-center h-12 w-12 rounded-md <%= @orphaned_feeds_count > 0 ? 'bg-orange-500' : 'bg-gray-400' %> text-white text-2xl" aria-hidden="true">
                 🗑️
               </div>
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Orphaned Feeds</dt>
-                <dd class="text-3xl font-semibold <%= @orphaned_feeds_count > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-white' %>"><%= @orphaned_feeds_count %></dd>
+                <dt class="text-sm font-medium text-gray-500  truncate">Orphaned Feeds</dt>
+                <dd class="text-3xl font-semibold <%= @orphaned_feeds_count > 0 ? 'text-orange-600 ' : 'text-gray-900 ' %>"><%= @orphaned_feeds_count %></dd>
               </dl>
             </div>
           </div>
@@ -87,18 +87,18 @@
       </div>
 
       <!-- Database Size -->
-      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
+      <div class="bg-white  overflow-hidden shadow-lg rounded-lg border border-gray-200 ">
         <div class="p-5">
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-slate-500 text-white text-2xl">
+              <div class="flex items-center justify-center h-12 w-12 rounded-md bg-gray-500 text-white text-2xl" aria-hidden="true">
                 💾
               </div>
             </div>
             <div class="ml-5 w-0 flex-1">
               <dl>
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Database Size</dt>
-                <dd class="text-2xl font-semibold text-gray-900 dark:text-white"><%= @system_stats[:database_size] %></dd>
+                <dt class="text-sm font-medium text-gray-500  truncate">Database Size</dt>
+                <dd class="text-2xl font-semibold text-gray-900 "><%= @system_stats[:database_size] %></dd>
               </dl>
             </div>
           </div>
@@ -109,23 +109,23 @@
     <!-- Two Column Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Recent Users -->
-      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Registrations</h2>
+      <div class="bg-white  shadow-lg rounded-lg border border-gray-200 ">
+        <div class="px-6 py-4 border-b border-gray-200 ">
+          <h2 class="text-lg font-semibold text-gray-900 ">Recent Registrations</h2>
         </div>
         <div class="p-6">
           <% if @recent_users.any? %>
             <div class="space-y-4">
               <% @recent_users.each do |user| %>
-                <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                <div class="flex items-center justify-between py-3 border-b border-gray-100  last:border-0">
                   <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-white"><%= user.email_address %></p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-sm font-medium text-gray-900 "><%= user.email_address %></p>
+                    <p class="text-xs text-gray-500 ">
                       Joined <%= time_ago_in_words(user.created_at) %> ago
                     </p>
                   </div>
                   <% if user.admin? %>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800  ">
                       Admin
                     </span>
                   <% end %>
@@ -133,88 +133,68 @@
               <% end %>
             </div>
           <% else %>
-            <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">No users yet</p>
+            <p class="text-sm text-gray-500  text-center py-8">No users yet</p>
           <% end %>
         </div>
-        <div class="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 rounded-b-lg">
-          <%= link_to "View all users", admin_users_path, class: "text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300" %>
+        <div class="px-6 py-3 bg-gray-50  border-t border-gray-200  rounded-b-lg">
+          <%= link_to "View all users", admin_users_path, class: "text-sm font-medium text-blue-600  hover:text-blue-800 " %>
         </div>
       </div>
 
       <!-- Quick Links -->
-      <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Links</h2>
+      <div class="bg-white  shadow-lg rounded-lg border border-gray-200 ">
+        <div class="px-6 py-4 border-b border-gray-200 ">
+          <h2 class="text-lg font-semibold text-gray-900 ">Quick Links</h2>
         </div>
         <div class="p-6">
           <div class="grid grid-cols-1 gap-4">
-            <%= link_to admin_users_path, class: "flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" do %>
+            <%= link_to admin_users_path, class: "flex items-center p-4 rounded-lg border border-gray-200  hover:bg-gray-50  transition-colors" do %>
               <div class="flex-shrink-0">
-                <span class="text-2xl">👥</span>
+                <span class="text-2xl" aria-hidden="true">👥</span>
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Manage Users</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">View and manage user accounts</p>
+                <p class="text-sm font-medium text-gray-900 ">Manage Users</p>
+                <p class="text-xs text-gray-500 ">View and manage user accounts</p>
               </div>
             <% end %>
 
-            <%= link_to admin_feeds_path, class: "flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" do %>
+            <%= link_to admin_feeds_path, class: "flex items-center p-4 rounded-lg border border-gray-200  hover:bg-gray-50  transition-colors" do %>
               <div class="flex-shrink-0">
-                <span class="text-2xl">🗂️</span>
+                <span class="text-2xl" aria-hidden="true">🗂️</span>
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Manage Feeds</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">View all feeds and cleanup orphaned</p>
+                <p class="text-sm font-medium text-gray-900 ">Manage Feeds</p>
+                <p class="text-xs text-gray-500 ">View all feeds and cleanup orphaned</p>
               </div>
             <% end %>
 
-            <%= link_to admin_suggested_feeds_path, class: "flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" do %>
+            <%= link_to admin_suggested_feeds_path, class: "flex items-center p-4 rounded-lg border border-gray-200  hover:bg-gray-50  transition-colors" do %>
               <div class="flex-shrink-0">
-                <span class="text-2xl">📡</span>
+                <span class="text-2xl" aria-hidden="true">📡</span>
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Suggested Feeds</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Manage onboarding feed suggestions</p>
+                <p class="text-sm font-medium text-gray-900 ">Suggested Feeds</p>
+                <p class="text-xs text-gray-500 ">Manage onboarding feed suggestions</p>
               </div>
             <% end %>
 
-            <%= link_to admin_settings_path, class: "flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" do %>
+            <%= link_to admin_settings_path, class: "flex items-center p-4 rounded-lg border border-gray-200  hover:bg-gray-50  transition-colors" do %>
               <div class="flex-shrink-0">
-                <span class="text-2xl">⚙️</span>
+                <span class="text-2xl" aria-hidden="true">⚙️</span>
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Settings</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Configure system settings</p>
+                <p class="text-sm font-medium text-gray-900 ">Settings</p>
+                <p class="text-xs text-gray-500 ">Configure system settings</p>
               </div>
             <% end %>
 
-            <%= link_to admin_daily_brief_prompts_path, class: "flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" do %>
+            <%= link_to mission_control_jobs_path, class: "flex items-center p-4 rounded-lg border border-gray-200  hover:bg-gray-50  transition-colors" do %>
               <div class="flex-shrink-0">
-                <span class="text-2xl">📬</span>
+                <span class="text-2xl" aria-hidden="true">🔧</span>
               </div>
               <div class="ml-4">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Daily Brief Prompts</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Manage AI brief generation</p>
-              </div>
-            <% end %>
-
-            <%= link_to admin_litellm_settings_path, class: "flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" do %>
-              <div class="flex-shrink-0">
-                <span class="text-2xl">🤖</span>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">LiteLLM Settings</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Configure AI model settings</p>
-              </div>
-            <% end %>
-
-            <%= link_to mission_control_jobs_path, class: "flex items-center p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" do %>
-              <div class="flex-shrink-0">
-                <span class="text-2xl">🔧</span>
-              </div>
-              <div class="ml-4">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">Background Jobs</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Monitor job queue status</p>
+                <p class="text-sm font-medium text-gray-900 ">Background Jobs</p>
+                <p class="text-xs text-gray-500 ">Monitor job queue status</p>
               </div>
             <% end %>
           </div>
@@ -223,9 +203,9 @@
     </div>
 
     <!-- System Health -->
-    <div class="mt-8 bg-white dark:bg-gray-800 shadow-lg rounded-lg border border-gray-200 dark:border-gray-700">
-      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">System Health</h2>
+    <div class="mt-8 bg-white  shadow-lg rounded-lg border border-gray-200 ">
+      <div class="px-6 py-4 border-b border-gray-200 ">
+        <h2 class="text-lg font-semibold text-gray-900 ">System Health</h2>
       </div>
       <div class="p-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -234,8 +214,8 @@
               <div class="h-3 w-3 rounded-full bg-green-500"></div>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">Database</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Connected</p>
+              <p class="text-sm font-medium text-gray-900 ">Database</p>
+              <p class="text-xs text-gray-500 ">Connected</p>
             </div>
           </div>
 
@@ -244,8 +224,8 @@
               <div class="h-3 w-3 rounded-full bg-green-500"></div>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">Rails</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400"><%= Rails.version %></p>
+              <p class="text-sm font-medium text-gray-900 ">Rails</p>
+              <p class="text-xs text-gray-500 "><%= Rails.version %></p>
             </div>
           </div>
 
@@ -254,8 +234,8 @@
               <div class="h-3 w-3 rounded-full bg-green-500"></div>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">Ruby</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400"><%= RUBY_VERSION %></p>
+              <p class="text-sm font-medium text-gray-900 ">Ruby</p>
+              <p class="text-xs text-gray-500 "><%= RUBY_VERSION %></p>
             </div>
           </div>
 
@@ -264,8 +244,8 @@
               <div class="h-3 w-3 rounded-full bg-blue-500"></div>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">Environment</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400"><%= Rails.env %></p>
+              <p class="text-sm font-medium text-gray-900 ">Environment</p>
+              <p class="text-xs text-gray-500 "><%= Rails.env %></p>
             </div>
           </div>
         </div>

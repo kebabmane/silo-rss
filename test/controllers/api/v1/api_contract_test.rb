@@ -115,7 +115,7 @@ module Api
         assert user.key?("confirmed"), "User must have 'confirmed'"
         assert_kind_of Integer, user["id"]
         assert_kind_of String, user["email"]
-        assert_includes [true, false], user["confirmed"]
+        assert_includes [ true, false ], user["confirmed"]
       end
 
       # ---------------------------------------------------------------
@@ -212,7 +212,7 @@ module Api
       test "batch_update response matches expected contract" do
         post batch_update_api_v1_articles_url,
              params: {
-               article_ids: [@tc_article_1.id, @hn_article_1.id],
+               article_ids: [ @tc_article_1.id, @hn_article_1.id ],
                bulk_action: "mark_read",
                value: true
              },
@@ -302,7 +302,7 @@ module Api
       def assert_state_contract(state)
         %w[read starred archived].each do |key|
           assert state.key?(key), "State must have '#{key}'"
-          assert_includes [true, false], state[key], "State '#{key}' must be a boolean"
+          assert_includes [ true, false ], state[key], "State '#{key}' must be a boolean"
         end
       end
     end

@@ -23,9 +23,9 @@ class Admin::DashboardController < AdminController
     # Handle both absolute and relative paths
     full_path = if Pathname.new(db_path).absolute?
                   db_path
-                else
+    else
                   File.join(Rails.root, db_path)
-                end
+    end
 
     if File.exist?(full_path)
       size_bytes = File.size(full_path)
@@ -41,7 +41,7 @@ class Admin::DashboardController < AdminController
   def format_bytes(bytes)
     return "0 B" if bytes == 0
 
-    units = ["B", "KB", "MB", "GB"]
+    units = [ "B", "KB", "MB", "GB" ]
     size = bytes.to_f
     unit_index = 0
 
@@ -55,7 +55,7 @@ class Admin::DashboardController < AdminController
 
   def calculate_orphaned_feeds_count
     # Use cached count to reduce database queries
-    Rails.cache.fetch('orphaned_feeds_count', expires_in: 1.hour) do
+    Rails.cache.fetch("orphaned_feeds_count", expires_in: 1.hour) do
       Feed.left_outer_joins(:subscriptions)
           .group("feeds.id")
           .having("COUNT(subscriptions.id) = 0")

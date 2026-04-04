@@ -10,8 +10,8 @@ class CreateDeviceRegistrations < ActiveRecord::Migration[8.0]
     end
 
     # Ensure each device token is unique per user
-    add_index :device_registrations, [:user_id, :device_token], unique: true
+    add_index :device_registrations, [ :user_id, :device_token ], unique: true
     add_index :device_registrations, :device_token
-    add_index :device_registrations, [:user_id, :platform]
+    add_index :device_registrations, [ :user_id, :platform ]
   end
 end

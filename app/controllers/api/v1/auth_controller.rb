@@ -2,7 +2,7 @@ module Api
   module V1
     class AuthController < ActionController::API
       include ApiAuthentication
-      skip_before_action :authenticate_api_user, only: [:login, :register]
+      skip_before_action :authenticate_api_user, only: [ :login, :register ]
 
       # POST /api/v1/auth/login
       def login
@@ -24,7 +24,7 @@ module Api
             }, status: :ok
           end
         else
-          render json: { error: 'Invalid email or password' }, status: :unauthorized
+          render json: { error: "Invalid email or password" }, status: :unauthorized
         end
       end
 
@@ -48,7 +48,7 @@ module Api
               email: user.email_address,
               confirmed: user.confirmed?
             },
-            message: user.confirmed? ? 'Account created and confirmed.' : 'Account created. Awaiting admin approval before activation.'
+            message: user.confirmed? ? "Account created and confirmed." : "Account created. Awaiting admin approval before activation."
           }, status: :created
         else
           render json: { error: user.errors.full_messages }, status: :unprocessable_entity
@@ -67,7 +67,7 @@ module Api
             }
           }, status: :ok
         else
-          render json: { error: 'Failed to refresh token' }, status: :unprocessable_entity
+          render json: { error: "Failed to refresh token" }, status: :unprocessable_entity
         end
       end
 

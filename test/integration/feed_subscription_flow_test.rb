@@ -56,8 +56,9 @@ class FeedSubscriptionFlowTest < ActionDispatch::IntegrationTest
       }
     end
 
-    # Should redirect to root with success message
-    assert_redirected_to dashboard_path
+    # Should redirect to dashboard with feed_id parameter
+    assert_response :redirect
+    assert_match %r{/dashboard(\?feed_id=\d+)?\z}, response.location
     follow_redirect!
     assert_match /Feed added successfully/, flash[:notice]
 
@@ -237,7 +238,8 @@ class FeedSubscriptionFlowTest < ActionDispatch::IntegrationTest
     end
 
     # Idempotent behavior: should redirect with success message
-    assert_redirected_to dashboard_path
+    assert_response :redirect
+    assert_match %r{/dashboard(\?feed_id=\d+)?\z}, response.location
     assert_match /Feed added successfully/, flash[:notice]
   end
 
@@ -266,7 +268,8 @@ class FeedSubscriptionFlowTest < ActionDispatch::IntegrationTest
       category: "Test",
       custom_name: "Test Feed"
     }
-    assert_redirected_to dashboard_path
+    assert_response :redirect
+    assert_match %r{/dashboard(\?feed_id=\d+)?\z}, response.location
 
     # Step 3: View subscriptions
     get feeds_path
@@ -358,16 +361,28 @@ class FeedSubscriptionFlowTest < ActionDispatch::IntegrationTest
       <rss version="2.0">
         <channel>
           <title>Refresh Test Feed</title>
+          <link>https://example.com</link>
+          <item>
+            <title>Test Article</title>
+            <link>https://example.com/article</link>
+            <guid>test-001</guid>
+          </item>
         </channel>
       </rss>
     XML
 
-    stub_request(:get, "https://refresh.com/feed")
+    stub_request(:get, "https://example.com/feed")
       .to_return(status: 200, body: feed_xml, headers: { "Content-Type" => "application/rss+xml" })
 
-    # Mock the job
-    FeedRefreshJob.expects(:perform_later).once
+    # Mock the job - expect it to be called during discovery AND during subscription creation
+    FeedRefreshJob.expects(:perform_later).twice
 
-    post discover_feeds_path, params: { url: "https://refresh.com/feed" }
+    post discover_feeds_path, params: { url: "https://example.com/feed" }
+
+    feed = Feed.find_by(feed_url: "https://example.com/feed")
+    assert feed
+
+    # Subscribe to trigger second job
+    post feeds_path, params: { feed_id: feed.id, category: "Test" }
   end
 end

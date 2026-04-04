@@ -25,7 +25,7 @@ module Api
               confirmed: current_user.confirmed?,
               admin: current_user.admin?
             },
-            message: 'Profile updated successfully.'
+            message: "Profile updated successfully."
           }, status: :ok
         else
           render json: { error: current_user.errors.full_messages }, status: :unprocessable_entity

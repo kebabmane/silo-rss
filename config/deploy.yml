@@ -8,10 +8,10 @@ image: silo/feed-reader
 servers:
   web:
     hosts:
-      - 170.64.139.111
+      - <%= ENV.fetch("KAMAL_DEPLOY_HOST") %>
   job:
     hosts:
-      - 170.64.139.111
+      - <%= ENV.fetch("KAMAL_DEPLOY_HOST") %>
     cmd: bin/rails solid_queue:start
   # job:
   #   hosts:

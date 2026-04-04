@@ -1,0 +1,294 @@
+#!/bin/bash
+
+# Docker Local Development Script for Feed Reader
+# Usage: ./bin/docker-dev [command]
+# Commands:
+#   start       - Build and start the app (default)
+#   stop        - Stop all containers
+#   restart     - Restart the app
+#   logs        - View app logs
+#   console     - Open Rails console
+#   test        - Run tests
+#   db:migrate  - Run database migrations
+#   db:reset    - Reset database
+#   shell       - Open bash shell in container
+#   build       - Rebuild Docker image
+#   clean       - Clean up containers and volumes
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+APP_NAME="feed_reader"
+DOCKER_IMAGE="${APP_NAME}:dev"
+CONTAINER_NAME="${APP_NAME}_dev"
+DB_VOLUME="${APP_NAME}_db"
+STORAGE_VOLUME="${APP_NAME}_storage"
+
+# Helper functions
+log_info() {
+  echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+  echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+log_warn() {
+  echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+  echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Check if Docker is running
+check_docker() {
+  if ! docker info > /dev/null 2>&1; then
+    log_error "Docker is not running. Please start Docker Desktop first."
+    exit 1
+  fi
+}
+
+# Build the Docker image
+build_image() {
+  log_info "Building Docker image..."
+  docker build -t "$DOCKER_IMAGE" .
+  log_success "Docker image built successfully!"
+}
+
+# Start the application
+start_app() {
+  check_docker
+
+  # Build if image doesn't exist
+  if ! docker image inspect "$DOCKER_IMAGE" > /dev/null 2>&1; then
+    log_warn "Docker image not found. Building..."
+    build_image
+  fi
+
+  log_info "Starting Feed Reader on http://localhost:3000"
+
+  # Create volumes if they don't exist
+  docker volume create "$DB_VOLUME" 2>/dev/null || true
+  docker volume create "$STORAGE_VOLUME" 2>/dev/null || true
+
+  # Stop existing container if running
+  docker stop "$CONTAINER_NAME" 2>/dev/null || true
+  docker rm "$CONTAINER_NAME" 2>/dev/null || true
+
+  # Run the container
+  docker run -d \
+    --name "$CONTAINER_NAME" \
+    -p 3000:3000 \
+    -v "$DB_VOLUME":/rails/db \
+    -v "$STORAGE_VOLUME":/rails/storage \
+    -e RAILS_ENV=development \
+    -e SECRET_KEY_BASE=$(openssl rand -hex 64) \
+    -e RAILS_LOG_TO_STDOUT=1 \
+    -e DISABLE_SSL=1 \
+    --health-cmd="curl -f http://localhost:3000/up || exit 1" \
+    --health-interval=30s \
+    --health-timeout=5s \
+    --health-retries=3 \
+    "$DOCKER_IMAGE" \
+    ./bin/thrust ./bin/rails server -b 0.0.0.0 -p 3000
+
+  log_info "Waiting for app to start..."
+  sleep 5
+
+  # Run database migrations
+  log_info "Setting up database..."
+  docker exec "$CONTAINER_NAME" bash -c "echo 'end' >> db/schema.rb 2>/dev/null; RAILS_ENV=development ./bin/rails db:schema:load 2>/dev/null || true" > /dev/null 2>&1
+  docker exec "$CONTAINER_NAME" bash -c "RAILS_ENV=development ./bin/rails db:schema:load SCHEMA=db/queue_schema.rb 2>/dev/null || true" > /dev/null 2>&1
+  docker exec "$CONTAINER_NAME" ./bin/rails db:migrate 2>/dev/null || true
+
+  # Start Solid Queue worker in background for background jobs
+  log_info "Starting background job worker..."
+  docker exec -d "$CONTAINER_NAME" ./bin/rails solid_queue:start 2>/dev/null || true
+
+  log_success "Feed Reader is running at http://localhost:3000"
+  log_info "Logs: ./bin/docker-dev logs"
+  log_info "Console: ./bin/docker-dev console"
+  log_info "Stop: ./bin/docker-dev stop"
+}
+
+# Stop the application
+stop_app() {
+  log_info "Stopping Feed Reader..."
+  docker stop "$CONTAINER_NAME" 2>/dev/null || true
+  docker rm "$CONTAINER_NAME" 2>/dev/null || true
+  log_success "Stopped!"
+}
+
+# View logs
+view_logs() {
+  if docker ps -q -f name="$CONTAINER_NAME" > /dev/null 2>&1; then
+    docker logs -f "$CONTAINER_NAME"
+  else
+    log_error "Container is not running. Start it with: ./bin/docker-dev start"
+    exit 1
+  fi
+}
+
+# Open Rails console
+open_console() {
+  check_container_running
+  docker exec -it "$CONTAINER_NAME" ./bin/rails console
+}
+
+# Open bash shell
+open_shell() {
+  check_container_running
+  docker exec -it "$CONTAINER_NAME" bash
+}
+
+# Run tests
+run_tests() {
+  check_docker
+
+  log_info "Running tests in Docker container..."
+
+  # Build test image if needed
+  if ! docker image inspect "$DOCKER_IMAGE" > /dev/null 2>&1; then
+    build_image
+  fi
+
+  docker run --rm \
+    -e RAILS_ENV=test \
+    -e SECRET_KEY_BASE=test_secret_key_base_for_testing \
+    "$DOCKER_IMAGE" \
+    ./bin/rails test "$@"
+}
+
+# Run database migrations
+run_migrations() {
+  check_container_running
+  log_info "Running database migrations..."
+  docker exec "$CONTAINER_NAME" ./bin/rails db:migrate
+  log_success "Migrations complete!"
+}
+
+# Reset database
+reset_database() {
+  check_container_running
+  log_warn "This will delete all data in the database. Are you sure? (y/N)"
+  read -r response
+  if [[ "$response" =~ ^[Yy]$ ]]; then
+    docker exec "$CONTAINER_NAME" ./bin/rails db:drop db:create db:migrate
+    log_success "Database reset complete!"
+  else
+    log_info "Cancelled."
+  fi
+}
+
+# Check if container is running
+check_container_running() {
+  if ! docker ps -q -f name="$CONTAINER_NAME" > /dev/null 2>&1; then
+    log_error "Container is not running. Start it with: ./bin/docker-dev start"
+    exit 1
+  fi
+}
+
+# Clean up
+cleanup() {
+  log_warn "This will remove all containers and volumes. Are you sure? (y/N)"
+  read -r response
+  if [[ "$response" =~ ^[Yy]$ ]]; then
+    log_info "Cleaning up..."
+    docker stop "$CONTAINER_NAME" 2>/dev/null || true
+    docker rm "$CONTAINER_NAME" 2>/dev/null || true
+    docker volume rm "$DB_VOLUME" 2>/dev/null || true
+    docker volume rm "$STORAGE_VOLUME" 2>/dev/null || true
+    docker rmi "$DOCKER_IMAGE" 2>/dev/null || true
+    log_success "Cleanup complete!"
+  else
+    log_info "Cancelled."
+  fi
+}
+
+# Show help
+show_help() {
+  cat << 'EOF'
+Docker Local Development Script for Feed Reader
+
+Usage: ./bin/docker-dev [command]
+
+Commands:
+  start       Build and start the app (default)
+  stop        Stop all containers
+  restart     Restart the app
+  logs        View app logs in real-time
+  console     Open Rails console
+  test        Run tests
+  db:migrate  Run database migrations
+  db:reset    Reset database (WARNING: destroys data!)
+  shell       Open bash shell in container
+  build       Rebuild Docker image
+  clean       Clean up containers and volumes (WARNING: destroys data!)
+  help        Show this help message
+
+Examples:
+  ./bin/docker-dev              # Start the app
+  ./bin/docker-dev start        # Same as above
+  ./bin/docker-dev test         # Run all tests
+  ./bin/docker-dev test test/models/article_test.rb  # Run specific test
+  ./bin/docker-dev console      # Open Rails console
+  ./bin/docker-dev logs         # View logs
+
+The app will be available at: http://localhost:3000
+EOF
+}
+
+# Main command handler
+case "${1:-start}" in
+  start)
+    start_app
+    ;;
+  stop)
+    stop_app
+    ;;
+  restart)
+    stop_app
+    start_app
+    ;;
+  logs)
+    view_logs
+    ;;
+  console)
+    open_console
+    ;;
+  test)
+    shift
+    run_tests "$@"
+    ;;
+  db:migrate)
+    run_migrations
+    ;;
+  db:reset)
+    reset_database
+    ;;
+  shell)
+    open_shell
+    ;;
+  build)
+    build_image
+    ;;
+  clean)
+    cleanup
+    ;;
+  help|--help|-h)
+    show_help
+    ;;
+  *)
+    log_error "Unknown command: $1"
+    show_help
+    exit 1
+    ;;
+esac

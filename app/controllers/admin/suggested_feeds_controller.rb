@@ -1,5 +1,5 @@
 class Admin::SuggestedFeedsController < AdminController
-  before_action :set_suggested_feed, only: [:edit, :update, :destroy]
+  before_action :set_suggested_feed, only: [ :edit, :update, :destroy ]
 
   def index
     @suggested_feeds = SuggestedFeed.ordered

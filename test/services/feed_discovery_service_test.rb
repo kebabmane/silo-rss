@@ -18,7 +18,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: rss_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(feed_url)
@@ -34,7 +34,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: "<rss><channel></channel></rss>",
-        headers: { 'Content-Type' => 'text/xml' }
+        headers: { "Content-Type" => "text/xml" }
       )
 
     service = FeedDiscoveryService.new(feed_url)
@@ -49,7 +49,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: "<feed></feed>",
-        headers: { 'Content-Type' => 'application/atom+xml' }
+        headers: { "Content-Type" => "application/atom+xml" }
       )
 
     service = FeedDiscoveryService.new(feed_url)
@@ -73,7 +73,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: rss_xml,
-        headers: { 'Content-Type' => 'text/html' } # Wrong content type
+        headers: { "Content-Type" => "text/html" } # Wrong content type
       )
 
     # Feedjira should still parse it successfully
@@ -96,7 +96,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     HTML
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     # Feedjira parse will fail for HTML
     Feedjira.stubs(:parse).raises(Feedjira::NoParserAvailable)
@@ -120,7 +120,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     HTML
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     Feedjira.stubs(:parse).raises(Feedjira::NoParserAvailable)
 
@@ -133,24 +133,37 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
 
   test "discover handles absolute feed URLs in HTML" do
     page_url = "https://example.com"
+    feed_url = "https://www.example.com/rss"
     html = <<~HTML
       <html>
         <head>
-          <link rel="alternate" type="application/rss+xml" href="https://feeds.example.com/rss" />
+          <link rel="alternate" type="application/rss+xml" href="https://www.example.com/rss" />
         </head>
         <body>Content</body>
       </html>
     HTML
 
-    stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+    feed_xml = <<~XML
+      <?xml version="1.0"?>
+      <rss version="2.0">
+        <channel>
+          <title>Test Feed</title>
+          <link>https://www.example.com</link>
+          <item><title>Test</title></item>
+        </channel>
+      </rss>
+    XML
 
-    Feedjira.stubs(:parse).raises(Feedjira::NoParserAvailable)
+    stub_request(:get, page_url)
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
+
+    stub_request(:get, feed_url)
+      .to_return(status: 200, body: feed_xml, headers: { "Content-Type" => "application/rss+xml" })
 
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://feeds.example.com/rss", result[:feed_url]
+    assert_equal "https://www.example.com/rss", result[:feed_url]
     assert_equal page_url, result[:site_url]
   end
 
@@ -166,7 +179,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     HTML
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     Feedjira.stubs(:parse).raises(Feedjira::NoParserAvailable)
 
@@ -190,7 +203,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     HTML
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     Feedjira.stubs(:parse).raises(Feedjira::NoParserAvailable)
 
@@ -207,21 +220,21 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
 
     # Stub the page request
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     Feedjira.stubs(:parse).with(html).raises(Feedjira::NoParserAvailable)
     Feedjira.stubs(:parse).with("").raises(Feedjira::NoParserAvailable)
 
     # Stub common path attempts - /feed returns 404, /rss succeeds
     stub_request(:get, "https://example.com/feed")
-      .to_return(status: 404, body: "", headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 404, body: "", headers: { "Content-Type" => "text/html" })
 
     feed_xml = "<rss><channel></channel></rss>"
     stub_request(:get, "https://example.com/rss")
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(page_url)
@@ -236,15 +249,15 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     html = "<html><head></head><body>No feed links</body></html>"
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     Feedjira.stubs(:parse).with(html).raises(Feedjira::NoParserAvailable)
     Feedjira.stubs(:parse).with("").raises(Feedjira::NoParserAvailable)
 
     # Stub all common paths to fail except /atom.xml
-    ["/feed", "/rss", "/atom", "/feed.xml", "/rss.xml"].each do |path|
+    [ "/feed", "/rss", "/atom", "/feed.xml", "/rss.xml" ].each do |path|
       stub_request(:get, "https://example.com#{path}")
-        .to_return(status: 404, body: "", headers: { 'Content-Type' => 'text/html' })
+        .to_return(status: 404, body: "", headers: { "Content-Type" => "text/html" })
     end
 
     feed_xml = "<feed></feed>"
@@ -252,7 +265,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/atom+xml' }
+        headers: { "Content-Type" => "application/atom+xml" }
       )
 
     service = FeedDiscoveryService.new(page_url)
@@ -270,7 +283,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(url_without_protocol)
@@ -287,7 +300,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(url_with_http)
@@ -304,7 +317,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(url_with_whitespace)
@@ -322,7 +335,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     HTML
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
@@ -340,12 +353,12 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     HTML
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     # Stub common path attempts to avoid external calls
-    ["/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml"].each do |path|
+    [ "/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml" ].each do |path|
       stub_request(:get, "https://example.com#{path}")
-        .to_return(status: 404, body: "", headers: { 'Content-Type' => 'text/html' })
+        .to_return(status: 404, body: "", headers: { "Content-Type" => "text/html" })
     end
 
     service = FeedDiscoveryService.new(page_url)
@@ -359,16 +372,16 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     page_url = "https://example.com/nonexistent"
 
     stub_request(:get, page_url)
-      .to_return(status: 404, body: "Not Found", headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 404, body: "Not Found", headers: { "Content-Type" => "text/html" })
 
     # Service will try common paths when page returns 404
     Feedjira.stubs(:parse).with("Not Found").raises(Feedjira::NoParserAvailable)
     Feedjira.stubs(:parse).with("").raises(Feedjira::NoParserAvailable)
 
     # Stub common paths - all return 404
-    ["/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml"].each do |path|
+    [ "/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml" ].each do |path|
       stub_request(:get, "https://example.com#{path}")
-        .to_return(status: 404, body: "", headers: { 'Content-Type' => 'text/html' })
+        .to_return(status: 404, body: "", headers: { "Content-Type" => "text/html" })
     end
 
     service = FeedDiscoveryService.new(page_url)
@@ -404,15 +417,15 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     html = "<html><head></head><body>No feed links</body></html>"
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     Feedjira.stubs(:parse).with(html).raises(Feedjira::NoParserAvailable)
     Feedjira.stubs(:parse).with("").raises(Feedjira::NoParserAvailable)
 
     # Stub all common paths to fail
-    ["/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml"].each do |path|
+    [ "/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml" ].each do |path|
       stub_request(:get, "https://example.com#{path}")
-        .to_return(status: 404, body: "", headers: { 'Content-Type' => 'text/html' })
+        .to_return(status: 404, body: "", headers: { "Content-Type" => "text/html" })
     end
 
     service = FeedDiscoveryService.new(page_url)
@@ -439,7 +452,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     malformed_html = "<html><head><link rel='alternate' type='application/rss+xml' href='/feed'</head>" # Missing closing >
 
     stub_request(:get, page_url)
-      .to_return(status: 200, body: malformed_html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: malformed_html, headers: { "Content-Type" => "text/html" })
 
     Feedjira.stubs(:parse).raises(Feedjira::NoParserAvailable)
 
@@ -457,15 +470,15 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     page_url = "https://example.com"
 
     stub_request(:get, page_url)
-      .to_return(status: 500, body: "Internal Server Error", headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 500, body: "Internal Server Error", headers: { "Content-Type" => "text/html" })
 
     # Stub common paths to also fail
     Feedjira.stubs(:parse).with("Internal Server Error").raises(Feedjira::NoParserAvailable)
     Feedjira.stubs(:parse).with("").raises(Feedjira::NoParserAvailable)
 
-    ["/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml"].each do |path|
+    [ "/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml" ].each do |path|
       stub_request(:get, "https://example.com#{path}")
-        .to_return(status: 404, body: "", headers: { 'Content-Type' => 'text/html' })
+        .to_return(status: 404, body: "", headers: { "Content-Type" => "text/html" })
     end
 
     service = FeedDiscoveryService.new(page_url)
@@ -476,38 +489,56 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
 
   # Edge cases
   test "discover extracts site_url from feed URL correctly" do
-    feed_url = "https://blog.example.com/feeds/posts/default"
-    feed_xml = "<rss><channel></channel></rss>"
+    feed_url = "https://example.com/feeds/posts/default"
+    feed_xml = <<~XML
+      <?xml version="1.0"?>
+      <rss version="2.0">
+        <channel>
+          <title>Test Feed</title>
+          <link>https://example.com</link>
+          <item><title>Test</title></item>
+        </channel>
+      </rss>
+    XML
 
     stub_request(:get, feed_url)
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
-    assert_equal "https://blog.example.com", result[:site_url]
+    assert_equal "https://example.com", result[:site_url]
   end
 
   test "discover handles subdomain in feed URL" do
-    feed_url = "https://feeds.example.com/rss"
-    feed_xml = "<rss><channel></channel></rss>"
+    feed_url = "https://www.example.com/rss"
+    feed_xml = <<~XML
+      <?xml version="1.0"?>
+      <rss version="2.0">
+        <channel>
+          <title>Test Feed</title>
+          <link>https://www.example.com</link>
+          <item><title>Test</title></item>
+        </channel>
+      </rss>
+    XML
 
     stub_request(:get, feed_url)
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
     assert_equal feed_url, result[:feed_url]
-    assert_equal "https://feeds.example.com", result[:site_url]
+    assert_equal "https://www.example.com", result[:site_url]
   end
 
   test "discover handles port number in URL" do
@@ -518,7 +549,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(feed_url)
@@ -536,7 +567,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: "<rss><channel></channel></rss>",
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(feed_url)
@@ -569,7 +600,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
       .to_return(
         status: 200,
         body: feed_xml,
-        headers: { 'Content-Type' => 'application/rss+xml' }
+        headers: { "Content-Type" => "application/rss+xml" }
       )
 
     service = FeedDiscoveryService.new(original_url)

@@ -1,5 +1,5 @@
 class RegistrationsController < ApplicationController
-  allow_unauthenticated_access only: [:new, :create]
+  allow_unauthenticated_access only: [ :new, :create ]
 
   rescue_from ActionController::ParameterMissing do |e|
     @user = User.new

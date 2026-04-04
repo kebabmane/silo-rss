@@ -18,7 +18,7 @@ class Subscription < ApplicationRecord
   private
 
   def invalidate_orphaned_feeds_cache
-    Rails.cache.delete('orphaned_feeds_count')
+    Rails.cache.delete("orphaned_feeds_count")
   rescue StandardError => e
     Rails.logger.debug("Error invalidating orphaned feeds cache: #{e.message}")
   end

@@ -1,0 +1,194 @@
+#!/usr/bin/env ruby
+# UI Code Analyzer - Scans view files for common UI/UX issues
+
+require 'fileutils'
+require 'pathname'
+
+class UiCodeAnalyzer
+  VIEWS_DIR = Pathname.new(File.expand_path('../app/views', __dir__))
+  REPORT_FILE = Pathname.new(File.expand_path('../tmp/ui-code-analysis-report.md', __dir__))
+  RAILS_ROOT = Pathname.new(File.expand_path('..', __dir__))
+
+  # Issue patterns to check
+  PATTERNS = {
+    deprecated_opacity: {
+      pattern: /bg-opacity-\d+|text-opacity-\d+|border-opacity-\d+/,
+      severity: :warning,
+      message: "Deprecated Tailwind v3 opacity syntax. Use /50, /75 syntax instead."
+    },
+    missing_dark_hover: {
+      pattern: /hover:bg-(blue|green|red|purple)-\d{3}(?!\S*dark:hover)/,
+      severity: :warning,
+      message: "Button/link missing dark:hover: variant"
+    },
+    missing_focus: {
+      pattern: /class:.*\b(?:button_to|link_to|submit|button)\b(?!.*focus:)/i,
+      severity: :error,
+      message: "Interactive element missing focus state"
+    },
+    poor_contrast_yellow: {
+      pattern: /text-yellow-500(?!.*dark:)/,
+      severity: :warning,
+      message: "Yellow-500 on light background may fail WCAG contrast"
+    },
+    hardcoded_white: {
+      pattern: /bg-white(?!.*dark:)/,
+      severity: :warning,
+      message: "Hardcoded bg-white without dark mode variant"
+    },
+    missing_aria_on_emoji: {
+      pattern: /[⭐🔒📧🔔🗑️⚙️👥📡📰💾](?!.*aria-hidden)/,
+      severity: :info,
+      message: "Emoji may need aria-hidden for accessibility"
+    },
+    invalid_css: {
+      pattern: /dark:\s*#[a-fA-F0-9]{3,6}/,
+      severity: :error,
+      message: "Invalid CSS syntax - dark mode should use class syntax"
+    },
+    inconsistent_gray: {
+      pattern: /dark:bg-gray-900(?!.*dark:bg-gray-950)/,
+      severity: :info,
+      message: "Consider standardizing to dark:bg-gray-950 for consistency"
+    }
+  }
+
+  def initialize
+    @issues = []
+    @file_count = 0
+  end
+
+  def analyze
+    puts "🔍 Analyzing UI code in #{VIEWS_DIR}...\n\n"
+
+    find_erb_files.each do |file|
+      analyze_file(file)
+    end
+
+    generate_report
+    print_summary
+  end
+
+  private
+
+  def find_erb_files
+    Pathname.glob(VIEWS_DIR.join('**', '*.erb'))
+  end
+
+  def analyze_file(file)
+    @file_count += 1
+    content = File.read(file)
+    relative_path = file.relative_path_from(RAILS_ROOT)
+
+    PATTERNS.each do |name, config|
+      matches = content.scan(config[:pattern])
+      matches.each do |match|
+        @issues << {
+          file: relative_path,
+          line: find_line_number(content, match),
+          type: name,
+          severity: config[:severity],
+          message: config[:message],
+          match: match.is_a?(Array) ? match.first : match
+        }
+      end
+    end
+  end
+
+  def find_line_number(content, match)
+    lines = content.lines
+    target = match.is_a?(Array) ? match.first : match
+    
+    lines.each_with_index do |line, index|
+      return index + 1 if line.include?(target.to_s)
+    end
+    0
+  end
+
+  def generate_report
+    FileUtils.mkdir_p(File.dirname(REPORT_FILE))
+    
+    File.open(REPORT_FILE, 'w') do |f|
+      f.puts "# UI Code Analysis Report"
+      f.puts "Generated: #{Time.now}"
+      f.puts "Files analyzed: #{@file_count}"
+      f.puts "\n## Summary\n\n"
+      f.puts "| Severity | Count |"
+      f.puts "|----------|-------|"
+      
+      severity_counts = @issues.group_by { |i| i[:severity] }.transform_values(&:count)
+      [:error, :warning, :info].each do |sev|
+        count = severity_counts[sev] || 0
+        emoji = sev == :error ? "🔴" : sev == :warning ? "🟡" : "🔵"
+        f.puts "| #{emoji} #{sev.to_s.capitalize} | #{count} |"
+      end
+      
+      f.puts "\n## Issues by File\n\n"
+      
+      @issues.group_by { |i| i[:file] }.each do |file, issues|
+        error_count = issues.count { |i| i[:severity] == :error }
+        warning_count = issues.count { |i| i[:severity] == :warning }
+        
+        f.puts "### #{file}"
+        f.puts "Errors: #{error_count}, Warnings: #{warning_count}\n\n"
+        
+        issues.each do |issue|
+          emoji = issue[:severity] == :error ? "🔴" : issue[:severity] == :warning ? "🟡" : "🔵"
+          f.puts "#{emoji} **Line #{issue[:line]}**: #{issue[:message]}"
+          f.puts "   Match: `#{issue[:match].to_s[0..50]}`"
+          f.puts ""
+        end
+        
+        f.puts "\n"
+      end
+      
+      f.puts "\n## Recommendations\n\n"
+      f.puts "### High Priority (Errors)"
+      f.puts "- Fix invalid CSS syntax issues immediately"
+      f.puts "- Add missing focus states to all interactive elements"
+      f.puts "- Correct deprecated Tailwind syntax\n\n"
+      
+      f.puts "### Medium Priority (Warnings)"
+      f.puts "- Add dark:hover: variants to buttons for better UX"
+      f.puts "- Improve color contrast (yellow-500 → yellow-600)"
+      f.puts "- Standardize dark mode background colors\n\n"
+      
+      f.puts "### Low Priority (Info)"
+      f.puts "- Add aria-hidden to decorative emoji"
+      f.puts "- Review hardcoded colors for dark mode consistency"
+    end
+  end
+
+  def print_summary
+    puts "\n" + "=" * 60
+    puts "📊 ANALYSIS COMPLETE"
+    puts "=" * 60
+    puts "\nFiles analyzed: #{@file_count}"
+    puts "Total issues found: #{@issues.count}"
+    puts "\nBreakdown:"
+    
+    severity_counts = @issues.group_by { |i| i[:severity] }.transform_values(&:count)
+    
+    puts "  🔴 Errors:   #{severity_counts[:error] || 0}"
+    puts "  🟡 Warnings: #{severity_counts[:warning] || 0}"
+    puts "  🔵 Info:     #{severity_counts[:info] || 0}"
+    
+    puts "\n📄 Report saved to:"
+    puts "   #{REPORT_FILE}"
+    puts "\nTop files with issues:"
+    
+    @issues.group_by { |i| i[:file] }
+           .transform_values(&:count)
+           .sort_by { |_, count| -count }
+           .first(5)
+           .each do |file, count|
+      puts "  - #{file}: #{count} issues"
+    end
+    
+    puts "\n" + "=" * 60
+  end
+end
+
+# Run the analyzer
+puts "\n🔍 Starting UI Code Analysis...\n\n"
+UiCodeAnalyzer.new.analyze

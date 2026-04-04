@@ -9,21 +9,21 @@ module ApiAuthentication
   private
 
   def authenticate_api_user
-    auth_header = request.headers['Authorization']
+    auth_header = request.headers["Authorization"]
     token = extract_token(auth_header)
 
     if token.present?
       @current_user = User.find_by_api_token(token)
 
       if @current_user&.api_token_expired?
-        render json: { error: 'Token expired. Please refresh your token.' }, status: :unauthorized
+        render json: { error: "Token expired. Please refresh your token." }, status: :unauthorized
         return
       end
     end
 
     unless @current_user
-      render json: { error: 'Unauthorized' }, status: :unauthorized
-      return
+      render json: { error: "Unauthorized" }, status: :unauthorized
+      nil
     end
   end
 
@@ -31,7 +31,7 @@ module ApiAuthentication
     return nil if auth_header.blank?
 
     # Support both "Bearer token" and plain "token" formats
-    if auth_header.start_with?('Bearer ')
+    if auth_header.start_with?("Bearer ")
       auth_header[7..-1] # Remove "Bearer " prefix (7 characters)
     else
       auth_header

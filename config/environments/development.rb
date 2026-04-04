@@ -78,7 +78,7 @@ Rails.application.configure do
   config.after_initialize do
     ApplicationRecord.descendants.each do |model|
       # Only enable strict loading for our application models, not gems
-      next if model.name.start_with?('SolidQueue::', 'ActiveStorage::', 'ActionText::')
+      next if model.name.start_with?("SolidQueue::", "ActiveStorage::", "ActionText::")
       model.strict_loading_mode = :all
     end
   end

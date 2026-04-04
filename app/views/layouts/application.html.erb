@@ -14,65 +14,73 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "tailwind", "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-
-    <script nonce="<%= content_security_policy_nonce %>">
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker', { scope: '/' })
-          .then(reg => console.log('Service Worker registered'))
-          .catch(err => console.log('Service Worker registration failed:', err));
-      }
-    </script>
   </head>
 
-  <body class="h-full bg-gray-100 dark:bg-gray-950" data-controller="keyboard theme">
+  <body class="h-full">
     <% if Current.user %>
-      <nav class="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-10" role="navigation" aria-label="Main navigation">
+      <nav class="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-30" role="navigation" aria-label="Main navigation">
         <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16 gap-4">
             <div class="flex items-center flex-shrink-0">
-              <%= link_to dashboard_path, class: "text-xl font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded", aria_label: "Silo home" do %>
+              <%= link_to dashboard_path, class: "text-xl font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded", aria_label: "Silo home" do %>
                 Silo
               <% end %>
             </div>
+            
+            <%# View Mode Toggle - Desktop %>
+            <div class="hidden md:flex items-center gap-1 bg-gray-100 rounded-lg p-1" data-controller="view-mode" data-view-mode="normal">
+              <button data-mode="normal" data-action="click->view-mode#toggle" data-view-mode-target="normal" class="px-3 py-1.5 text-sm rounded-md transition view-mode-btn" aria-label="Normal view">
+                List
+              </button>
+              <button data-mode="reader" data-action="click->view-mode#toggle" data-view-mode-target="reader" class="px-3 py-1.5 text-sm rounded-md transition view-mode-btn" aria-label="Reader view">
+                Reader
+              </button>
+            </div>
+
             <div class="hidden md:flex items-center justify-center flex-1">
               <%= form_with url: search_path, method: :get, data: { turbo_frame: "articles_list" }, class: "flex items-center gap-2" do |f| %>
                 <%= f.text_field :q,
                     placeholder: "Search articles...",
                     value: params[:q],
-                    class: "w-80 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+                    class: "w-80 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
                 <div class="flex items-center gap-2">
                   <% if params[:q].present? %>
-                    <%= link_to "Clear", dashboard_path, data: { turbo_frame: "articles_list" }, class: "text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" %>
+                    <%= link_to "Clear", dashboard_path, data: { turbo_frame: "articles_list" }, class: "text-xs text-gray-500 hover:text-gray-700" %>
                   <% end %>
-                  <%= f.submit "Search", class: "px-3 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer" %>
+                  <%= f.submit "Search", class: "px-3 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" %>
                 </div>
               <% end %>
             </div>
             <div class="flex items-center gap-2 sm:gap-3">
-              <%= link_to "Add Feed", new_feed_path, class: "px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2", aria_label: "Add new feed" %>
+              <%# Desktop Add Feed Button %>
+              <%= link_to new_feed_path, class: "hidden md:flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2", aria_label: "Add new feed" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Add Feed</span>
+              <% end %>
+              
+              <%# Mobile Add Feed Button (icon only) %>
+              <%= link_to new_feed_path, class: "md:hidden flex items-center justify-center w-9 h-9 text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500", aria_label: "Add new feed" do %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              <% end %>
 
               <div class="relative dropdown-trigger" data-controller="dropdown">
                 <details class="nav-menu">
-                  <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="Menu" aria-label="Menu" onclick="event.preventDefault()">
+                  <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition" title="Menu" aria-label="Menu">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
                     </svg>
-                    <span>Menu</span>
+                    <span class="hidden sm:inline">Menu</span>
                   </summary>
-                  <div class="absolute right-0 mt-2 z-30 w-52 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
-                    <%= link_to "Sync Feeds", refresh_all_feeds_path, data: { turbo_method: :post }, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700", aria_label: "Synchronize all feeds" %>
-                    <hr class="my-1 border-gray-200 dark:border-gray-700" />
-                    <%= link_to "Daily Briefs", daily_briefs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-                    <%= link_to "Settings", settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-                    <hr class="my-1 border-gray-200 dark:border-gray-700" />
-                    <button type="button" data-action="click->focus-mode#toggle" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="Toggle focus mode">
-                      Focus Mode
-                    </button>
-                    <button type="button" data-action="click->keyboard#showHelp" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" title="Show keyboard shortcuts">
-                      Keyboard Shortcuts
-                    </button>
+                  <div class="absolute right-0 mt-2 z-30 w-52 rounded-md border border-gray-200 bg-white shadow-lg py-2">
+                    <%= link_to "Sync Feeds", refresh_all_feeds_path, data: { turbo_method: :post }, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100", aria_label: "Synchronize all feeds" %>
+                    <hr class="my-1 border-gray-200" />
+                    <%= link_to "Settings", settings_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
                   </div>
                 </details>
               </div>
@@ -80,33 +88,25 @@
               <% if Current.user&.admin? %>
                 <div class="relative dropdown-trigger" data-controller="dropdown">
                   <details class="nav-menu">
-                    <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition" title="Admin Menu" aria-label="Admin Menu" onclick="event.preventDefault()">
+                    <summary class="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer transition" title="Admin Menu" aria-label="Admin Menu">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      <span>Admin</span>
+                      <span class="hidden sm:inline">Admin</span>
                     </summary>
-                    <div class="absolute right-0 mt-2 z-30 w-52 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg py-2">
-                      <%= link_to "Dashboard", admin_root_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                      <%= link_to "Users", admin_users_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                      <%= link_to "Suggested Feeds", admin_suggested_feeds_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                      <hr class="my-1 border-gray-200 dark:border-gray-700" />
-                      <%= link_to "Settings", admin_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                      <%= link_to "Jobs", mission_control_jobs_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                      <%= link_to "Daily Brief Prompts", admin_daily_brief_prompts_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
-                      <%= link_to "LiteLLM Settings", admin_litellm_settings_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap", role: "menuitem" %>
+                  <div class="absolute right-0 mt-2 z-40 w-52 rounded-md border border-gray-200 bg-white shadow-lg py-2">
+                      <%= link_to "Dashboard", admin_root_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Users", admin_users_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Feeds", admin_feeds_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap", role: "menuitem" %>
+                      <hr class="my-1 border-gray-200" />
+                      <%= link_to "Settings", admin_settings_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap", role: "menuitem" %>
+                      <%= link_to "Jobs", mission_control_jobs_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 whitespace-nowrap", role: "menuitem" %>
                     </div>
                   </details>
                 </div>
               <% end %>
 
-              <button data-action="click->theme#toggle" class="inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Toggle dark mode">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                  <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
-                </svg>
-              </button>
-
-              <%= button_to "Sign Out", session_path, method: :delete, class: "px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition", aria_label: "Sign out" %>
+              <%= button_to "Sign Out", session_path, method: :delete, class: "px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition", aria_label: "Sign out" %>
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@
         <% if flash.any? %>
           <div class="fixed bottom-6 right-6 z-50 space-y-2">
             <% flash.each do |type, message| %>
-              <div data-controller="flash" data-flash-timeout-value="10000" class="px-4 py-3 rounded-md shadow-lg transition transform duration-500 ease-out <%= type == 'notice' ? 'bg-green-100 border border-green-400 text-green-700 dark:bg-green-800 dark:border-green-600 dark:text-green-100' : 'bg-red-100 border border-red-400 text-red-700 dark:bg-red-800 dark:border-red-600 dark:text-red-100' %>">
+              <div data-controller="flash" data-flash-timeout-value="10000" class="px-4 py-3 rounded-md shadow-lg transition transform duration-500 ease-out <%= type == 'notice' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700' %>">
                 <%= message %>
               </div>
             <% end %>
@@ -123,16 +123,45 @@
         <% end %>
         <%= yield %>
       </main>
+
+      <%# Mobile Bottom Navigation %>
+      <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 pb-safe">
+        <div class="flex justify-around items-center h-16">
+          <%= link_to dashboard_path, class: "flex flex-col items-center justify-center flex-1 h-full text-gray-600 #{current_page?(dashboard_path) ? 'text-blue-600' : ''}" do %>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+            </svg>
+            <span class="text-xs mt-1">Feeds</span>
+          <% end %>
+          
+          <%= link_to dashboard_path(filter: "all"), class: "flex flex-col items-center justify-center flex-1 h-full text-gray-600" do %>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span class="text-xs mt-1">Articles</span>
+          <% end %>
+          
+          <%= link_to search_path, class: "flex flex-col items-center justify-center flex-1 h-full text-gray-600 #{current_page?(search_path) ? 'text-blue-600' : ''}" do %>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span class="text-xs mt-1">Search</span>
+          <% end %>
+          
+          <%= link_to settings_path, class: "flex flex-col items-center justify-center flex-1 h-full text-gray-600 #{current_page?(settings_path) ? 'text-blue-600' : ''}" do %>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span class="text-xs mt-1">Settings</span>
+          <% end %>
+        </div>
+      </nav>
+
+      <%# Add padding for mobile nav %>
+      <div class="md:hidden h-16"></div>
     <% else %>
-      <!-- Theme toggle for public pages -->
-      <div class="fixed top-4 right-4 z-50" data-controller="theme">
-        <button data-action="click->theme#toggle" class="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700" aria-label="Toggle dark mode">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/>
-          </svg>
-        </button>
-      </div>
-      <main class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950">
+      <main class="min-h-screen flex items-center justify-center bg-gray-100">
         <%= yield %>
       </main>
     <% end %>

@@ -1,8 +1,8 @@
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+<div class="min-h-screen bg-gray-50  py-8">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="bg-white dark:bg-gray-950 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Server Settings</h1>
+    <div class="bg-white  rounded-lg shadow-lg border border-gray-200 ">
+      <div class="px-6 py-4 border-b border-gray-200 ">
+        <h1 class="text-2xl font-bold text-gray-900 ">Server Settings</h1>
       </div>
 
       <div class="px-6 py-6">
@@ -14,13 +14,13 @@
 
           <div class="space-y-6">
             <!-- Require Admin Confirmation Setting -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <div class="border border-gray-200  rounded-lg p-4">
               <div class="flex items-start justify-between">
                 <div>
-                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h2 class="text-lg font-semibold text-gray-900 ">
                     Require Admin Confirmation
                   </h2>
-                  <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  <p class="mt-1 text-sm text-gray-600 ">
                     When enabled, new users must be confirmed by an admin before they can log in.
                   </p>
                 </div>
@@ -32,42 +32,15 @@
                     <%= "checked" if @require_admin_confirmation %>
                     class="sr-only peer"
                   >
-                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-            </div>
-
-            <!-- Push Notifications Setting -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-              <div class="flex items-start justify-between">
-                <div>
-                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    Push Notifications
-                  </h2>
-                  <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    When enabled, users can register mobile devices to receive push notifications for new articles and daily briefs. Requires Firebase (FCM) and/or Apple APNs credentials to be configured.
-                  </p>
-                  <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
-                    <strong>Note:</strong> This feature is completely optional and the application works fine without it. Only enable if you have set up push notification credentials.
-                  </p>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="push_notifications_enabled"
-                    value="1"
-                    <%= "checked" if @push_notifications_enabled %>
-                    class="sr-only peer"
-                  >
-                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300  rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-blue-600"></div>
                 </label>
               </div>
             </div>
 
             <!-- Submit Button -->
             <div class="flex justify-end gap-3">
-              <%= link_to "Back", admin_users_path, class: "px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600" %>
-              <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md">
+              <%= link_to "Back", admin_users_path, class: "px-4 py-2 text-gray-700  bg-gray-100  rounded-md hover:bg-gray-200 " %>
+              <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700  text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ">
                 Save Settings
               </button>
             </div>

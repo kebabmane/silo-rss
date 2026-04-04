@@ -10,6 +10,6 @@ class CreateArticleStates < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :article_states, [:user_id, :article_id], unique: true
+    add_index :article_states, [ :user_id, :article_id ], unique: true
   end
 end

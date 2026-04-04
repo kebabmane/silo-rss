@@ -1,14 +1,7 @@
 <% @articles.each do |article| %>
   <% cache(article) do %>
     <% state = article.state_for(Current.user) %>
-    <% selected = false %>
-    <% read = state.read? %>
-    <% card_classes = [
-        "group relative block px-4 py-4 border-l-4 transition",
-        "hover:bg-gray-50 dark:hover:bg-gray-800",
-        "border-transparent"
-      ].join(" ") %>
-    <%= turbo_stream.append "articles-list", render("shared/article_card", article: article, state: state, read: read, card_classes: card_classes) %>
+    <%= turbo_stream.append "articles-list", render("shared/article_card", article: article, read: state.read?, starred: state.starred?, selected: false) %>
   <% end %>
 <% end %>
 

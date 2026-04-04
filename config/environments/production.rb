@@ -111,6 +111,8 @@ Rails.application.configure do
   # Enable DNS rebinding protection and other `Host` header attacks.
   config.hosts << ENV["APPLICATION_HOST"] if ENV["APPLICATION_HOST"].present?
   config.hosts << /.*\.local/ # Allow home network .local domains for HA
+  config.hosts << "localhost" # Allow localhost for Docker development
+  config.hosts << "localhost:3000" # Allow localhost:3000 for Docker development
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
