@@ -7,6 +7,11 @@ class ArticleState < ApplicationRecord
   scope :unread, -> { where(read: false) }
   scope :starred, -> { where(starred: true) }
   scope :archived, -> { where(archived: true) }
+  scope :for_user, ->(user) { where(user_id: user.id) }
+  scope :sync_since, ->(timestamp) {
+    return all if timestamp.blank?
+    where("updated_at > ?", timestamp)
+  }
 
   # Bulk upsert article states for a user.
   # attribute should be :read, :starred, or :archived.

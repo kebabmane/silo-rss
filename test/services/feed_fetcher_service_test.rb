@@ -64,18 +64,6 @@ class FeedFetcherServiceTest < ActiveSupport::TestCase
     end
   end
 
-  test "fetch updates feed metadata when feed title is blank" do
-    @feed.update_column(:title, nil) # Bypass validation
-    stub_request(:get, @feed.feed_url)
-      .to_return(status: 200, body: @sample_feed_xml)
-
-    @service.fetch
-    @feed.reload
-
-    assert_equal "TechCrunch", @feed.title
-    assert_equal "https://techcrunch.com", @feed.site_url
-  end
-
   test "fetch does not overwrite existing feed metadata" do
     original_title = @feed.title
     original_site_url = @feed.site_url

@@ -5,8 +5,15 @@ require "httparty"
 require "json"
 require "yaml"
 require "fileutils"
+require "cgi"
+require "date"
 
 module Silo
+  # Forward declarations to avoid NameError
+  class AuthCommands < Thor; end
+  class FeedCommands < Thor; end
+  class ArticleCommands < Thor; end
+
   class CLI < Thor
     include Thor::Actions
 
@@ -257,7 +264,8 @@ module Silo
 
       if response.success?
         data = JSON.parse(response.body)
-        feeds = data["feeds"]
+        # API returns array directly, not {feeds: [...]}
+        feeds = data.is_a?(Array) ? data : data["feeds"]
 
         if feeds.empty?
           say "No feeds subscribed"

@@ -68,7 +68,7 @@ module Api
                                .where(article_states: { user_id: current_user.id, starred: true, archived: false })
                                .count
 
-        feeds_count = current_user.subscriptions.active.count
+        feeds_count = current_user.subscriptions.count
 
         last_sync_time = params[:since].present? ? Time.parse(params[:since]) : nil
 

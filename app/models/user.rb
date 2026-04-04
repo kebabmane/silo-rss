@@ -47,6 +47,7 @@ class User < ApplicationRecord
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
   attribute :theme, :string, default: "light"
+  attribute :time_zone, :string, default: "Etc/UTC"
 
   scope :confirmed, -> { where.not(confirmed_at: nil) }
   scope :pending_confirmation, -> { where(confirmed_at: nil) }

@@ -37,6 +37,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "articles_count", default: 0
+    t.integer "subscriptions_count", default: 0
     t.index [ "feed_url" ], name: "index_feeds_on_feed_url", unique: true
   end
 
@@ -89,7 +90,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "api_token"
-    t.text "full_content"
     t.string "time_zone", default: "UTC"
     t.datetime "confirmed_at"
     t.integer "confirmed_by_id"
@@ -99,6 +99,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000001) do
     t.string "api_token_digest"
     t.datetime "api_token_expires_at"
     t.datetime "onboarding_completed_at"
+    t.integer "subscriptions_count", default: 0
     t.string "cli_token"
     t.string "cli_token_digest"
     t.datetime "cli_token_generated_at"
