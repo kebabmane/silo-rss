@@ -30,9 +30,11 @@ class FeedCreatorService
 
     if feed.new_record?
       feed.title = suggested_feed.title
-      feed.site_url = suggested_feed.site_url
+      # Note: SuggestedFeed doesn't have site_url, so we leave it nil
+      # FeedFetcherService.fetch_metadata will populate it
       fetch_initial_metadata(feed)
-      feed.title = suggested_feed.title if feed.title.blank? || feed.title == extract_host_from_url(feed.feed_url)
+      # Ensure title is preserved even if metadata fetch fails
+      feed.title = suggested_feed.title if feed.title.blank?
       feed.save!
     end
 

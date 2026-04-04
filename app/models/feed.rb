@@ -1,7 +1,6 @@
 class Feed < ApplicationRecord
   has_many :articles, dependent: :destroy
   has_many :subscriptions, dependent: :destroy
-  has_many :daily_brief_feed_filters, dependent: :destroy
   has_many :users, through: :subscriptions
 
   validates :feed_url, presence: true, uniqueness: true
@@ -14,7 +13,7 @@ class Feed < ApplicationRecord
   private
 
   def invalidate_orphaned_feeds_cache
-    Rails.cache.delete('orphaned_feeds_count')
+    Rails.cache.delete("orphaned_feeds_count")
   rescue StandardError => e
     Rails.logger.debug("Error invalidating orphaned feeds cache: #{e.message}")
   end

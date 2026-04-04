@@ -8,15 +8,15 @@ Rails.application.routes.draw do
   # Authentication
   resource :session
   resources :passwords, param: :token
-  resources :registrations, only: [:new, :create]
-  resource :settings, only: [:show, :update]
+  resources :registrations, only: [ :new, :create ]
+  resource :settings, only: [ :show, :update ]
 
   # Public landing page + main application
   root "home#index"
   get "dashboard", to: "dashboard#index"
   get "dashboard/more_articles", to: "dashboard#more_articles"
 
-  resources :feeds, only: [:index, :new, :create, :destroy] do
+  resources :feeds, only: [ :index, :new, :create, :destroy ] do
     collection do
       post :discover
       post :import_opml
@@ -27,7 +27,7 @@ Rails.application.routes.draw do
 
   post "mark_onboarding_completed", to: "dashboard#mark_onboarding_completed"
 
-  resources :articles, only: [:index, :show] do
+  resources :articles, only: [ :index, :show ] do
     member do
       patch :toggle_read
       patch :toggle_starred
@@ -38,66 +38,49 @@ Rails.application.routes.draw do
 
   get "search", to: "articles#search"
 
-  # Daily Briefs
-  resources :daily_brief_schedules do
-    member do
-      post :generate_now
-      patch :enable
-      patch :disable
-    end
-  end
-  resources :daily_briefs, only: [:index, :show] do
-    member do
-      patch :mark_read
-      patch :mark_unread
-    end
-  end
-
   # Admin section - requires authentication
   mount MissionControl::Jobs::Engine, at: "/admin/jobs"
 
   namespace :admin do
-    get '/', to: 'dashboard#index', as: :root
-    get 'dashboard', to: 'dashboard#index'
+    get "/", to: "dashboard#index", as: :root
+    get "dashboard", to: "dashboard#index"
 
-    resources :users, only: [:index, :update] do
+    resources :users, only: [ :index, :update ] do
       patch :confirm, on: :member
     end
 
-    resource :litellm_settings, only: [:show, :update] do
+    resource :litellm_settings, only: [ :show, :update ] do
       post :test_connection
       post :fetch_models
     end
 
-    resource :settings, only: [:show, :update]
+    resource :settings, only: [ :show, :update ]
 
     resources :suggested_feeds
 
-    resources :daily_brief_prompts, only: [:index]
-
-    resources :feeds, only: [:index, :destroy]
+    resources :feeds, only: [ :index, :destroy ]
   end
 
   # API routes
   namespace :api do
     namespace :v1 do
       # Health check
-      get 'health', to: 'health#show'
+      get "health", to: "health#show"
 
       # Authentication
-      post 'auth/login', to: 'auth#login'
-      post 'auth/register', to: 'auth#register'
-      post 'auth/refresh', to: 'auth#refresh'
-      delete 'auth/logout', to: 'auth#logout'
+      post "auth/login", to: "auth#login"
+      post "auth/register", to: "auth#register"
+      post "auth/refresh", to: "auth#refresh"
+      delete "auth/logout", to: "auth#logout"
 
       # Profile/Settings
-      resource :profile, only: [:show, :update]
+      resource :profile, only: [ :show, :update ]
 
       # Passwords
-      resources :passwords, only: [:create, :update], param: :token
+      resources :passwords, only: [ :create, :update ], param: :token
 
       # Feeds
-      resources :feeds, only: [:index, :create, :destroy] do
+      resources :feeds, only: [ :index, :create, :destroy ] do
         collection do
           get :browse
           post :discover
@@ -106,7 +89,7 @@ Rails.application.routes.draw do
       end
 
       # Articles
-      resources :articles, only: [:index, :show] do
+      resources :articles, only: [ :index, :show ] do
         member do
           patch :mark_read
           patch :mark_starred
@@ -120,26 +103,7 @@ Rails.application.routes.draw do
         end
       end
 
-      # Daily Briefs
-      resources :daily_briefs, only: [:index, :show] do
-        member do
-          patch :mark_read
-          patch :mark_unread
-        end
-        collection do
-          get :latest
-        end
-      end
-
-      resources :daily_brief_schedules, only: [:index, :show, :create, :update, :destroy] do
-        member do
-          post :generate_now
-          patch :enable
-          patch :disable
-        end
-      end
-
-      resources :device_registrations, only: [:create, :destroy], param: :device_token
+      resources :device_registrations, only: [ :create, :destroy ], param: :device_token
     end
   end
 

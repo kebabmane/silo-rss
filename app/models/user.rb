@@ -25,8 +25,6 @@ class User < ApplicationRecord
   has_many :subscriptions, dependent: :destroy
   has_many :feeds, through: :subscriptions
   has_many :article_states, dependent: :destroy
-  has_many :daily_brief_schedules, dependent: :destroy
-  has_many :daily_briefs, dependent: :destroy
   has_many :device_registrations, dependent: :destroy
 
   validates :email_address,
@@ -40,7 +38,7 @@ class User < ApplicationRecord
             length: { minimum: PASSWORD_MIN_LENGTH, maximum: ActiveModel::SecurePassword::MAX_PASSWORD_LENGTH_ALLOWED },
             if: :password_attribute_assigned?
   TIME_ZONE_OPTIONS = ActiveSupport::TimeZone.all.map do |tz|
-    [tz.to_s, tz.tzinfo.name]
+    [ tz.to_s, tz.tzinfo.name ]
   end.freeze
   VALID_TIME_ZONES = TIME_ZONE_OPTIONS.map(&:last).freeze
 
@@ -213,5 +211,4 @@ class User < ApplicationRecord
     def password_attribute_assigned?
       !@password.nil? || !@password_confirmation.nil?
     end
-
 end
