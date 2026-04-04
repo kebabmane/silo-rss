@@ -42,11 +42,10 @@ class FeedFetcherService
       create_or_update_article(entry)
     end.compact
 
-    # Queue background jobs to fetch full content for articles that need it
+    # Queue background jobs to fetch full content for ALL articles
+    # This ensures complete article content even if RSS feed provides truncated summaries
     articles.each do |article|
-      if ArticleContentFetcherService.needs_fetch?(article)
-        ArticleContentFetchJob.perform_later(article.id)
-      end
+      ArticleContentFetchJob.perform_later(article.id)
     end
 
     @feed.update(last_fetched_at: Time.current)
