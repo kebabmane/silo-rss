@@ -452,7 +452,7 @@ class Admin::SuggestedFeedsControllerTest < ActionDispatch::IntegrationTest
     }
 
     # Should either succeed (redirect) or fail gracefully (unprocessable_entity)
-    assert [302, 303, 307, 308, 422].include?(response.status), "Response status #{response.status} not in expected range"
+    assert [ 302, 303, 307, 308, 422 ].include?(response.status), "Response status #{response.status} not in expected range"
   end
 
   test "handles special characters in inputs" do

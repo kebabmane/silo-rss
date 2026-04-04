@@ -2,9 +2,6 @@ Rails.application.routes.draw do
   # Favicon redirect (browsers request this automatically)
   get "favicon.ico", to: redirect("/icon.png")
 
-  # Service Worker
-  get "service-worker", to: "service_worker#show", format: :js
-
   # Authentication
   resource :session
   resources :passwords, param: :token
@@ -47,11 +44,6 @@ Rails.application.routes.draw do
 
     resources :users, only: [ :index, :update ] do
       patch :confirm, on: :member
-    end
-
-    resource :litellm_settings, only: [ :show, :update ] do
-      post :test_connection
-      post :fetch_models
     end
 
     resource :settings, only: [ :show, :update ]
@@ -102,8 +94,6 @@ Rails.application.routes.draw do
           post :mark_all_read
         end
       end
-
-      resources :device_registrations, only: [ :create, :destroy ], param: :device_token
     end
   end
 

@@ -1,25 +1,25 @@
 <!-- Search Bar -->
-<div class="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+<div class="p-4 border-b border-gray-200  flex-shrink-0">
   <%= form_with url: search_path, method: :get, data: { turbo_frame: "articles_list" }, class: "relative" do |f| %>
     <%= f.text_field :q,
         placeholder: "Search articles...",
         value: query,
-        class: "w-full px-4 py-2 pr-20 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+        class: "w-full px-4 py-2 pr-20 text-sm border border-gray-300  rounded-lg bg-white  text-gray-900  placeholder-gray-500  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
         autofocus: true %>
     <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
       <% if query.present? %>
         <%= link_to dashboard_path,
             data: { turbo_frame: "articles_list" },
-            class: "px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded" do %>
+            class: "px-2 py-1 text-xs text-gray-500  hover:text-gray-700  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2  rounded" do %>
           Clear
         <% end %>
       <% end %>
-      <%= f.submit "Search", class: "px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950" %>
+      <%= f.submit "Search", class: "px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700  text-white rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 " %>
     </div>
   <% end %>
 </div>
 
-<div class="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
+<div class="divide-y divide-gray-200  flex-1 overflow-y-auto">
   <% if query.present? %>
     <% if articles.any? %>
       <% selected_id = selected_article_id.to_i if selected_article_id.present? %>
@@ -28,32 +28,32 @@
         <% read = state.read? %>
         <% card_classes = [
             "group relative block px-4 py-4 border-l-4 transition duration-150 hover:shadow-sm",
-            "hover:bg-gray-50 dark:hover:bg-gray-800",
-            selected_id == article.id ? "bg-blue-50 dark:bg-blue-900/40 shadow-sm" : "bg-transparent",
-            selected_id == article.id ? "border-blue-500 dark:border-blue-400" : "border-transparent"
+            "hover:bg-gray-50 ",
+            selected_id == article.id ? "bg-blue-50  shadow-sm" : "bg-transparent",
+            selected_id == article.id ? "border-blue-500 " : "border-transparent"
           ].join(" ") %>
         <a href="<%= search_path(q: query, article_id: article.id) %>"
            class="<%= card_classes %>"
            data-turbo-frame="article_content"
            data-article-id="<%= article.id %>">
           <div class="flex items-start gap-3">
-            <span class="mt-1.5 h-3 w-3 rounded-full flex-shrink-0 transition <%= read ? 'bg-gray-300 dark:bg-gray-600' : 'bg-blue-500 dark:bg-blue-400' %>"></span>
+            <span class="mt-1.5 h-3 w-3 rounded-full flex-shrink-0 transition <%= read ? 'bg-gray-300 ' : 'bg-blue-500 ' %>"></span>
             <div class="flex-1 min-w-0">
               <!-- Article Title -->
-              <p class="text-base font-semibold <%= read ? 'text-gray-600 dark:text-gray-300' : 'text-gray-900 dark:text-white' %> transition group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-2">
+              <p class="text-base font-semibold <%= read ? 'text-gray-600 ' : 'text-gray-900 ' %> transition group-hover:text-blue-600  line-clamp-2">
                 <%= article.title %>
               </p>
 
               <!-- Article Preview -->
               <% if article.display_content.present? %>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                <p class="mt-2 text-sm text-gray-600  line-clamp-2">
                   <%= truncate_html(article.display_content, 120) %>
                 </p>
               <% end %>
 
               <!-- Feed & Time Metadata -->
-              <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
-                <span class="truncate max-w-xs font-medium text-gray-600 dark:text-gray-400"><%= article.feed.title %></span>
+              <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 ">
+                <span class="truncate max-w-xs font-medium text-gray-600 "><%= article.feed.title %></span>
                 <% if article.published_at.present? %>
                   <span aria-hidden="true">•</span>
                   <time datetime="<%= article.published_at.iso8601 %>" title="<%= format_user_time(article.published_at, style: :long) %>"><%= relative_time(article.published_at) %></time>
@@ -61,7 +61,7 @@
               </div>
             </div>
             <% if state.starred? %>
-              <span class="flex items-center text-yellow-600 dark:text-yellow-400 flex-shrink-0" aria-label="Starred">
+              <span class="flex items-center text-yellow-600  flex-shrink-0" aria-label="Starred">
                 <span aria-hidden="true">⭐</span>
               </span>
             <% end %>
@@ -71,13 +71,13 @@
     <% else %>
       <div class="flex items-center justify-center h-full p-8">
         <div class="text-center max-w-sm">
-          <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full">
-            <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gray-100  rounded-full">
+            <svg class="w-8 h-8 text-gray-400 " fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v6m0 0v6m0-6h6m0 0h6M6 7h6m0 0H6" />
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No articles found</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
+          <h3 class="text-lg font-semibold text-gray-900  mb-2">No articles found</h3>
+          <p class="text-sm text-gray-600 ">
             No results for "<span class="font-medium"><%= query %></span>". Try adjusting your search terms.
           </p>
         </div>
@@ -86,13 +86,13 @@
   <% else %>
     <div class="flex items-center justify-center h-full p-8">
       <div class="text-center max-w-sm">
-        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full">
-          <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gray-100  rounded-full">
+          <svg class="w-8 h-8 text-gray-400 " fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.5 5.5a7.5 7.5 0 0010.5 10.5z" />
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Search articles</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <h3 class="text-lg font-semibold text-gray-900  mb-2">Search articles</h3>
+        <p class="text-sm text-gray-600 ">
           Enter a search term above to find articles across your feeds
         </p>
       </div>

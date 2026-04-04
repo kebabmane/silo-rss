@@ -79,7 +79,7 @@ class FeedDiscoveryService
     return nil if @url.blank?
 
     base_uri = URI.parse(@url)
-    common_paths = ["/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml"]
+    common_paths = [ "/feed", "/rss", "/atom", "/feed.xml", "/rss.xml", "/atom.xml" ]
 
     common_paths.each do |path|
       test_url = "#{base_uri.scheme}://#{base_uri.host}#{path}"

@@ -70,4 +70,11 @@ class Article < ApplicationRecord
   def needs_content_fetch?
     ArticleContentFetcherService.needs_fetch?(self)
   end
+
+  # Calculate estimated reading time
+  def reading_time
+    word_count = display_content.to_s.gsub(/<[^>]+>/, "").split.size
+    minutes = (word_count / 200.0).ceil
+    minutes < 1 ? "< 1 min" : "#{minutes} min"
+  end
 end

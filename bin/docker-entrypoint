@@ -15,9 +15,15 @@ fi
 # For workers, wait for web container to run migrations first
 if [[ "$*" == *"solid_queue:start"* ]]; then
   echo "Waiting for database to be ready..."
-  sleep 10
-  # Only run db:prepare if tables don't exist (avoid race condition)
-  ./bin/rails db:prepare 2>/dev/null || echo "Database already prepared"
+  # Wait up to 60 seconds for database to be ready
+  for i in {1..30}; do
+    if ./bin/rails runner 'SolidQueue::RecurringTask.count' 2>/dev/null; then
+      echo "Database ready, starting worker..."
+      break
+    fi
+    echo "Waiting for database... ($i/30)"
+    sleep 2
+  done
 fi
 
 exec "${@}"

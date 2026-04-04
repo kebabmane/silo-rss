@@ -1,6 +1,6 @@
 module Admin
   class UsersController < AdminController
-    before_action :set_user, only: [:update, :confirm]
+    before_action :set_user, only: [ :update, :confirm ]
 
     def index
       @users = User.order(created_at: :desc).includes(:confirmed_by)

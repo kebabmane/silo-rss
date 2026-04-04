@@ -1,4 +1,4 @@
-require 'redcarpet'
+require "redcarpet"
 
 module ApplicationHelper
   def markdown(text)
@@ -59,10 +59,10 @@ module ApplicationHelper
     return "" if text.blank?
 
     # Remove HTML tags for preview
-    clean_text = text.gsub(/<[^>]*>/, '')
+    clean_text = text.gsub(/<[^>]*>/, "")
     # Truncate and add ellipsis if needed
     if clean_text.length > length
-      clean_text[0...length].sub(/\s+\S*\z/, '') + '...'
+      clean_text[0...length].sub(/\s+\S*\z/, "") + "..."
     else
       clean_text
     end

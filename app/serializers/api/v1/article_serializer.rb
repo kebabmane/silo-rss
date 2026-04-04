@@ -12,7 +12,7 @@ module Api
         {
           id: article.id,
           title: article.title,
-          content: article.content&.truncate(300, omission: '...'),
+          content: article.content&.truncate(300, omission: "..."),
           url: article.url,
           published_at: article.published_at,
           feed: feed_hash,
@@ -24,7 +24,7 @@ module Api
         {
           id: article.id,
           title: article.title,
-          content: article.content&.truncate(200, omission: '...'),
+          content: article.content&.truncate(200, omission: "..."),
           url: article.url,
           published_at: article.published_at,
           feed: feed_hash,

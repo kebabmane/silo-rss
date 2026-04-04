@@ -32,6 +32,7 @@ class DashboardController < ApplicationController
 
     # Select first article if available
     @selected_article = find_selected_article
+    @previous_article, @next_article = find_adjacent_articles if @selected_article
   end
 
   def more_articles
@@ -68,6 +69,23 @@ class DashboardController < ApplicationController
   end
 
   private
+
+  def find_adjacent_articles
+    articles_query = ArticleFilterQuery.new(
+      user: Current.user,
+      feed_id: params[:feed_id],
+      category: params[:category],
+      filter: params[:filter] || "unread"
+    ).call
+
+    # Previous = newer article (published later, appears earlier in the list)
+    previous = articles_query.where("published_at > ?", @selected_article.published_at).first
+
+    # Next = older article (published earlier, appears later in the list)
+    next_article = articles_query.where("published_at < ?", @selected_article.published_at).first
+
+    [ previous, next_article ]
+  end
 
   def find_selected_article
     if params[:article_id].present?

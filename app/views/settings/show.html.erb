@@ -1,17 +1,17 @@
 <div class="max-w-3xl mx-auto py-10 px-4">
-  <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Settings</h1>
+  <h1 class="text-3xl font-bold text-gray-900  mb-6">Settings</h1>
 
-  <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+  <div class="bg-white  shadow rounded-lg p-6">
     <%= form_with model: @user, url: settings_path, method: :patch, data: { turbo: true } do |form| %>
       <div class="space-y-6">
         <div>
-          <%= form.label :time_zone, "Time Zone", class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
+          <%= form.label :time_zone, "Time Zone", class: "block text-sm font-medium text-gray-700 " %>
           <%= form.select :time_zone,
                 options_for_select(@time_zone_options, @user.time_zone),
                 {},
-                class: "mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
-          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Choose the timezone to display article dates, daily briefs, and notifications.
+                class: "mt-1 block w-full rounded-md border border-gray-300  bg-white  py-2 px-3 text-sm text-gray-900  shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+          <p class="mt-2 text-sm text-gray-500 ">
+            Choose the timezone to display article dates and notifications.
           </p>
         </div>
       </div>

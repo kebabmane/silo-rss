@@ -64,7 +64,7 @@ class FeedsController < ApplicationController
     if @subscription
       # Idempotent: return success for existing subscriptions
       respond_to do |format|
-        format.html { redirect_to dashboard_path, notice: "Feed added successfully" }
+        format.html { redirect_to dashboard_path(feed_id: @feed.id), notice: "Feed added successfully" }
         format.json { render json: { status: "already_subscribed", feed_id: @feed.id }, status: :ok }
         format.turbo_stream { head :ok }
       end
@@ -76,7 +76,7 @@ class FeedsController < ApplicationController
     if @subscription.save
       FeedRefreshJob.perform_later(@feed.id)
       respond_to do |format|
-        format.html { redirect_to dashboard_path, notice: "Feed added successfully" }
+        format.html { redirect_to dashboard_path(feed_id: @feed.id), notice: "Feed added successfully" }
         format.json { render json: { status: "subscribed", feed_id: @feed.id }, status: :created }
         format.turbo_stream { head :created }
       end

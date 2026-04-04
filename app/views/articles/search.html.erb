@@ -1,32 +1,32 @@
 <div class="flex h-[calc(100vh-4rem)]">
   <!-- Left Sidebar: Categories and Feeds -->
-  <div class="w-full md:w-64 lg:w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto hidden md:block" data-controller="filter-highlight">
+  <div class="w-full md:w-64 lg:w-64 bg-white  border-r border-gray-200  overflow-y-auto hidden md:block" data-controller="filter-highlight">
     <div class="p-4">
       <!-- Back to Dashboard -->
       <div class="mb-4">
-        <%= link_to dashboard_path, class: "block px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition" do %>
+        <%= link_to dashboard_path, class: "block px-3 py-2 text-sm rounded-md text-gray-700  hover:bg-gray-100  transition" do %>
           ← Back to Dashboard
         <% end %>
       </div>
 
-      <hr class="my-4 border-gray-200 dark:border-gray-700">
+      <hr class="my-4 border-gray-200 ">
 
-      <div class="text-sm text-gray-600 dark:text-gray-400">
+      <div class="text-sm text-gray-600 ">
         <p class="px-3 mb-2 font-semibold">Search Results</p>
         <% if params[:q].present? %>
-          <p class="px-3 text-xs">Searching for: <strong class="text-gray-900 dark:text-gray-100"><%= params[:q] %></strong></p>
+          <p class="px-3 text-xs">Searching for: <strong class="text-gray-900 "><%= params[:q] %></strong></p>
         <% end %>
       </div>
     </div>
   </div>
 
   <!-- Middle: Articles List -->
-  <%= turbo_frame_tag "articles_list", class: "w-96 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col" do %>
+  <%= turbo_frame_tag "articles_list", class: "w-96 bg-white  border-r border-gray-200  overflow-y-auto flex flex-col" do %>
     <%= render partial: "articles/search_articles_list", locals: { articles: @articles, query: params[:q], selected_article_id: params[:article_id] } %>
   <% end %>
 
   <!-- Right: Article Content -->
-  <%= turbo_frame_tag "article_content", class: "flex-1 overflow-y-auto bg-white dark:bg-gray-950" do %>
+  <%= turbo_frame_tag "article_content", class: "flex-1 overflow-y-auto bg-white " do %>
     <%= render partial: "articles/search_article_content", locals: { article: @selected_article } %>
   <% end %>
 </div>

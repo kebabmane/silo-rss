@@ -45,7 +45,7 @@ default_feeds = [
 
   # Entertainment
   { title: "Variety", feed_url: "https://variety.com/feed/", category: "Entertainment", description: "Entertainment news and reviews", display_order: 1 },
-  { title: "Deadline", feed_url: "https://deadline.com/feed/", category: "Entertainment", description: "Entertainment industry news", display_order: 2 },
+  { title: "Deadline", feed_url: "https://deadline.com/feed/", category: "Entertainment", description: "Entertainment industry news", display_order: 2 }
 ]
 
 default_feeds.each do |feed|

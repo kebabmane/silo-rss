@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class',
   content: [
     './app/views/**/*.{erb,html}',
     './app/helpers/**/*.rb',

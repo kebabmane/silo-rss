@@ -3,7 +3,7 @@ module Api
     class ArticlesController < BaseController
       include ArticleStatePreloader
 
-      before_action :set_article, only: [:mark_read, :mark_starred, :mark_archived]
+      before_action :set_article, only: [ :mark_read, :mark_starred, :mark_archived ]
 
       # GET /api/v1/articles
       def index
@@ -23,11 +23,11 @@ module Api
           articles = articles.where(subscriptions: { category: params[:category] })
         end
 
-        if params[:filter] == 'unread'
+        if params[:filter] == "unread"
           articles = articles.unread_for(current_user)
-        elsif params[:filter] == 'starred'
+        elsif params[:filter] == "starred"
           articles = articles.starred_for(current_user).all_unarchived_for(current_user)
-        elsif params[:filter] == 'archived'
+        elsif params[:filter] == "archived"
           articles = articles.archived_for(current_user)
         else
           # Exclude archived by default
@@ -43,7 +43,7 @@ module Api
         preload_article_states(articles, current_user)
 
         # Enable ETag caching for mobile apps
-        fresh_when(etag: [articles, current_user], last_modified: articles.maximum(:updated_at), public: false)
+        fresh_when(etag: [ articles, current_user ], last_modified: articles.maximum(:updated_at), public: false)
 
         render json: {
           articles: articles.map { |article|
@@ -140,12 +140,12 @@ module Api
         value = ActiveModel::Type::Boolean.new.cast(params[:value])
 
         if article_ids.empty?
-          render json: { error: 'No article IDs provided' }, status: :unprocessable_entity
+          render json: { error: "No article IDs provided" }, status: :unprocessable_entity
           return
         end
 
         unless %w[mark_read mark_starred mark_archived].include?(action_name)
-          render json: { error: 'Invalid action' }, status: :unprocessable_entity
+          render json: { error: "Invalid action" }, status: :unprocessable_entity
           return
         end
 
@@ -155,10 +155,10 @@ module Api
                           .pluck(:id)
 
         attribute = case action_name
-                    when 'mark_read' then :read
-                    when 'mark_starred' then :starred
-                    when 'mark_archived' then :archived
-                    end
+        when "mark_read" then :read
+        when "mark_starred" then :starred
+        when "mark_archived" then :archived
+        end
 
         ArticleState.bulk_set(
           user: current_user,
@@ -202,8 +202,8 @@ module Api
 
         return if @article
 
-        render json: { error: 'Not Found' }, status: :not_found
-        return
+        render json: { error: "Not Found" }, status: :not_found
+        nil
       end
     end
   end

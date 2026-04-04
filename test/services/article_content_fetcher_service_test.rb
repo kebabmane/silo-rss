@@ -25,7 +25,7 @@ class ArticleContentFetcherServiceTest < ActiveSupport::TestCase
     HTML
 
     stub_request(:get, @article.url)
-      .to_return(status: 200, body: html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: html, headers: { "Content-Type" => "text/html" })
 
     result = @service.fetch
 
@@ -172,7 +172,7 @@ class ArticleContentFetcherServiceTest < ActiveSupport::TestCase
 
     # HTTParty follows redirects by default, so stub the original URL to return final content
     stub_request(:get, @article.url)
-      .to_return(status: 200, body: final_html, headers: { 'Content-Type' => 'text/html' })
+      .to_return(status: 200, body: final_html, headers: { "Content-Type" => "text/html" })
 
     result = @service.fetch
 
@@ -352,7 +352,7 @@ class ArticleContentFetcherServiceTest < ActiveSupport::TestCase
     HTML
 
     stub_request(:get, @article.url)
-      .to_return(status: 200, body: html.force_encoding('UTF-8'))
+      .to_return(status: 200, body: html.force_encoding("UTF-8"))
 
     result = @service.fetch
 
@@ -401,7 +401,7 @@ class ArticleContentFetcherServiceTest < ActiveSupport::TestCase
     expected_tags = %w[div p img a h1 h2 h3 h4 h5 h6 blockquote ul ol li pre code]
     expected_attributes = %w[href src alt]
 
-    mock_doc = mock('readability_doc')
+    mock_doc = mock("readability_doc")
     mock_doc.stubs(:content).returns("a" * 101)
 
     Readability::Document.expects(:new).with(

@@ -278,7 +278,7 @@ module Api
       end
 
       test "create triggers background feed refresh job" do
-        assert_enqueued_with(job: FeedRefreshJob, args: [@ruby_weekly.id]) do
+        assert_enqueued_with(job: FeedRefreshJob, args: [ @ruby_weekly.id ]) do
           post api_v1_feeds_url,
                params: { feed_id: @ruby_weekly.id },
                headers: api_headers(@alice),
@@ -463,7 +463,7 @@ module Api
 
         # This will succeed if no validation, or fail if validation exists
         # Adjust based on actual model validations
-        assert_includes [201, 422], response.status
+        assert_includes [ 201, 422 ], response.status
       end
 
       test "discover and subscribe workflow" do

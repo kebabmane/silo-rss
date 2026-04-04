@@ -16,7 +16,7 @@ module ArticleStatePreloader
     # Preload the states into the articles association
     articles.each do |article|
       state = states_by_article_id[article.id]
-      article.association(:article_states).target = state ? [state] : []
+      article.association(:article_states).target = state ? [ state ] : []
       article.association(:article_states).loaded!
     end
   end

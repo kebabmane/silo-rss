@@ -106,11 +106,11 @@ class OpmlServiceTest < ActiveSupport::TestCase
     assert_includes opml, '<opml version="2.0">'
 
     doc = Nokogiri::XML(opml)
-    body = doc.at_xpath('//body')
+    body = doc.at_xpath("//body")
 
     # Body should exist but be empty
     assert body.present?
-    assert_equal 0, body.xpath('outline').count
+    assert_equal 0, body.xpath("outline").count
   end
 
   test "export generates well-formed XML" do

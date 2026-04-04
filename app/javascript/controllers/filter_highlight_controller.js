@@ -25,11 +25,11 @@ export default class extends Controller {
       const isActive = filter === currentFilter
 
       if (isActive) {
-        link.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700')
-        link.classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900', 'dark:text-blue-200')
+        link.classList.remove('text-gray-700', 'hover:bg-gray-100')
+        link.classList.add('bg-blue-50', 'text-blue-700')
       } else {
-        link.classList.remove('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900', 'dark:text-blue-200')
-        link.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700')
+        link.classList.remove('bg-blue-50', 'text-blue-700')
+        link.classList.add('text-gray-700', 'hover:bg-gray-100')
       }
     })
 
@@ -39,11 +39,11 @@ export default class extends Controller {
       const isActive = feedId === currentFeedId
 
       if (isActive) {
-        link.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700')
-        link.classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900', 'dark:text-blue-200', 'font-medium')
+        link.classList.remove('text-gray-700', 'hover:bg-gray-100')
+        link.classList.add('bg-blue-50', 'text-blue-700', 'font-medium')
       } else {
-        link.classList.remove('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900', 'dark:text-blue-200', 'font-medium')
-        link.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700')
+        link.classList.remove('bg-blue-50', 'text-blue-700', 'font-medium')
+        link.classList.add('text-gray-700', 'hover:bg-gray-100')
       }
     })
   }

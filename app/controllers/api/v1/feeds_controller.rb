@@ -23,9 +23,9 @@ module Api
       # GET /api/v1/feeds/browse - returns all available feeds in the system (paginated)
       def browse
         limit = params[:limit].present? ? params[:limit].to_i : 50
-        limit = [[limit, 1].max, 100].min # Clamp between 1 and 100
+        limit = [ [ limit, 1 ].max, 100 ].min # Clamp between 1 and 100
         offset = params[:offset].present? ? params[:offset].to_i : 0
-        offset = [offset, 0].max
+        offset = [ offset, 0 ].max
 
         feeds = Feed.all.order(created_at: :desc)
         total_count = feeds.count
@@ -53,11 +53,11 @@ module Api
       def sync
         UserFeedRefreshJob.perform_later(current_user.id)
         render json: {
-          message: 'Sync started. Your feeds will refresh shortly.'
+          message: "Sync started. Your feeds will refresh shortly."
         }, status: :ok
       end
 
-      # POST /api/v1/feeds/discover
+    # POST /api/v1/feeds/discover
     def discover
         discovery_result = FeedDiscoveryService.new(params[:url]).discover
 
@@ -121,7 +121,7 @@ module Api
           subscription.destroy
           head :no_content
         else
-          render json: { error: 'Subscription not found' }, status: :not_found
+          render json: { error: "Subscription not found" }, status: :not_found
         end
       end
 

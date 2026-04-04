@@ -7,6 +7,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
+      - bundle-cache:/usr/local/bundle
       - db-data:/rails/db
       - storage-data:/rails/storage
     environment:
@@ -19,6 +20,24 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["./bin/rails", "solid_queue:start"]
+    volumes:
+      - db-data:/rails/db
+      - storage-data:/rails/storage
+      - bundle-cache:/usr/local/bundle
+    environment:
+      - RAILS_ENV=development
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE:-$(openssl rand -hex 64)}
+      - RAILS_LOG_TO_STDOUT=1
+      - DISABLE_SSL=1
+    depends_on:
+      - app
+    restart: unless-stopped
 
   test:
     build:

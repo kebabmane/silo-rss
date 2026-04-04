@@ -414,3 +414,4 @@ class ArticleBrowsingTest < ApplicationSystemTestCase
     # Should apply both filters
     assert_selector "body"
   end
+end

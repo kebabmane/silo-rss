@@ -35,7 +35,7 @@ class FeedFetcherServiceTest < ActiveSupport::TestCase
   # Success scenarios
   test "fetch successfully retrieves and parses feed" do
     stub_request(:get, @feed.feed_url)
-      .to_return(status: 200, body: @sample_feed_xml, headers: { 'Content-Type' => 'application/rss+xml' })
+      .to_return(status: 200, body: @sample_feed_xml, headers: { "Content-Type" => "application/rss+xml" })
 
     articles = @service.fetch
 
@@ -270,13 +270,12 @@ class FeedFetcherServiceTest < ActiveSupport::TestCase
     end
   end
 
-  test "fetch does not queue ArticleContentFetchJob for articles with sufficient content" do
+  test "fetch always queues ArticleContentFetchJob for all articles to ensure full content" do
     stub_request(:get, @feed.feed_url)
       .to_return(status: 200, body: @sample_feed_xml)
 
-    ArticleContentFetcherService.stubs(:needs_fetch?).returns(false)
-
-    assert_no_enqueued_jobs(only: ArticleContentFetchJob) do
+    # Even with sufficient content, jobs are queued to ensure complete content
+    assert_enqueued_jobs 2, only: ArticleContentFetchJob do
       @service.fetch
     end
   end

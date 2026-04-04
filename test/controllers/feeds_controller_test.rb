@@ -190,7 +190,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should enqueue user feed refresh job" do
     login_as @alice
 
-    assert_enqueued_with(job: UserFeedRefreshJob, args: [@alice.id]) do
+    assert_enqueued_with(job: UserFeedRefreshJob, args: [ @alice.id ]) do
       post refresh_all_feeds_url
     end
 
@@ -212,7 +212,8 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
       post feeds_url, params: { feed_id: feed.id, category: "Programming", custom_name: "Ruby News" }
     end
 
-    assert_redirected_to dashboard_path
+    assert_response :redirect
+    assert_match %r{/dashboard(\?feed_id=\d+)?\z}, response.location
     assert_equal "Feed added successfully", flash[:notice]
   end
 
@@ -251,7 +252,8 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     end
 
     # Idempotent behavior: should redirect with success message, not error
-    assert_redirected_to dashboard_path
+    assert_response :redirect
+    assert_match %r{/dashboard(\?feed_id=\d+)?\z}, response.location
     assert_match /Feed added successfully/, flash[:notice]
   end
 

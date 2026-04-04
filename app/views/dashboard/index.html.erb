@@ -3,112 +3,113 @@
   <%= render "dashboard/onboarding_modal" %>
 <% end %>
 
-<div data-controller="focus-mode" data-focus-mode-target="layout" class="dashboard-layout flex h-[calc(100vh-4rem)]" data-current-filter="<%= params[:filter] || 'unread' %>">
+<div class="dashboard-layout flex h-[calc(100vh-4rem)]" data-current-filter="<%= params[:filter] || 'unread' %>">
   <!-- Left Sidebar: Categories and Feeds -->
-  <div class="dashboard-sidebar w-64 flex-shrink-0 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto" data-controller="filter-highlight">
+  <div class="dashboard-sidebar w-64 flex-shrink-0 bg-white  border-r border-gray-200  overflow-y-auto" data-controller="filter-highlight">
     <div class="p-4">
       <!-- Filter Buttons -->
       <div class="mb-5 space-y-2">
-        <%= link_to dashboard_path(filter: "unread"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "unread" } do %>
+        <%= link_to dashboard_path(filter: "unread"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700  hover:bg-gray-100  focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "unread" } do %>
           <span>Unread</span>
         <% end %>
-        <%= link_to dashboard_path(filter: "starred"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "starred" } do %>
+        <%= link_to dashboard_path(filter: "starred"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700  hover:bg-gray-100  focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "starred" } do %>
           <span><span aria-hidden="true">⭐</span> Starred</span>
         <% end %>
-        <%= link_to dashboard_path(filter: "all"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "all" } do %>
+        <%= link_to dashboard_path(filter: "all"), class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700  hover:bg-gray-100  focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ", data: { turbo_frame: "articles_list", filter_link: true, filter_value: "all" } do %>
           <span>All Articles</span>
         <% end %>
       </div>
 
-      <hr class="my-4 border-gray-200 dark:border-gray-700">
+      <%# Add Feed Button in Sidebar %>
+      <%= link_to new_feed_path, class: "flex items-center justify-center gap-2 w-full px-3 py-2.5 mb-5 text-sm font-medium text-blue-600  bg-blue-50  border border-blue-200  rounded-md hover:bg-blue-100  transition", aria_label: "Add new feed" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Add Feed</span>
+      <% end %>
+
+      <hr class="my-4 border-gray-200 ">
 
       <!-- Categories and Feeds -->
-      <% @categories.group_by(&:itself).each do |category, _| %>
-        <div class="mb-5">
-          <h3 class="px-3 text-xs font-semibold text-gray-600 dark:text-gray-500 tracking-widest mb-3">
-            <%= category.upcase %>
-          </h3>
-          <% (@subscriptions_by_category[category] || []).each do |subscription| %>
-            <%= link_to dashboard_path(feed_id: subscription.feed_id, filter: "all"),
-                class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
-                data: { turbo_frame: "articles_list", feed_link: true, feed_id: subscription.feed_id } do %>
-              <%= subscription.display_name %>
-            <% end %>
+      <% if @subscriptions.empty? %>
+        <%# Empty state when no feeds %>
+        <div class="px-3 py-6 text-center">
+          <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-blue-50  rounded-full">
+            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h3 class="text-sm font-semibold text-gray-900  mb-1">No feeds yet</h3>
+          <p class="text-xs text-gray-500  mb-3">Add your first RSS feed to get started</p>
+          <%= link_to new_feed_path, class: "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition" do %>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Your First Feed
           <% end %>
         </div>
+      <% else %>
+        <% @categories.group_by(&:itself).each do |category, _| %>
+          <div class="mb-5">
+            <h3 class="px-3 text-xs font-semibold text-gray-600  tracking-widest mb-3">
+              <%= category.upcase %>
+            </h3>
+            <% (@subscriptions_by_category[category] || []).each do |subscription| %>
+              <%= link_to dashboard_path(feed_id: subscription.feed_id, filter: "all"),
+                  class: "block px-3 py-2.5 text-sm rounded-md transition font-medium text-gray-700  hover:bg-gray-100 ",
+                  data: { turbo_frame: "articles_list", feed_link: true, feed_id: subscription.feed_id } do %>
+                <%= subscription.display_name %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
       <% end %>
     </div>
   </div>
 
   <!-- Middle: Articles List -->
-  <%= turbo_frame_tag "articles_list", class: "dashboard-article-list w-96 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 overflow-y-auto flex flex-col", data: { current_filter: params[:filter] || "unread", current_feed_id: params[:feed_id], current_category: params[:category] } do %>
+  <%= turbo_frame_tag "articles_list", class: "dashboard-article-list w-96 bg-white  border-r border-gray-200  overflow-y-auto flex flex-col", data: { current_filter: params[:filter] || "unread", current_feed_id: params[:feed_id], current_category: params[:category] } do %>
     <!-- Mobile search bar -->
-    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 md:hidden">
+    <div class="p-4 border-b border-gray-200  flex-shrink-0 md:hidden">
       <%= form_with url: search_path, method: :get, data: { turbo_frame: "articles_list" }, class: "relative" do |f| %>
         <%= f.text_field :q,
             placeholder: "Search articles...",
             value: params[:q],
-            class: "w-full px-4 py-2 pr-20 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+            class: "w-full px-4 py-2 pr-20 text-sm border border-gray-300  rounded-lg bg-white  text-gray-900  placeholder-gray-500  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
         <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           <% if params[:q].present? %>
             <%= link_to dashboard_path,
                 data: { turbo_frame: "articles_list" },
-                class: "px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" do %>
+                class: "px-2 py-1 text-xs text-gray-500  hover:text-gray-700 " do %>
               Clear
             <% end %>
           <% end %>
-          <%= f.submit "Search", class: "px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white rounded-md cursor-pointer min-h-[44px] min-w-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950" %>
+          <%= f.submit "Search", class: "px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700  text-white rounded-md cursor-pointer min-h-[44px] min-w-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 " %>
         </div>
       <% end %>
     </div>
 
-    <div id="articles-list" class="divide-y divide-gray-200 dark:divide-gray-700 flex-1 overflow-y-auto">
+    <div id="articles-list" class="divide-y divide-gray-200  flex-1 overflow-y-auto">
       <% @articles.each do |article| %>
         <% cache(article) do %>
           <% state = article.state_for(Current.user) %>
-          <% selected = params[:article_id].to_i == article.id %>
-          <% read = state.read? %>
-          <% card_classes = [
-              "group relative block px-4 py-4 border-l-4 transition",
-              "hover:bg-gray-50 dark:hover:bg-gray-800",
-              selected ? "bg-blue-50 dark:bg-blue-900/40" : "bg-transparent",
-              selected ? "border-blue-500 dark:border-blue-400" : "border-transparent"
-            ].join(" ") %>
-          <%= link_to dashboard_path(article_id: article.id),
-              class: card_classes,
-              data: {
-                turbo_frame: "article_content",
-                action: "click->keyboard#selectArticle",
-                article_id: article.id
-              } do %>
-            <div class="flex items-start gap-3">
-              <span class="mt-1.5 h-3 w-3 rounded-full flex-shrink-0 <%= read ? 'bg-gray-300 dark:bg-gray-600' : 'bg-blue-500 dark:bg-blue-400' %>"></span>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium <%= read ? 'text-gray-700 dark:text-gray-200' : 'text-gray-900 dark:text-gray-100' %> transition group-hover:text-blue-600 dark:group-hover:text-blue-300 line-clamp-2">
-                  <%= article.title %>
-                </p>
-                <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
-                  <span class="truncate max-w-xs"><%= article.feed.title %></span>
-                  <% if article.published_at.present? %>
-                    <span aria-hidden="true">•</span>
-                    <time datetime="<%= article.published_at.iso8601 %>"><%= format_user_time(article.published_at, style: :short_date) %></time>
-                  <% end %>
-                </div>
-              </div>
-              <% if state.starred? %>
-                <span class="flex items-center text-yellow-600 dark:text-yellow-400" aria-label="Starred">
-                  <span aria-hidden="true">⭐</span>
-                </span>
-              <% end %>
-            </div>
-          <% end %>
+          <%= render "shared/article_card", 
+                article: article, 
+                read: state.read?, 
+                starred: state.starred?, 
+                selected: params[:article_id].to_i == article.id %>
         <% end %>
       <% end %>
 
       <% if @articles.empty? %>
-        <div class="p-8 text-center text-gray-500 dark:text-gray-400">
-          <p>No articles found</p>
-          <p class="text-sm mt-2">Add some feeds to get started!</p>
+        <div class="p-8 text-center text-gray-500 ">
+          <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-gray-100  rounded-full">
+            <svg class="w-8 h-8 text-gray-400 " fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900  mb-2">No articles found</h3>
+          <p class="text-sm">Add some feeds to get started!</p>
         </div>
       <% elsif @pagy.next %>
         <%= render "dashboard/load_more_trigger", next_page: @pagy.next %>
@@ -117,27 +118,27 @@
   <% end %>
 
   <!-- Right: Article Content -->
-  <%= turbo_frame_tag "article_content", class: "dashboard-article-pane flex-1 overflow-y-auto bg-white dark:bg-black" do %>
+  <%= turbo_frame_tag "article_content", class: "dashboard-article-pane flex-1 overflow-y-auto bg-white " do %>
     <% if @selected_article %>
       <% state = @selected_article.state_for(Current.user) %>
-      <article class="max-w-3xl lg:max-w-4xl mx-auto px-6 py-10 md:px-12 md:py-16 space-y-8">
+      <article class="max-w-2xl mx-auto px-6 py-10 md:px-12 md:py-16 space-y-8">
         <header class="space-y-4 mb-8">
           <div class="space-y-3">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900  leading-tight">
               <%= @selected_article.title %>
             </h1>
           </div>
-          <div class="flex flex-wrap items-center justify-between gap-4 text-base text-gray-600 dark:text-gray-400">
+          <div class="flex flex-wrap items-center justify-between gap-4 text-base text-gray-600 ">
             <div class="flex flex-wrap items-center gap-3">
-              <span class="font-semibold text-gray-700 dark:text-gray-300"><%= @selected_article.feed.title %></span>
+              <span class="font-semibold text-gray-700 "><%= @selected_article.feed.title %></span>
               <% if @selected_article.published_at.present? %>
                 <span aria-hidden="true">•</span>
-                <time datetime="<%= @selected_article.published_at.iso8601 %>" class="text-gray-500 dark:text-gray-500"><%= format_user_time(@selected_article.published_at, style: :long_date) %></time>
+                <time datetime="<%= @selected_article.published_at.iso8601 %>" class="text-gray-500 "><%= format_user_time(@selected_article.published_at, style: :long_date) %></time>
               <% end %>
             </div>
             <% if @selected_article.url.present? %>
               <div class="flex items-center gap-2">
-                <a href="<%= @selected_article.url %>" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full text-blue-600 dark:text-blue-300 border border-transparent hover:bg-blue-50 dark:hover:bg-blue-900/30 transition whitespace-nowrap">
+                <a href="<%= @selected_article.url %>" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full text-blue-600  border border-transparent hover:bg-blue-50  transition whitespace-nowrap">
                   View Original →
                 </a>
               </div>
@@ -150,35 +151,64 @@
         <div class="flex flex-wrap items-center gap-3">
           <%= button_to toggle_read_article_path(@selected_article),
               method: :patch,
-              class: "#{base_toolbar_classes} #{state.read? ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700' : 'bg-blue-50 dark:bg-blue-900/50 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-800/60'}",
+              class: "#{base_toolbar_classes} #{state.read? ? 'bg-gray-100  border-gray-300  text-gray-700  hover:bg-gray-200 ' : 'bg-blue-50  border-blue-300  text-blue-700  hover:bg-blue-100 '}",
               data: { turbo: false } do %>
             <%= state.read? ? "Mark Unread" : "Mark Read" %>
           <% end %>
 
           <%= button_to toggle_starred_article_path(@selected_article),
               method: :patch,
-              class: "#{base_toolbar_classes} #{state.starred? ? 'bg-amber-50 dark:bg-amber-900/50 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-800/60' : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'}",
+              class: "#{base_toolbar_classes} #{state.starred? ? 'bg-amber-50  border-amber-300  text-amber-700  hover:bg-amber-100 ' : 'bg-gray-100  border-gray-300  text-gray-700  hover:bg-gray-200 '}",
               data: { turbo: false } do %>
             <%= state.starred? ? "⭐ Starred" : "☆ Star" %>
           <% end %>
 
           <%= button_to toggle_archived_article_path(@selected_article),
               method: :patch,
-              class: "#{base_toolbar_classes} bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700" do %>
+              class: "#{base_toolbar_classes} bg-gray-100  border-gray-300  text-gray-700  hover:bg-gray-200 " do %>
             Archive
           <% end %>
 
           <%= button_to fetch_content_article_path(@selected_article),
               method: :post,
-              class: "#{base_toolbar_classes} #{@selected_article.full_content_fetched? ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-800/50' : 'bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-800/50'}" do %>
+              class: "#{base_toolbar_classes} #{@selected_article.full_content_fetched? ? 'bg-green-50  border-green-300  text-green-700  hover:bg-green-100 ' : 'bg-purple-50  border-purple-300  text-purple-700  hover:bg-purple-100 '}" do %>
             <%= @selected_article.full_content_fetched? ? "🔄 Re-fetch Content" : "📥 Fetch Full Content" %>
           <% end %>
         </div>
 
-        <div class="prose prose-base md:prose-lg dark:prose-invert max-w-none article-content leading-relaxed">
+        <div class="prose prose-base md:prose-lg  max-w-none article-content leading-relaxed">
           <%= sanitize @selected_article.display_content, tags: %w[div p br strong em a h1 h2 h3 h4 h5 h6 ul ol li blockquote img pre code span table thead tbody tr th td], attributes: %w[href src alt class] %>
         </div>
       </article>
+
+      <!-- Fixed Side Navigation - Only visible in Reader mode (controlled by CSS) -->
+      <div class="reader-nav-left fixed left-4 top-1/2 -translate-y-1/2 z-30 hidden">
+        <% if @previous_article %>
+          <%= link_to dashboard_path(article_id: @previous_article.id, filter: @filter, feed_id: params[:feed_id], category: params[:category], view: params[:view]),
+              class: "inline-flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition shadow-md",
+              data: { turbo: true } do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          <% end %>
+        <% else %>
+          <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed shadow-md">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </span>
+        <% end %>
+      </div>
+
+      <div class="reader-nav-right fixed right-4 top-1/2 -translate-y-1/2 z-30 hidden">
+        <% if @next_article %>
+          <%= link_to dashboard_path(article_id: @next_article.id, filter: @filter, feed_id: params[:feed_id], category: params[:category], view: params[:view]),
+              class: "inline-flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition shadow-md",
+              data: { turbo: true } do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
+        <% else %>
+          <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed shadow-md">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </span>
+        <% end %>
+      </div>
 
       <!-- Auto-mark as read -->
       <% unless state.read? %>
@@ -188,8 +218,32 @@
         </div>
       <% end %>
     <% else %>
-      <div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-        <p>Select an article to read</p>
+      <%# Empty state - no article selected %>
+      <div class="flex flex-col items-center justify-center h-full text-center px-6">
+        <% if @subscriptions.empty? %>
+          <%# No feeds at all - show welcome %>
+          <div class="w-20 h-20 mb-6 flex items-center justify-center bg-blue-50  rounded-full">
+            <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-900  mb-2">Welcome to Silo!</h2>
+          <p class="text-gray-500  mb-6 max-w-sm">Start building your personal news feed by adding RSS sources you love.</p>
+          <%= link_to new_feed_path, class: "inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition" do %>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Your First Feed
+          <% end %>
+        <% else %>
+          <%# Has feeds but no article selected %>
+          <div class="w-16 h-16 mb-4 flex items-center justify-center bg-gray-100  rounded-full">
+            <svg class="w-8 h-8 text-gray-400 " fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18m7.334 0l-1.591 1.591M4.5 12H2.25m2.25 0l-1.591 1.591M12 18.75V21m-4.834-1.834l1.591-1.591M3.75 10.5H6m-2.25 0l1.591-1.591" />
+            </svg>
+          </div>
+          <p class="text-gray-500 ">Select an article from the list to start reading</p>
+        <% end %>
       </div>
     <% end %>
   <% end %>
