@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ArticleContentFetcherService
   def initialize(article)
     @article = article

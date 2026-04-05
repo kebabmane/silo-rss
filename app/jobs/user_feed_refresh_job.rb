@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class UserFeedRefreshJob < ApplicationJob
   queue_as :default
 

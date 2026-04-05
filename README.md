@@ -6,25 +6,25 @@ Silo is your personal internet inbox: a modern, self-hosted RSS/Atom feed reader
 
 ### Core Functionality
 - **Feed Management**
-  - Auto-discovery: Paste any website URL, we'll find the RSS/Atom feed
+  - Auto-discovery: Paste any website URL, we'll find the RSS/Atom feed (with 24-hour result caching)
   - Direct feed URL support
   - Organize feeds into categories/folders
   - OPML import/export for easy migration
 
 - **Reading Experience**
   - Three-pane Turbo-powered interface (folders → articles → content)
-  - Full article content extraction
+  - Full article content extraction (on-demand background fetching)
   - Read/unread tracking per user
   - Star/favorite articles
   - Archive articles
   - Clean, distraction-free reading view
 
 - **Advanced Features**
-  - Full-text search across all articles
+  - Full-text search across all articles (SQLite FTS5)
   - Filter by feed, category, date, read status
   - Keyboard shortcuts for power users
   - Dark mode with theme persistence
-  - Auto-refresh feeds every 15 minutes
+  - Auto-refresh feeds every 15 minutes (with HTTP conditional requests)
 
 ### Technical Stack
 - **Rails 8** with Hotwire (Turbo + Stimulus)
@@ -183,9 +183,52 @@ See [SKILL.md](SKILL.md) for AI agent configuration.
 
 ## Configuration
 
-### Feed Refresh Interval
+### SQLite Database Maintenance
 
-Feeds are refreshed every 15 minutes by default. To change this, edit `config/recurring.yml`:
+Silo includes automated SQLite maintenance tasks:
+
+**Weekly Maintenance (Scheduled Sundays at 3 AM):**
+```bash
+# Runs automatically via Solid Queue
+rake sqlite:maintenance
+```
+
+Performs:
+- `VACUUM` - Reclaims space and defragments database
+- `ANALYZE` - Updates query optimizer statistics
+- `REINDEX` - Rebuilds indexes for optimal performance
+
+**Manual Tasks:**
+```bash
+# Check database stats
+bin/rails sqlite:stats
+
+# Run integrity check
+bin/rails sqlite:integrity_check
+
+# Manual maintenance
+bin/rails sqlite:maintenance
+```
+
+### API Error Handling
+
+The API uses standardized Result objects for consistent error responses:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "not_found",
+    "message": "Feed not found",
+    "retryable": false
+  },
+  "meta": {
+    "cached": false
+  }
+}
+```
+
+Error codes: `not_found`, `network_error`, `invalid_input`, `unauthorized`, `parse_error`, `conflict`
 
 ```yaml
 default: &default
@@ -216,14 +259,28 @@ Jobs are configured in `config/queue.yml` and `config/recurring.yml`.
 
 ### Services
 
-- **FeedDiscoveryService** - Auto-discovers feeds from website URLs
-- **FeedFetcherService** - Fetches and parses feed articles
+- **FeedDiscoveryService** - Auto-discovers feeds from website URLs (with 24-hour caching)
+- **FeedFetcherService** - Fetches and parses feed articles with HTTP conditional requests (If-Modified-Since/ETag)
+- **FeedCreatorService** - Creates feeds from discovery results (returns standardized Result objects)
 - **OpmlService** - OPML import/export functionality
+- **ArticleFilterQuery** - Query object for efficient article filtering
+
+### Performance & Optimization
+
+- **HTTP Conditional Requests** - Feed fetches use `If-Modified-Since` headers to avoid re-fetching unchanged feeds (304 Not Modified support)
+- **Smart Content Fetching** - Only articles needing content extraction are queued (not every article on every fetch)
+- **Feed Discovery Caching** - Discovery results cached for 24 hours to improve performance for popular feeds
+- **N+1 Query Prevention** - Article states preloaded efficiently using custom preloader
+- **Counter Caches** - Article and subscription counts cached on feeds and users
+- **SQLite Maintenance** - Automated weekly VACUUM, ANALYZE, and REINDEX tasks
 
 ### Jobs
 
 - **FeedRefreshJob** - Refreshes a single feed
-- **ScheduledRefreshJob** - Queues all feeds for refresh (runs every 15 min)
+- **ScheduledRefreshJob** - Queues all stale feeds for refresh (runs every 15 min, respects 30-min threshold)
+- **UserFeedRefreshJob** - Refreshes all feeds for a specific user
+- **ArticleContentFetchJob** - Fetches full article content on-demand
+- **DatabaseBackupJob** - Daily automated SQLite backups (7-day retention)
 
 ## Deployment
 

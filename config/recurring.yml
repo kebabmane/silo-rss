@@ -12,6 +12,11 @@ development:
     schedule: every day at 2am
     description: "Daily SQLite database backup with 7-day retention"
 
+  sqlite_maintenance:
+    command: "Rails.application.load_tasks; Rake::Task['sqlite:maintenance'].invoke"
+    schedule: every Sunday at 3am
+    description: "Weekly SQLite maintenance (VACUUM, ANALYZE, REINDEX)"
+
 production:
   refresh_all_feeds:
     class: ScheduledRefreshJob
@@ -29,3 +34,8 @@ production:
     queue: default
     schedule: every day at 2am
     description: "Daily SQLite database backup with 7-day retention"
+
+  sqlite_maintenance:
+    command: "Rails.application.load_tasks; Rake::Task['sqlite:maintenance'].invoke"
+    schedule: every Sunday at 3am
+    description: "Weekly SQLite maintenance (VACUUM, ANALYZE, REINDEX)"

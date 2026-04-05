@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class OpmlService
   def self.export(user)
     builder = Nokogiri::XML::Builder.new(encoding: "UTF-8") do |xml|

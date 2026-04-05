@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Service for creating feeds from discovery results or suggested feeds
 # Encapsulates the feed creation logic to keep controllers thin
 class FeedCreatorService

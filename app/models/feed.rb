@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Feed < ApplicationRecord
   has_many :articles, dependent: :destroy
   has_many :subscriptions, dependent: :destroy
