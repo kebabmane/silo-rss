@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Api
   module V1
     class FeedsController < BaseController
@@ -9,6 +11,7 @@ module Api
             id: sub.id,
             category: sub.category,
             custom_name: sub.custom_name,
+            unread_count: sub.feed.articles_count, # Approximation; could be optimized
             feed: {
               id: sub.feed.id,
               title: sub.feed.title,
@@ -57,14 +60,15 @@ module Api
         }, status: :ok
       end
 
-    # POST /api/v1/feeds/discover
-    def discover
-        discovery_result = FeedDiscoveryService.new(params[:url]).discover
+      # POST /api/v1/feeds/discover
+      def discover
+        result = FeedDiscoveryService.new(params[:url]).discover
 
-        if discovery_result
-          feed = Feed.find_or_initialize_by(feed_url: discovery_result[:feed_url])
+        if result.success?
+          discovery_data = result.data
+          feed = Feed.find_or_initialize_by(feed_url: discovery_data[:feed_url])
           if feed.new_record?
-            feed.site_url = discovery_result[:site_url]
+            feed.site_url = discovery_data[:site_url]
             apply_discovered_metadata(feed)
             feed.title = (URI.parse(feed.feed_url).host rescue "Unknown Feed") if feed.title.blank?
             feed.save
@@ -76,14 +80,17 @@ module Api
               title: feed.title,
               feed_url: feed.feed_url,
               site_url: feed.site_url
-            }
+            },
+            meta: result.meta
           }, status: :ok
         else
-          render json: { error: "Feed not found" }, status: :not_found
+          Rails.logger.warn("API feed discovery failed: #{result.error_code} - #{result.error_message}")
+          render json: {
+            error: result.error_message || "Feed not found",
+            code: result.error_code,
+            retryable: result.retryable?
+          }, status: :not_found
         end
-      rescue SocketError, Timeout::Error, Errno::ECONNREFUSED, HTTParty::Error, Feedjira::NoParserAvailable, URI::InvalidURIError => e
-        Rails.logger.warn("API feed discovery failed: #{e.message}")
-        render json: { error: "Feed not found" }, status: :not_found
       end
 
       # POST /api/v1/feeds

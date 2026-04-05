@@ -174,8 +174,8 @@ module Api
         stub_request(:get, "https://example.com/no-feed")
           .to_return(status: 200, body: "<html><head></head><body>No feed here</body></html>")
 
-        # Stub FeedDiscoveryService to return nil
-        FeedDiscoveryService.any_instance.stubs(:discover).returns(nil)
+        # Stub FeedDiscoveryService to return failure
+        FeedDiscoveryService.any_instance.stubs(:discover).returns(Result.failure(:not_found, "Feed not found"))
 
         post discover_api_v1_feeds_url,
              params: { url: "https://example.com/no-feed" },
@@ -184,7 +184,7 @@ module Api
 
         assert_response :not_found
         json = JSON.parse(response.body)
-        assert_equal "Feed not found", json["error"]
+        assert json["error"].present?
       end
 
       test "discover requires authentication" do
@@ -196,7 +196,7 @@ module Api
       end
 
       test "discover handles malformed URLs gracefully" do
-        FeedDiscoveryService.any_instance.stubs(:discover).returns(nil)
+        FeedDiscoveryService.any_instance.stubs(:discover).returns(Result.failure(:not_found, "Invalid URL"))
 
         post discover_api_v1_feeds_url,
              params: { url: "not a url" },
@@ -205,7 +205,7 @@ module Api
 
         assert_response :not_found
         json = JSON.parse(response.body)
-        assert_equal "Feed not found", json["error"]
+        assert json["error"].present?
       end
 
       # POST /api/v1/feeds

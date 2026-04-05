@@ -491,7 +491,12 @@ class FeedFetcherServiceTest < ActiveSupport::TestCase
   test "fetch respects timeout setting" do
     stub_request(:get, @feed.feed_url).to_timeout
 
-    HTTParty.expects(:get).with(@feed.feed_url, timeout: 15).raises(Net::ReadTimeout)
+    # HTTParty now receives headers for conditional requests along with timeout
+    HTTParty.expects(:get).with(
+      @feed.feed_url,
+      timeout: 15,
+      headers: instance_of(Hash)
+    ).raises(Net::ReadTimeout)
 
     @service.fetch
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Query object for filtering articles in the dashboard
 # Encapsulates the complex filtering logic to keep controllers thin
 class ArticleFilterQuery

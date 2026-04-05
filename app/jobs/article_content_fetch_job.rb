@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ArticleContentFetchJob < ApplicationJob
   queue_as :default
 

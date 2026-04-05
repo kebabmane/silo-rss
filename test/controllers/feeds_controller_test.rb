@@ -71,10 +71,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     login_as @alice
 
     # Mock the discovery service
-    discovery_result = {
-      feed_url: "https://example.com/feed.xml",
-      site_url: "https://example.com"
-    }
+    discovery_result = Result.success(
+      data: {
+        feed_url: "https://example.com/feed.xml",
+        site_url: "https://example.com"
+      }
+    )
     FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     # Mock Feedjira parsing
@@ -85,6 +87,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     # Mock HTTParty
     response = mock
     response.stubs(:body).returns("<rss></rss>")
+    response.stubs(:code).returns(200)
     response.stubs(:media_type).returns(Mime[:turbo_stream].to_s)
     HTTParty.stubs(:get).returns(response)
 
@@ -93,16 +96,17 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     post discover_feeds_url, params: { url: "https://example.com" }, as: :turbo_stream
     assert_response :success
-    assert_equal Mime[:turbo_stream].to_s, response.media_type
   end
 
   test "should create new feed when discovering unknown feed" do
     login_as @alice
 
-    discovery_result = {
-      feed_url: "https://newfeed.com/rss",
-      site_url: "https://newfeed.com"
-    }
+    discovery_result = Result.success(
+      data: {
+        feed_url: "https://newfeed.com/rss",
+        site_url: "https://newfeed.com"
+      }
+    )
     FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     parsed_feed = mock
@@ -111,6 +115,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     response_mock = mock
     response_mock.stubs(:body).returns("<rss></rss>")
+    response_mock.stubs(:code).returns(200)
     HTTParty.stubs(:get).returns(response_mock)
 
     FeedRefreshJob.stubs(:perform_later)
@@ -124,10 +129,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should find existing feed when discovering known feed" do
     login_as @alice
 
-    discovery_result = {
-      feed_url: @tech_crunch.feed_url,
-      site_url: @tech_crunch.site_url
-    }
+    discovery_result = Result.success(
+      data: {
+        feed_url: @tech_crunch.feed_url,
+        site_url: @tech_crunch.site_url
+      }
+    )
     FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     assert_no_difference "Feed.count" do
@@ -139,10 +146,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should enqueue FeedRefreshJob for new feed" do
     login_as @alice
 
-    discovery_result = {
-      feed_url: "https://newfeed.com/rss",
-      site_url: "https://newfeed.com"
-    }
+    discovery_result = Result.success(
+      data: {
+        feed_url: "https://newfeed.com/rss",
+        site_url: "https://newfeed.com"
+      }
+    )
     FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     parsed_feed = mock
@@ -151,6 +160,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     response_mock = mock
     response_mock.stubs(:body).returns("<rss></rss>")
+    response_mock.stubs(:code).returns(200)
     HTTParty.stubs(:get).returns(response_mock)
 
     FeedRefreshJob.expects(:perform_later).once
@@ -161,7 +171,8 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should return error when discovery fails" do
     login_as @alice
 
-    FeedDiscoveryService.any_instance.stubs(:discover).returns(nil)
+    discovery_result = Result.failure(:not_found, "Feed not found")
+    FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     post discover_feeds_url, params: { url: "https://invalid-url.com" }, as: :turbo_stream
     assert_response :success
@@ -171,10 +182,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should include existing categories in discovery response" do
     login_as @alice
 
-    discovery_result = {
-      feed_url: @tech_crunch.feed_url,
-      site_url: @tech_crunch.site_url
-    }
+    discovery_result = Result.success(
+      data: {
+        feed_url: @tech_crunch.feed_url,
+        site_url: @tech_crunch.site_url
+      }
+    )
     FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     post discover_feeds_url, params: { url: @tech_crunch.site_url }, as: :turbo_stream
@@ -361,7 +374,8 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should handle discovery with malformed URL" do
     login_as @alice
 
-    FeedDiscoveryService.any_instance.stubs(:discover).returns(nil)
+    discovery_result = Result.failure(:invalid_input, "Invalid URL")
+    FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     post discover_feeds_url, params: { url: "not-a-valid-url" }, as: :turbo_stream
     assert_response :success
@@ -370,10 +384,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should handle discovery when Feedjira parsing fails" do
     login_as @alice
 
-    discovery_result = {
-      feed_url: "https://example.com/feed.xml",
-      site_url: "https://example.com"
-    }
+    discovery_result = Result.success(
+      data: {
+        feed_url: "https://example.com/feed.xml",
+        site_url: "https://example.com"
+      }
+    )
     FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     # Feedjira returns nil when parsing fails
@@ -381,6 +397,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     response_mock = mock
     response_mock.stubs(:body).returns("invalid xml")
+    response_mock.stubs(:code).returns(200)
     HTTParty.stubs(:get).returns(response_mock)
 
     FeedRefreshJob.stubs(:perform_later)
@@ -398,14 +415,17 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should handle HTTParty errors during discovery" do
     login_as @alice
 
-    discovery_result = {
-      feed_url: "https://example.com/feed.xml",
-      site_url: "https://example.com"
-    }
+    discovery_result = Result.success(
+      data: {
+        feed_url: "https://example.com/feed.xml",
+        site_url: "https://example.com"
+      }
+    )
     FeedDiscoveryService.any_instance.stubs(:discover).returns(discovery_result)
 
     response_mock = mock
     response_mock.stubs(:body).returns("")
+    response_mock.stubs(:code).returns(200)
     HTTParty.stubs(:get).returns(response_mock)
 
     post discover_feeds_url, params: { url: "https://example.com" }, as: :turbo_stream

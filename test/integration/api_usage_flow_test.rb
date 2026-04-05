@@ -444,7 +444,8 @@ class ApiUsageFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
     json_response = JSON.parse(response.body)
-    assert_equal "Feed not found", json_response["error"]
+    assert json_response["error"].present?
+    assert_match /no feed found/i, json_response["error"]
   end
 
   test "API subscribe with duplicate feed returns error" do

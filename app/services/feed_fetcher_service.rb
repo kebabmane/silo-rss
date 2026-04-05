@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FeedFetcherService
   def initialize(feed)
     @feed = feed
@@ -12,7 +14,11 @@ class FeedFetcherService
       return
     end
 
-    response = HTTParty.get(uri.to_s, timeout: 10)
+    response = HTTParty.get(uri.to_s, timeout: 10, headers: conditional_headers)
+
+    # Return early if feed hasn't changed (304 Not Modified)
+    return if response.code == 304
+
     parsed_feed = Feedjira.parse(response.body)
     return unless parsed_feed
 
@@ -29,23 +35,33 @@ class FeedFetcherService
       return []
     end
 
-    response = HTTParty.get(uri.to_s, timeout: 15)
+    response = HTTParty.get(uri.to_s, timeout: 15, headers: conditional_headers)
+
+    # Return early if feed hasn't changed (304 Not Modified)
+    if response.code == 304
+      Rails.logger.info("Feed #{@feed.id} (#{@feed.title}) not modified since last fetch")
+      @feed.touch(:last_fetched_at)
+      return []
+    end
+
     parsed_feed = Feedjira.parse(response.body)
 
     return [] unless parsed_feed
 
     # Update feed metadata if available
-    update_feed_metadata(parsed_feed)
+    update_feed_metadata(parsed_feed, response)
 
     # Process each entry
     articles = parsed_feed.entries.map do |entry|
       create_or_update_article(entry)
     end.compact
 
-    # Queue background jobs to fetch full content for ALL articles
-    # This ensures complete article content even if RSS feed provides truncated summaries
+    # Queue background jobs to fetch full content for articles that need it
+    # Only queue for new articles or articles with short content
     articles.each do |article|
-      ArticleContentFetchJob.perform_later(article.id)
+      if article.needs_content_fetch?
+        ArticleContentFetchJob.perform_later(article.id)
+      end
     end
 
     @feed.update(last_fetched_at: Time.current)
@@ -57,10 +73,26 @@ class FeedFetcherService
 
   private
 
-  def update_feed_metadata(parsed_feed)
+  # Build conditional request headers based on last fetch time
+  def conditional_headers
+    headers = {}
+
+    if @feed.last_fetched_at.present?
+      headers["If-Modified-Since"] = @feed.last_fetched_at.httpdate
+    end
+
+    headers
+  end
+
+  def update_feed_metadata(parsed_feed, response = nil)
     updates = {}
     updates[:title] = parsed_feed.title if parsed_feed.title.present? && @feed.title.blank?
     updates[:site_url] = parsed_feed.url if parsed_feed.url.present? && @feed.site_url.blank?
+
+    # Store ETag for future conditional requests if available
+    if response && response.headers["etag"].present?
+      updates[:etag] = response.headers["etag"]
+    end
 
     @feed.update(updates) if updates.any?
   end

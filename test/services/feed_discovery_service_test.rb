@@ -24,8 +24,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
-    assert_equal feed_url, result[:feed_url]
-    assert_equal "https://example.com", result[:site_url]
+    assert_equal feed_url, result.data[:feed_url]
+    assert_equal "https://example.com", result.data[:site_url]
   end
 
   test "discover identifies feed by XML content-type" do
@@ -40,7 +40,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
-    assert_equal feed_url, result[:feed_url]
+    assert_equal feed_url, result.data[:feed_url]
   end
 
   test "discover identifies feed by atom content-type" do
@@ -55,7 +55,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
-    assert_equal feed_url, result[:feed_url]
+    assert_equal feed_url, result.data[:feed_url]
   end
 
   test "discover identifies feed by parsing with Feedjira" do
@@ -80,7 +80,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
-    assert_equal feed_url, result[:feed_url]
+    assert_equal feed_url, result.data[:feed_url]
   end
 
   # Success scenarios - feed discovery from HTML page
@@ -104,8 +104,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://example.com/feed.xml", result[:feed_url]
-    assert_equal page_url, result[:site_url]
+    assert_equal "https://example.com/feed.xml", result.data[:feed_url]
+    assert_equal page_url, result.data[:site_url]
   end
 
   test "discover finds Atom feed link in HTML head" do
@@ -127,8 +127,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://example.com/atom.xml", result[:feed_url]
-    assert_equal page_url, result[:site_url]
+    assert_equal "https://example.com/atom.xml", result.data[:feed_url]
+    assert_equal page_url, result.data[:site_url]
   end
 
   test "discover handles absolute feed URLs in HTML" do
@@ -163,8 +163,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://www.example.com/rss", result[:feed_url]
-    assert_equal page_url, result[:site_url]
+    assert_equal "https://www.example.com/rss", result.data[:feed_url]
+    assert_equal page_url, result.data[:site_url]
   end
 
   test "discover handles relative feed URLs in HTML" do
@@ -186,8 +186,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://example.com/feed", result[:feed_url]
-    assert_equal page_url, result[:site_url]
+    assert_equal "https://example.com/feed", result.data[:feed_url]
+    assert_equal page_url, result.data[:site_url]
   end
 
   test "discover chooses first feed link when multiple exist" do
@@ -210,7 +210,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://example.com/rss", result[:feed_url]
+    assert_equal "https://example.com/rss", result.data[:feed_url]
   end
 
   # Success scenarios - common feed paths
@@ -240,8 +240,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://example.com/rss", result[:feed_url]
-    assert_equal page_url, result[:site_url]
+    assert_equal "https://example.com/rss", result.data[:feed_url]
+    assert_equal page_url, result.data[:site_url]
   end
 
   test "discover checks multiple common paths in order" do
@@ -271,7 +271,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://example.com/atom.xml", result[:feed_url]
+    assert_equal "https://example.com/atom.xml", result.data[:feed_url]
   end
 
   # URL normalization
@@ -289,7 +289,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(url_without_protocol)
     result = service.discover
 
-    assert_equal "https://example.com/feed", result[:feed_url]
+    assert_equal "https://example.com/feed", result.data[:feed_url]
   end
 
   test "discover preserves http protocol when specified" do
@@ -306,7 +306,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(url_with_http)
     result = service.discover
 
-    assert_equal "http://example.com/feed", result[:feed_url]
+    assert_equal "http://example.com/feed", result.data[:feed_url]
   end
 
   test "discover strips whitespace from URL" do
@@ -323,7 +323,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(url_with_whitespace)
     result = service.discover
 
-    assert_equal "https://example.com/feed", result[:feed_url]
+    assert_equal "https://example.com/feed", result.data[:feed_url]
   end
 
   test "discover resolves relative feed URL without leading slash" do
@@ -340,8 +340,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_equal "https://example.com/feed.xml", result[:feed_url]
-    assert_equal page_url, result[:site_url]
+    assert_equal "https://example.com/feed.xml", result.data[:feed_url]
+    assert_equal page_url, result.data[:site_url]
   end
 
   test "discover rejects unsafe feed links" do
@@ -364,7 +364,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_nil result
+    assert result.failure?
   end
 
   # Error scenarios
@@ -387,7 +387,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_nil result
+    assert result.failure?
   end
 
   test "discover returns nil when URL times out" do
@@ -398,7 +398,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_nil result
+    assert result.failure?
   end
 
   test "discover returns nil when network error occurs" do
@@ -409,7 +409,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_nil result
+    assert result.failure?
   end
 
   test "discover returns nil when no feed links and common paths fail" do
@@ -431,7 +431,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_nil result
+    assert result.failure?
   end
 
   test "discover logs error and returns nil on exception" do
@@ -444,7 +444,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_nil result
+    assert result.failure?
   end
 
   test "discover handles malformed HTML gracefully" do
@@ -484,7 +484,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_nil result
+    assert result.failure?
   end
 
   # Edge cases
@@ -511,7 +511,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
-    assert_equal "https://example.com", result[:site_url]
+    assert_equal "https://example.com", result.data[:site_url]
   end
 
   test "discover handles subdomain in feed URL" do
@@ -537,8 +537,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
-    assert_equal feed_url, result[:feed_url]
-    assert_equal "https://www.example.com", result[:site_url]
+    assert_equal feed_url, result.data[:feed_url]
+    assert_equal "https://www.example.com", result.data[:site_url]
   end
 
   test "discover handles port number in URL" do
@@ -555,8 +555,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(feed_url)
     result = service.discover
 
-    assert_equal feed_url, result[:feed_url]
-    assert_equal "https://example.com", result[:site_url]
+    assert_equal feed_url, result.data[:feed_url]
+    assert_equal "https://example.com", result.data[:site_url]
   end
 
   test "discover extracts site_url successfully for valid URLs" do
@@ -575,8 +575,8 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
 
     # Should extract site_url successfully
     assert_not_nil result
-    assert_equal feed_url, result[:feed_url]
-    assert_equal "https://example.com", result[:site_url]
+    assert_equal feed_url, result.data[:feed_url]
+    assert_equal "https://example.com", result.data[:site_url]
   end
 
   test "discover respects timeout setting" do
@@ -587,7 +587,7 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(page_url)
     result = service.discover
 
-    assert_nil result
+    assert result.failure?
   end
 
   test "discover handles redirect responses" do
@@ -606,6 +606,6 @@ class FeedDiscoveryServiceTest < ActiveSupport::TestCase
     service = FeedDiscoveryService.new(original_url)
     result = service.discover
 
-    assert_equal original_url, result[:feed_url]
+    assert_equal original_url, result.data[:feed_url]
   end
 end

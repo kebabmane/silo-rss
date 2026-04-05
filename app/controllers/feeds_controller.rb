@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FeedsController < ApplicationController
   OPML_UPLOAD_LIMIT = 1.megabyte
 
@@ -13,10 +15,10 @@ class FeedsController < ApplicationController
 
   def discover
     url = params[:url]
-    discovery_result = FeedDiscoveryService.new(url).discover
+    result = FeedDiscoveryService.new(url).discover
 
-    if discovery_result
-      @feed = FeedCreatorService.create_from_discovery(discovery_result)
+    if result.success?
+      @feed = FeedCreatorService.create_from_discovery(result.data)
       FeedRefreshJob.perform_later(@feed.id)
 
       @existing_categories = Current.user.subscriptions.distinct.pluck(:category).compact.sort
@@ -30,16 +32,11 @@ class FeedsController < ApplicationController
         end
       end
     else
+      Rails.logger.warn("Feed discovery failed: #{result.error_code} - #{result.error_message}")
       respond_to do |format|
         format.turbo_stream { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
         format.html { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
       end
-    end
-  rescue SocketError, Timeout::Error, Errno::ECONNREFUSED, HTTParty::Error, Feedjira::NoParserAvailable, URI::InvalidURIError => e
-    Rails.logger.warn("Feed discovery error: #{e.message}")
-    respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
-      format.html { render turbo_stream: turbo_stream.replace("feed_discovery", partial: "feeds/discovery_error"), formats: :turbo_stream }
     end
   rescue FeedCreatorService::Error => e
     Rails.logger.error("Feed creation error: #{e.message}")

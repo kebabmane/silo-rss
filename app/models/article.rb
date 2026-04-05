@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Article < ApplicationRecord
   belongs_to :feed, counter_cache: true
   has_many :article_states, dependent: :destroy
